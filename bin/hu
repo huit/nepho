@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+import pdb
+import hu
+from hu.command import command
+
+output = command()
+print output
+# vim:ft=python
