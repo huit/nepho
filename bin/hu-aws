@@ -34,6 +34,8 @@ from awscli.argprocess import unpack_cli_arg
 import argparse
 
 import json
+import yaml
+import string
 from hu.command import command
 
 LOG = logging.getLogger('hu-dummy')
@@ -59,6 +61,18 @@ def main():
     env_name = args['opts']['environment']
     stack_name = '%s-%s' % (plugin_name, env_name)
     cf_file='./plugins/%s/%s.cf' % (plugin_name, env_name)
+    yaml_file = './plugins/%s/%s.yaml' % (plugin_name, env_name)
+    
+    f = open(yaml_file)
+    paramsMap = yaml.safe_load(f)
+    f.close()
+ 
+    #params_string_array=[]
+    #for key in dataMap.keys():
+    #    params_string_array.append("--parameters")
+    #    params_string_array.append("parameter_key=%s,parameter_value=%s" % (key, dataMap[key]))
+    #params_string = string.join(yaml_string_array, " ")
+    
     f = open(cf_file, 'r')
     template_content=f.read()
     f.close()
@@ -72,6 +86,11 @@ def main():
                '--stack-name', stack_name, 
                '--template-body', template_content
                ]
+    if len(paramsMap.keys()) > 0:
+        main_args.append("--parameters")
+        for key in paramsMap.keys():
+            main_args.append("parameter_key=%s,parameter_value=%s" % (key, paramsMap[key]))
+    
     print main_args
     return aws_driver.main(main_args)
 
