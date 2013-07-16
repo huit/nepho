@@ -49,13 +49,12 @@ def setup_awscli_driver():
 def main():
     # Create an aws-cli driver
     aws_driver = setup_awscli_driver()
-    
+
+    # Read in command line options as JSON    
     args_json = command()
     args=json.loads(args_json)
-    
-    print args_json
-    print args
-    
+
+    # Very basic parsing to determine plugin and environment to use
     plugin_name = args['plugin']
     env_name = args['opts']['environment']
     stack_name = '%s-%s' % (plugin_name, env_name)
@@ -64,7 +63,15 @@ def main():
     template_content=f.read()
     f.close()
 
-    main_args=['cloudformation', 'create-stack', '--stack-name', stack_name, '--template-body', template_content]
+    # TODO: assemble a more interesting template 
+    # TODO: create a parameters option 
+    main_args=[
+               'cloudformation', 
+               'create-stack', 
+               '--capabilities', 'CAPABILITY_IAM', 
+               '--stack-name', stack_name, 
+               '--template-body', template_content
+               ]
     print main_args
     return aws_driver.main(main_args)
 
