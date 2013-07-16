@@ -31,7 +31,10 @@ from awscli.argparser import OperationArgParser
 #from awscli.help import ServiceHelpCommand
 #from awscli.help import OperationHelpCommand
 from awscli.argprocess import unpack_cli_arg
+import argparse
 
+import json
+from hu.command import command
 
 LOG = logging.getLogger('hu-dummy')
 
@@ -45,10 +48,25 @@ def setup_awscli_driver():
             
 def main():
     # Create an aws-cli driver
-    driver = setup_awscli_driver()
+    aws_driver = setup_awscli_driver()
     
-    main_args=['ec2', 'describe-instances']
-    return driver.main(main_args)
+    args_json = command()
+    args=json.loads(args_json)
+    
+    print args_json
+    print args
+    
+    plugin_name = args['plugin']
+    env_name = args['opts']['environment']
+    stack_name = '%s-%s' % (plugin_name, env_name)
+    cf_file='./plugins/%s/%s.cf' % (plugin_name, env_name)
+    f = open(cf_file, 'r')
+    template_content=f.read()
+    f.close()
+
+    main_args=['cloudformation', 'create-stack', '--stack-name', stack_name, '--template-body', template_content]
+    print main_args
+    return aws_driver.main(main_args)
 
 if __name__ == '__main__':
     sys.exit(main())
