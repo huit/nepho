@@ -5,8 +5,9 @@ __all__ = ["command"]
 
 def command():
     args = parse_args()
-    plugin = args['subcommand']
+    subcmd = args['subcommand']
+    modul  = args['module']
     # FIXME: check to see whether we know of such a plugin
     opts = dict( args['opts'] )
-    serialized = serialize(plugin,opts)
+    serialized = serialize(subcmd,modul,opts)
     return serialized

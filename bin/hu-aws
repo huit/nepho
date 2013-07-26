@@ -33,6 +33,8 @@ from awscli.argparser import OperationArgParser
 from awscli.argprocess import unpack_cli_arg
 import argparse
 
+from jinja2 import Environment, FileSystemLoader
+
 import json
 import yaml
 import string
@@ -54,45 +56,58 @@ def main():
 
     # Read in command line options as JSON    
     args_json = command()
+    print args_json
     args=json.loads(args_json)
 
     # Very basic parsing to determine plugin and environment to use
-    plugin_name = args['plugin']
+    plugin_name = args['subcmd']
+    mod_name = args['module']
     env_name = args['opts']['environment']
-    stack_name = '%s-%s' % (plugin_name, env_name)
-    cf_file='./plugins/%s/%s.cf' % (plugin_name, env_name)
-    yaml_file = './plugins/%s/%s.yaml' % (plugin_name, env_name)
+    stack_name = '%s-%s' % (mod_name, env_name)
+    cf_filename='%s.cf' % (env_name)
+    cf_dir='./modules/%s' % (mod_name)
+    #cf_file='./modules/%s/%s.cf' % (plugin_name, env_name)
     
-    f = open(yaml_file)
-    paramsMap = yaml.safe_load(f)
-    f.close()
- 
-    #params_string_array=[]
-    #for key in dataMap.keys():
-    #    params_string_array.append("--parameters")
-    #    params_string_array.append("parameter_key=%s,parameter_value=%s" % (key, dataMap[key]))
-    #params_string = string.join(yaml_string_array, " ")
+    yaml_file = './modules/%s/%s.yaml' % (mod_name, env_name)
     
-    f = open(cf_file, 'r')
-    template_content=f.read()
-    f.close()
+    paramsMap = None
+    try:
+        f = open(yaml_file)
+        paramsMap = yaml.safe_load(f)
+        f.close()
+    except IOError: pass
+    
+        
+    #
+    # Use Jinja2
+    # 
+    template_dirs = [cf_dir, 'modules/common/']
+    print template_dirs
+    jinjaFSloader = FileSystemLoader(template_dirs)
+    env = Environment(loader=jinjaFSloader)    
+    template = env.get_template(cf_filename)
 
-    # TODO: assemble a more interesting template 
-    # TODO: create a parameters option 
-    main_args=[
+    if args['subcmd'] == 'show-template':
+        print template.render()
+    
+    if args['subcmd'] == 'deploy':
+        
+        # TODO: assemble a more interesting template 
+        # TODO: create a parameters option 
+        main_args=[
                'cloudformation', 
                'create-stack', 
                '--capabilities', 'CAPABILITY_IAM', 
                '--stack-name', stack_name, 
-               '--template-body', template_content
+               '--template-body', template.render()
                ]
-    if len(paramsMap.keys()) > 0:
-        main_args.append("--parameters")
-        for key in paramsMap.keys():
-            main_args.append("parameter_key=%s,parameter_value=%s" % (key, paramsMap[key]))
+        if paramsMap is not None and len(paramsMap.keys()) > 0:
+            main_args.append("--parameters")
+            for key in paramsMap.keys():
+                main_args.append("parameter_key=%s,parameter_value=%s" % (key, paramsMap[key]))
     
-    print main_args
-    return aws_driver.main(main_args)
+            print main_args
+            return aws_driver.main(main_args)
 
 if __name__ == '__main__':
     sys.exit(main())
