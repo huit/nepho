@@ -1,0 +1,12 @@
+
+"KeyName" : {
+  "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+  "Type" : "String"
+},
+
+"InstanceType" : {
+      "Description" : "WebServer EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+}
