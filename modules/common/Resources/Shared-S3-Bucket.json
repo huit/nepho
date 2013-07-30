@@ -1,4 +1,15 @@
+{#
 
+    Resource definitions for a shared s# bucket for application components 
+      to use concurrently.
+      
+    Relevant Objects Created:
+    
+    - S3Bucket
+    - S3Keys
+    
+ #}
+      
 "S3Bucket" : {
       "Type" : "AWS::S3::Bucket",
       "DeletionPolicy" : "Retain"

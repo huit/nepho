@@ -1,3 +1,17 @@
+{#
+
+    General parameters that sould be relevant to a website runtime on a web platform
+      such as Drupal, Wordpress, etc.
+      
+   Parameters:
+   
+   - SiteName: a name for the website (default: "My Site")
+   - SiteEMail: email address of a site admin user
+   - SiteAdmin: username for a website's admin user (default: admin)
+   - SitePassword: password for admin user
+   
+#}
+      
 "SiteName": {
       "Default": "My Site",
       "Description" : "The name of the website",
@@ -11,6 +25,7 @@
 
 "SiteAdmin": {
       "Description" : "The site admin account username",
+      "Default": "admin",
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "16",

@@ -1,4 +1,13 @@
+{#
 
+    A typical set of parameters relevant to firing up EC2 instances, with or without sane defaults.
+    
+    Parameters:
+    
+    - KeyName: name of your SSH key registered with AWS.
+    - InstanceType: EC2 instance type (default: m1.small).
+    
+#}    
 "KeyName" : {
   "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
   "Type" : "String"

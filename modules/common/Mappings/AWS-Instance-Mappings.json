@@ -1,4 +1,10 @@
+{#
 
+    Standard AWS Linux template mappings, for general use.
+    
+    Refers to Amazon Linuz v(TDB).
+    
+#}
     "AWSInstanceType2Arch" : {
       "t1.micro"    : { "Arch" : "64" },
       "m1.small"    : { "Arch" : "64" },
