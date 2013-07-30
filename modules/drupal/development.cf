@@ -5,104 +5,9 @@
 
   "Parameters" : {
 
-    "KeyName" : {
-      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
-      "Type" : "String"
-    },
-
-    "InstanceType" : {
-      "Description" : "WebServer EC2 instance type",
-      "Type" : "String",
-      "Default" : "m1.small",
-      "ConstraintDescription" : "must be a valid EC2 instance type."
-    },
-
-    "SiteName": {
-      "Default": "My Site",
-      "Description" : "The name of the Drupal Site",
-      "Type": "String"
-    },
-
-    "SiteEMail": {
-      "Description" : "EMail for site adminitrator",
-      "Type": "String"
-    },
-
-    "SiteAdmin": {
-      "Description" : "The Drupal site admin account username",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "16",
-      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
-    },
-
-    "SitePassword": {
-      "NoEcho": "true",
-      "Description" : "The Drupal site admin account password",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "41",
-      "AllowedPattern" : "[a-zA-Z0-9]*",
-      "ConstraintDescription" : "must contain only alphanumeric characters."
-    },
-
-    "DBName": {
-      "Default": "drupaldb",
-      "Description" : "The Drupal database name",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "64",
-      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
-    },
-
-    "DBUsername": {
-      "Default": "admin",
-      "NoEcho": "true",
-      "Description" : "The Drupal database admin account username",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "16",
-      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
-    },
-
-    "DBPassword": {
-      "Default": "admin",
-      "NoEcho": "true",
-      "Description" : "The Drupal database admin account password",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "41",
-      "AllowedPattern" : "[a-zA-Z0-9]*",
-      "ConstraintDescription" : "must contain only alphanumeric characters."
-    },
-
-    "DBClass" : {
-      "Default" : "db.m1.small",
-      "Description" : "Database instance class",
-      "Type" : "String",
-      "AllowedValues" : [ "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge" ],
-      "ConstraintDescription" : "must select a valid database instance type."
-    },
-
-    "DBAllocatedStorage" : {
-      "Default": "5",
-      "Description" : "The size of the database (Gb)",
-      "Type": "Number",
-      "MinValue": "5",
-      "MaxValue": "1024",
-      "ConstraintDescription" : "must be between 5 and 1024Gb."
-    },
-
-    "MultiAZDatabase": {
-      "Default": "true",
-      "Description" : "Create a multi-AZ MySQL Amazon RDS database instance",
-      "Type": "String",
-      "AllowedValues" : [ "true", "false" ],
-      "ConstraintDescription" : "must be either true or false."
-    },
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/Site-Admin-Parameters.json' %},    
+    {% include 'Parameters/RDS-Parameters.json' %},
 
     "WebServerCapacity": {
       "Default": "2",
@@ -124,82 +29,13 @@
   },
 
   "Mappings" : {
-    "AWSInstanceType2Arch" : {
-      "t1.micro"    : { "Arch" : "64" },
-      "m1.small"    : { "Arch" : "64" },
-      "m1.medium"   : { "Arch" : "64" },
-      "m1.large"    : { "Arch" : "64" },
-      "m1.xlarge"   : { "Arch" : "64" },
-      "m2.xlarge"   : { "Arch" : "64" },
-      "m2.2xlarge"  : { "Arch" : "64" },
-      "m2.4xlarge"  : { "Arch" : "64" },
-      "m3.xlarge"   : { "Arch" : "64" },
-      "m3.2xlarge"  : { "Arch" : "64" },
-      "c1.medium"   : { "Arch" : "64" },
-      "c1.xlarge"   : { "Arch" : "64" },
-      "cc1.4xlarge" : { "Arch" : "64HVM" },
-      "cc2.8xlarge" : { "Arch" : "64HVM" },
-      "cg1.4xlarge" : { "Arch" : "64HVM" }
-    },
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %}
 
-    "AWSRegionArch2AMI" : {
-      "us-east-1"      : { "32" : "ami-a0cd60c9", "64" : "ami-aecd60c7", "64HVM" : "ami-a8cd60c1" },
-      "us-west-2"      : { "32" : "ami-46da5576", "64" : "ami-48da5578", "64HVM" : "NOT_YET_SUPPORTED" },
-      "us-west-1"      : { "32" : "ami-7d4c6938", "64" : "ami-734c6936", "64HVM" : "NOT_YET_SUPPORTED" },
-      "eu-west-1"      : { "32" : "ami-61555115", "64" : "ami-6d555119", "64HVM" : "ami-67555113" },
-      "ap-southeast-1" : { "32" : "ami-220b4a70", "64" : "ami-3c0b4a6e", "64HVM" : "NOT_YET_SUPPORTED" },
-      "ap-southeast-2" : { "32" : "ami-8f990eb5", "64" : "ami-95990eaf", "64HVM" : "NOT_YET_SUPPORTED" },
-      "ap-northeast-1" : { "32" : "ami-2a19aa2b", "64" : "ami-2819aa29", "64HVM" : "NOT_YET_SUPPORTED" },
-      "sa-east-1"      : { "32" : "ami-f836e8e5", "64" : "ami-fe36e8e3", "64HVM" : "NOT_YET_SUPPORTED" }
-    }
   },
 
   "Resources" : {
-
-    "S3Bucket" : {
-      "Type" : "AWS::S3::Bucket",
-      "DeletionPolicy" : "Retain"
-    },
-
-    "BucketPolicy" : {
-      "Type" : "AWS::S3::BucketPolicy",
-      "Properties" : {
-        "PolicyDocument": {
-          "Version"      : "2008-10-17",
-          "Id"           : "UploadPolicy",
-          "Statement"    : [{
-            "Sid"        : "EnableReadWrite",
-            "Action"     : ["s3:GetObject", "s3:PutObject", "s3:PutObjectACL" ],
-            "Effect"     : "Allow",
-            "Resource"   : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "S3Bucket"} , "/*"]]},
-            "Principal"  : { "AWS": {"Fn::GetAtt" : ["S3User", "Arn"]} }
-          }]
-        },
-        "Bucket" : {"Ref" : "S3Bucket"}
-      }
-    },
-
-    "S3User" : {
-      "Type" : "AWS::IAM::User",
-      "Properties" : {
-        "Path": "/",
-        "Policies": [{
-          "PolicyName": "root",
-          "PolicyDocument": { "Statement":[{
-            "Effect":"Allow",
-            "Action":"s3:*",
-            "Resource":"*"
-          }]}
-        }]
-      }
-    },
-
-    "S3Keys" : {
-      "Type" : "AWS::IAM::AccessKey",
-      "Properties" : {
-        "UserName" : {"Ref": "S3User"}
-      }
-    },
+    {% include 'Resources/Shared-S3-Bucket.json' %},
 
     "ElasticLoadBalancer" : {
       "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",

@@ -56,7 +56,6 @@ def main():
 
     # Read in command line options as JSON    
     args_json = command()
-    print args_json
     args=json.loads(args_json)
 
     # Very basic parsing to determine plugin and environment to use
@@ -82,13 +81,22 @@ def main():
     # Use Jinja2
     # 
     template_dirs = [cf_dir, 'modules/common/']
-    print template_dirs
     jinjaFSloader = FileSystemLoader(template_dirs)
     env = Environment(loader=jinjaFSloader)    
-    template = env.get_template(cf_filename)
+    jinja_template = env.get_template(cf_filename)
 
+    #
+    # Load as JSON to validate it
+    #
+    try:
+        cf_json = json.loads(jinja_template.render())
+    except ValueError:
+        print "Error parsing JSON"
+        print jinja_template.render()
+        sys.exit(1)
+        
     if args['subcmd'] == 'show-template':
-        print template.render()
+        print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
     
     if args['subcmd'] == 'deploy':
         
