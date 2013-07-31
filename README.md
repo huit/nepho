@@ -25,6 +25,7 @@ Let's define how we expect this to work.
     $ hu deploy -E prod -hosted myapp
     $ hu list -E devel
     $ hu describe [stack ID]
+    $ hu delete [stack ID]
     
 ### Module syntax and layout
 
@@ -46,6 +47,23 @@ build a common library of boilerplate CloudFormation template snippets and simpl
 This is a real help in creating easy-to-read modules, since the CloudFormation syntax is very verbose.
 
 As an example ..... (TBD)
+
+## Useful examples:
+
+### Three-tier VPC
+
+Deploy a 3 tier VPC that's bare (i.e. no application instances ot databases). Before you run, be sure to change the
+relevant keypair in `modules/vpc-three-tier-bare/development.yaml` to reflect yours (see issue on implementing local 
+overrides for parameters).
+
+    $ ./bin/hu-aws validate-template -E development vpc-three-tier-bare
+    $ ./bin/hu-aws deploy -E development vpc-three-tier-bare
+    $ ./bin/hu-aws deploy -E development vpc-three-tier-bare
+    $ aws cloudformation list-stacks
+    $ ./bin/hu-aws destroy -E development vpc-three-tier-bare
+    
+There is also a "populated" application VPC module in progress.    
+
 
 
 

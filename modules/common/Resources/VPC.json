@@ -1,0 +1,17 @@
+{#
+
+   Defines a Class-B VPC network 10.0.x.y,
+     named "VPC".
+   
+#}
+
+"VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : "10.0.0.0/16",
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
+          {"Key" : "Network", "Value" : "Public" }
+        ]
+      }
+    }
