@@ -1,0 +1,12 @@
+"BastionHostInstanceId" : {
+    "Description" : "Instance Id of newly created bastion host instance",
+    "Value" : { "Ref" : "BastionHostInstance" }
+},
+
+"BastionHostIPAddress" : {
+    "Description" : "Public IP address of bastion host instance",
+    "Value" : { "Fn::GetAtt" : ["BastionHostInstance", "PublicIp"] },
+}
+
+    
+    

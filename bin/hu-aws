@@ -84,7 +84,35 @@ def main():
     jinjaFSloader = FileSystemLoader(template_dirs)
     env = Environment(loader=jinjaFSloader)    
     jinja_template = env.get_template(cf_filename)
-
+    
+    if args['subcmd'] == 'show-template':
+        try:
+            cf_json = json.loads(jinja_template.render())
+            print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
+        except ValueError:
+            print jinja_template.render()
+            
+            
+    
+    if args['subcmd'] == 'validate-template':
+        print "Jinja2 template loading succeeded."
+        try:
+             cf_json = json.loads(jinja_template.render())
+        except ValueError:
+            print "Invalid JSON: Raw text:"
+            print "------------------------"
+            print jinja_template.render()
+            sys.exit(1)      
+        print "JSON valid."
+        main_args=[
+               'cloudformation', 
+               'validate-template', 
+               '--template-body', json.dumps(cf_json)
+               ]
+        return aws_driver.main(main_args)
+                
+        #print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
+    
     #
     # Load as JSON to validate it
     #
@@ -94,12 +122,10 @@ def main():
         print "Error parsing JSON"
         print jinja_template.render()
         sys.exit(1)
-        
-    if args['subcmd'] == 'show-template':
-        print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
-    
+                
     if args['subcmd'] == 'deploy':
         
+        print "Subcommand is deploy"
         # TODO: assemble a more interesting template 
         # TODO: create a parameters option 
         main_args=[
@@ -107,7 +133,7 @@ def main():
                'create-stack', 
                '--capabilities', 'CAPABILITY_IAM', 
                '--stack-name', stack_name, 
-               '--template-body', template.render()
+               '--template-body', json.dumps(cf_json)
                ]
         if paramsMap is not None and len(paramsMap.keys()) > 0:
             main_args.append("--parameters")
@@ -116,6 +142,19 @@ def main():
     
             print main_args
             return aws_driver.main(main_args)
+
+    if args['subcmd'] == 'delete':
+        
+        print "Subcommand is delete"
+        # TODO: assemble a more interesting template 
+        # TODO: create a parameters option 
+        main_args=[
+               'cloudformation', 
+               'delete-stack', 
+               '--stack-name', stack_name
+               ]
+        return aws_driver.main(main_args)
+
 
 if __name__ == '__main__':
     sys.exit(main())
