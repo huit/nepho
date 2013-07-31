@@ -132,6 +132,7 @@ def main():
                'cloudformation', 
                'create-stack', 
                '--capabilities', 'CAPABILITY_IAM', 
+               '--disable-rollback',
                '--stack-name', stack_name, 
                '--template-body', json.dumps(cf_json)
                ]
