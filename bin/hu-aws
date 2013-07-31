@@ -63,6 +63,8 @@ def main():
     mod_name = args['module']
     env_name = args['opts']['environment']
     stack_name = '%s-%s' % (mod_name, env_name)
+    if args['opts']['name'] is not None and len(args['opts']['name']) > 1:
+        stack_name = args['opts']['name']
     cf_filename='%s.cf' % (env_name)
     cf_dir='./modules/%s' % (mod_name)
     #cf_file='./modules/%s/%s.cf' % (plugin_name, env_name)
@@ -125,9 +127,6 @@ def main():
                 
     if args['subcmd'] == 'deploy':
         
-        print "Subcommand is deploy"
-        # TODO: assemble a more interesting template 
-        # TODO: create a parameters option 
         main_args=[
                'cloudformation', 
                'create-stack', 
@@ -141,14 +140,11 @@ def main():
             for key in paramsMap.keys():
                 main_args.append("parameter_key=%s,parameter_value=%s" % (key, paramsMap[key]))
     
-            print main_args
+
             return aws_driver.main(main_args)
 
     if args['subcmd'] == 'delete':
         
-        print "Subcommand is delete"
-        # TODO: assemble a more interesting template 
-        # TODO: create a parameters option 
         main_args=[
                'cloudformation', 
                'delete-stack', 
