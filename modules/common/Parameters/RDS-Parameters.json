@@ -47,6 +47,20 @@
       "ConstraintDescription" : "must contain only alphanumeric characters."
     },
 
+    "DBEngine" : {
+      "Default" : "MySQL",
+      "Description" : "Database type",
+      "Type" : "String",
+      "AllowedValues" : [ "MySQL" ],
+      "ConstraintDescription" : "must select a valid database instance type."
+    },
+    
+    "DBEngineVersion" : {
+      "Default" : "5.5",
+      "Description" : "Database version",
+      "Type" : "String"
+    },
+    
     "DBClass" : {
       "Default" : "db.m1.small",
       "Description" : "Database instance class",

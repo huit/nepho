@@ -1,0 +1,12 @@
+"DataHostInstanceId" : {
+    "Description" : "Instance Id of a test host on the data tier",
+    "Value" : { "Ref" : "DataHostInstance" }
+},
+
+"DataHostIPAddress" : {
+    "Description" : "IP address of host on the data tier instance",
+    "Value" : { "Fn::GetAtt" : ["DataHostInstance", "PrivateIpAddress"] }
+}
+
+    
+    

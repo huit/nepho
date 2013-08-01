@@ -1,0 +1,36 @@
+{#
+
+    Resources for RDS database on a data tier with subnet we assume is named "DataSubnet".
+    
+#}    
+
+    "DBSubnetGroup" : {
+      "Type" : "AWS::RDS::DBSubnetGroup",
+      "Properties" : {
+        "DBSubnetGroupDescription" : "Subnets available for the RDS DB Instance",
+        "SubnetIds" : [ { "Ref" : "DataSubnet" } ]
+      }
+    },
+
+    "DBSecurityGroup" : {
+      "Type" : "AWS::RDS::DBSecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Security group for RDS DB Instance",
+        "EC2VpcId" : { "Ref" : "VPC" }
+      }
+    },
+
+    "DBInstance" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+        "DBName"             : { "Ref" : "DBName" },
+        "AllocatedStorage"   : { "Ref" : "DBAllocatedStorage" },
+        "DBInstanceClass"    : { "Ref" : "DBClass" },
+        "Engine"             : { "Ref" : "DBEngine" }, 
+        "EngineVersion"      : { "Ref" : "DBEngineVersion" }, 
+        "MasterUsername"     : { "Ref" : "DBUsername" } ,
+        "MasterUserPassword" : { "Ref" : "DBPassword" },
+        "DBSubnetGroupName"  : { "Ref" : "DBSubnetGroup" },
+        "DBSecurityGroups"   : [ { "Ref" : "DBSecurityGroup" } ]
+      }
+    }

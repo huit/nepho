@@ -1,0 +1,85 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template for a three tier VPC with relevant components in place for an app stack.",
+
+  "Parameters" : { 
+  
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/RDS-Parameters.json' %} 
+    
+  },
+
+  "Mappings" : {  {% include 'Mappings/AWS-Instance-Mappings.json' %}  },
+
+
+  "Resources" : {
+
+
+{# **** Define VPC network structures **** #}
+
+
+    {% include 'Resources/VPC.json' %},
+  
+    {% include 'Resources/VPC-General-Public-Tier.json' %},  
+    {% include 'Resources/VPC-General-Private-Tier.json' %},
+    {% include 'Resources/VPC-General-Data-Tier.json' %},   
+        
+{#    {% include 'Resources/VPC-Public-Web-Access-ACLs.json' %},   #}
+{#    {% include 'Resources/VPC-Private-Tier-Access-ACLs.json' %}, #}
+{#    {% include 'Resources/VPC-Data-Tier-Access-ACLs.json' %},    #}
+    
+{# **** ELB and AutoScaling **** #}
+
+    {% include 'Resources/Web-Load-Balancer-and-AutoScaler.json' %},
+
+{# **** Bastion Host **** #}
+
+    {% include 'Resources/BastionHost.json' %},
+
+{# **** RDS Database **** #}
+
+{#    {% include 'Resources/RDS-in-VPC.json' %}, #}
+
+{# **** Application instances **** #}
+
+    "LaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" },
+                                          "Arch" ] } ] },
+        "UserData" : { "Fn::Base64" : "80" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "InstanceType" : { "Ref" : "InstanceType" }
+      }
+    },
+
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP access on the configured port",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [ 
+                   { "IpProtocol" : "tcp", 
+                     "FromPort" : "80", 
+                     "ToPort" : "80", 
+                     "SourceSecurityGroupId" : { "Ref" : "LoadBalancerSecurityGroup" } 
+                    } ]
+      }
+    }
+
+  },
+ 
+  "Outputs" : {
+ 
+    {% include 'Outputs/BastionHost.json' %},
+{#    {% include 'Outputs/RDS.json' %},  #}
+         
+    "URL" : {
+      "Description" : "URL of the website",
+      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "ElasticLoadBalancer", "DNSName" ]}]]}
+    }
+
+  } 
+}

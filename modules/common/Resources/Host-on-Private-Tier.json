@@ -1,30 +1,21 @@
-    
-    "BastionHostIPAddress" : {
-      "Type" : "AWS::EC2::EIP",
-      "Properties" : {
-        "Domain" : "vpc",
-        "InstanceId" : { "Ref" : "BastionHostInstance" }
-      },
-      "DependsOn": "AttachGateway"
-    },
 
-    "BastionHostSecurityGroup" : {
+    "PrivateHostSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "GroupDescription" : "Enable SSH access via port 22 and HTTP access.",
         "SecurityGroupIngress" : [
-          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHAccessRange"}},
+          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : "0.0.0.0/0"},
           { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"}
          ]
       }
     },
 
 
-    "BastionHostInstance" : {
+    "PrivateHostInstance" : {
       "Type" : "AWS::EC2::Instance",
       "Metadata" : {
-        "Comment" : "Install a simple PHP application and provide SSH access.",
+        "Comment" : "Host with SSH access.",
         "AWS::CloudFormation::Init" : {
           "config" : {
             "packages" : {
@@ -32,8 +23,7 @@
                 "httpd"             : [],
                 "php"               : [],
                 "rsync"             : [],
-                "git"               : [],
-                "nmap"              : []
+                "git"               : []
               }
             },
 
@@ -42,7 +32,7 @@
               "/var/www/html/index.php" : {
                 "content" : { "Fn::Join" : ["", [
                   "<?php\n",
-                  "echo '<h1>AWS Bastion Host.</h1> Access via SSH on port 22.';\n",
+                  "echo '<h1>AWS Private Tier Host Host.</h1> Access via SSH on port 22.';\n",
                   "?>\n"
                 ]]},
                 "mode"    : "000644",
@@ -66,8 +56,8 @@
                 "content": { "Fn::Join" : ["", [
                   "[cfn-auto-reloader-hook]\n",
                   "triggers=post.update\n",
-                  "path=Resources.BastionHostInstance.Metadata.AWS::CloudFormation::Init\n",
-                  "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r BastionHostInstance ",
+                  "path=Resources.PrivateHostInstance.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r PrivateHostInstance ",
                                                    " --region     ", { "Ref" : "AWS::Region" }, "\n",
                   "runas=root\n"
                 ]]}
@@ -89,8 +79,8 @@
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
                                           { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" },
                                           "Arch" ] } ] },
-        "SecurityGroupIds" : [{ "Ref" : "BastionHostSecurityGroup" }],
-        "SubnetId" : { "Ref" : "PublicSubnet" },
+        "SecurityGroupIds" : [{ "Ref" : "PrivateHostSecurityGroup" }],
+        "SubnetId" : { "Ref" : "PrivateSubnet" },
         "InstanceType" : { "Ref" : "InstanceType" },
         "KeyName" : { "Ref" : "KeyName" },
         "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ],
@@ -98,47 +88,11 @@
           "#!/bin/bash\n",
           "yum update -y aws-cfn-bootstrap\n",
 
-          "# Helper function\n",
-          "function error_exit\n",
-          "{\n",
-          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "BastionHostWaitHandle" }, "'\n",
-          "  exit 1\n",
-          "}\n",
-
-{#
-          "# Install the simple web page\n",
-          "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r BastionHostInstance ",
-          "         --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to run cfn-init'\n",
-          
-          "# Start up the cfn-hup daemon to listen for changes to the instance metadata\n",
-          "/opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'\n",          
-#}
-          "# Install the simple web page\n",
-          "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r BastionHostInstance ",
+          "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r PrivateHostInstance ",
           "         --region ", { "Ref" : "AWS::Region" }, " \n",
 
-          "# Start up the cfn-hup daemon to listen for changes to the instance metadata\n",
-          "/opt/aws/bin/cfn-hup \n",
-
-          "# All done so signal success\n",
-          "/opt/aws/bin/cfn-signal -e 0 -r \"Bastion host setup complete\" '", { "Ref" : "BastionHostWaitHandle" }, "'\n"
+          "/opt/aws/bin/cfn-hup \n"
 
         ]]}}        
-      },
-      "DependsOn": "PublicRoute"
-    },
-
-
-    "BastionHostWaitHandle" : {
-      "Type" : "AWS::CloudFormation::WaitConditionHandle"
-    },
-
-    "BastionHostWaitCondition" : {
-      "Type" : "AWS::CloudFormation::WaitCondition",
-      "DependsOn" : "BastionHostInstance",
-      "Properties" : {
-        "Handle" : {"Ref" : "BastionHostWaitHandle"},
-        "Timeout" : "600"
       }
     }
-
