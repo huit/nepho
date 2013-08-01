@@ -1,0 +1,32 @@
+{# 
+    Deploys a basic three tier VPC virtual datacenter.
+#}
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template for a basic bare three-tier VPC environment",
+
+  "Parameters" : { {% include 'Parameters/General-Instance-Parameters.json' %} },
+
+  "Mappings" : {  {% include 'Mappings/AWS-Instance-Mappings.json' %}  },
+
+  "Resources" : {
+
+{# **** Define VPC network structures **** #}
+
+    {% include 'Resources/VPC.json' %},
+  
+    {% include 'Resources/VPC-General-Public-Tier.json' %},
+    {% include 'Resources/VPC-General-Private-Tier.json' %},
+    {% include 'Resources/VPC-General-Data-Tier.json' %}
+    
+{#    {% include 'Resources/VPC-Public-Web-Access-ACLs.json' %},   #}
+{#    {% include 'Resources/VPC-Private-Tier-Access-ACLs.json' %}, #}
+{#    {% include 'Resources/VPC-Data-Tier-Access-ACLs.json' %},    #}
+
+
+  },
+  
+  "Outputs" : { }
+}

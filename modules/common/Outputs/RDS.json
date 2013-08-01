@@ -1,0 +1,9 @@
+"JDBCConnectionString": {
+      "Description" : "JDBC connection string for database",
+      "Value" : { "Fn::Join": [ "", [ "jdbc:mysql://",
+                                      { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "DBInstance", "Endpoint.Port" ] },
+                                      "/",
+                                      { "Ref": "DBName" }]]}
+}
