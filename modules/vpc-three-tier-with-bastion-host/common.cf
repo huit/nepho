@@ -16,17 +16,23 @@
 {# **** Define VPC network structures **** #}
 
     {% include 'Resources/VPC.json' %},
-  
-    {% include 'Resources/VPC-General-Public-Tier.json' %},
+   
+    {% include 'Resources/VPC-General-Public-Tier.json' %},  
     {% include 'Resources/VPC-General-Private-Tier.json' %},
-    {% include 'Resources/VPC-General-Data-Tier.json' %}
-    
+    {% include 'Resources/VPC-General-Data-Tier.json' %},   
+
+{# **** Define net ACLs **** #}
+        
 {#    {% include 'Resources/VPC-Public-Web-Access-ACLs.json' %},   #}
 {#    {% include 'Resources/VPC-Private-Tier-Access-ACLs.json' %}, #}
 {#    {% include 'Resources/VPC-Data-Tier-Access-ACLs.json' %},    #}
 
+    
+{# **** Bastion Host **** #}
 
+    {% include 'Resources/BastionHost.json' %}
+    
   },
   
-  "Outputs" : { }
+  "Outputs" : { {% include 'Outputs/BastionHost.json' %} }
 }

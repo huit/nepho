@@ -5,7 +5,7 @@
 
 "BastionHostIPAddress" : {
     "Description" : "Public IP address of bastion host instance",
-    "Value" : { "Fn::GetAtt" : ["BastionHostInstance", "PublicIp"] },
+    "Value" : { "Fn::GetAtt" : ["BastionHostInstance", "PublicIp"] }
 }
 
     

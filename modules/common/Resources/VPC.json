@@ -1,7 +1,7 @@
 {#
 
    Defines a Class-B VPC network 10.0.x.y,
-     named "VPC".
+     named "VPC", with an internet gateway.
    
 #}
 
@@ -14,4 +14,22 @@
           {"Key" : "Network", "Value" : "Public" }
         ]
       }
-    }
+},
+    
+"InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
+          {"Key" : "Network", "Value" : "Public" }
+        ]
+      }
+},
+
+"AttachGateway" : {
+       "Type" : "AWS::EC2::VPCGatewayAttachment",
+       "Properties" : {
+         "VpcId" : { "Ref" : "VPC" },
+         "InternetGatewayId" : { "Ref" : "InternetGateway" }
+       }
+}
