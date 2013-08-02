@@ -8,7 +8,7 @@
 "VPC" : {
       "Type" : "AWS::EC2::VPC",
       "Properties" : {
-        "CidrBlock" : "10.0.0.0/16",
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "VPC", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
           {"Key" : "Network", "Value" : "Public" }

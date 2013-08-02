@@ -81,7 +81,7 @@
                                           "Arch" ] } ] },
         "SecurityGroupIds" : [{ "Ref" : "DataHostSecurityGroup" }],
         "SubnetId" : { "Ref" : "DataSubnet" },
-        "InstanceType" : { "Ref" : "InstanceType" },
+        "InstanceType" :  "t1.micro",
         "KeyName" : { "Ref" : "KeyName" },
         "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ],
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [

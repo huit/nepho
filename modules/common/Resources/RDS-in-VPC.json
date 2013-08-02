@@ -1,6 +1,7 @@
 {#
 
-    Resources for RDS database on a data tier with subnet we assume is named "DataSubnet".
+    Resources for RDS database on a data tier with 2 subnets we assume 
+      is named "DataSubnet" and "DataSubnet2".
     
 #}    
 
@@ -8,14 +9,15 @@
       "Type" : "AWS::RDS::DBSubnetGroup",
       "Properties" : {
         "DBSubnetGroupDescription" : "Subnets available for the RDS DB Instance",
-        "SubnetIds" : [ { "Ref" : "DataSubnet" } ]
+        "SubnetIds" : [ { "Ref" : "DataSubnet" }, { "Ref" : "DataSubnet2" } ]
       }
     },
-
+    
     "DBSecurityGroup" : {
       "Type" : "AWS::RDS::DBSecurityGroup",
       "Properties" : {
         "GroupDescription" : "Security group for RDS DB Instance",
+        "DBSecurityGroupIngress": { "CIDRIP": { "Fn::FindInMap" : [ "SubnetMappings", "VPC", "CIDR" ]} },
         "EC2VpcId" : { "Ref" : "VPC" }
       }
     },
@@ -31,6 +33,8 @@
         "MasterUsername"     : { "Ref" : "DBUsername" } ,
         "MasterUserPassword" : { "Ref" : "DBPassword" },
         "DBSubnetGroupName"  : { "Ref" : "DBSubnetGroup" },
-        "DBSecurityGroups"   : [ { "Ref" : "DBSecurityGroup" } ]
+        "DBSecurityGroups"   : [ { "Ref" : "DBSecurityGroup" } ],
+        "MultiAZ"            : { "Ref" : "MultiAZDatabase" }
+        
       }
     }

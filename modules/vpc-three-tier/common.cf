@@ -10,8 +10,13 @@
     
   },
 
-  "Mappings" : {  {% include 'Mappings/AWS-Instance-Mappings.json' %}  },
-
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
 
   "Resources" : {
 
@@ -39,7 +44,7 @@
 
 {# **** RDS Database **** #}
 
-{#    {% include 'Resources/RDS-in-VPC.json' %}, #}
+    {% include 'Resources/RDS-in-VPC.json' %}, 
 
 {# **** Application instances **** #}
 
@@ -74,7 +79,7 @@
   "Outputs" : {
  
     {% include 'Outputs/BastionHost.json' %},
-{#    {% include 'Outputs/RDS.json' %},  #}
+    {% include 'Outputs/RDS.json' %},  
          
     "URL" : {
       "Description" : "URL of the website",
