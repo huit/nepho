@@ -1,3 +1,21 @@
+{#
+
+   Creates Bastion host that allows external access into a VPC and resources. Makes
+     sure via dependencies that the internet gateway is attached first, or else will fail.
+   
+   Expects objects:
+   
+   - AttachGateway: internet gateway object
+   - VPC: the VPC object
+   - SSHAccessRange: the CIDR of ips to limit ssh access to the bastion host.
+   - PublicSubnet: subnet to place the bastion host on.
+   - KeyName: SSH key to install
+   
+   Creates objects:
+   - BastionHostIPAddress: public IP (EIP) to contact the bastion host from the outside
+   - BastionHostInstance: the instance itself
+
+#}  
     
     "BastionHostIPAddress" : {
       "Type" : "AWS::EC2::EIP",

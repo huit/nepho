@@ -4,11 +4,8 @@
     
     Parameters:
     
-    - KeyName: name of your SSH key registered with AWS.
-    - InstanceType: EC2 instance type (default: m1.small).
-    - InstanceCount: # of these instances (default: 1)
-    - SSHAccessRange: network range in CIDR form for access to the system via SSH (default: entire internet)
-    
+    - NATInstanceType: EC2 instance type to use for NAT (default: m1.small)
+
 #} 
 
 "NATInstanceType" : {

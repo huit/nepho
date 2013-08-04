@@ -1,4 +1,18 @@
+{#
 
+   Inserts a basic host on the data tier, for testing purposes.
+   
+   Expects objects:
+   
+   - VPC: the VPC object
+   - KeyName: SSH key to install
+   - DataSubnet: subnet to place the bastion host on.
+   
+   Creates objects:
+   - BastionHostIPAddress: public IP (EIP) to contact the bastion host from the outside
+   - BastionHostInstance: the instance itself
+
+#} 
     "DataHostSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {

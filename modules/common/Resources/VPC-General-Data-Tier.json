@@ -6,8 +6,7 @@
       
     In order to use RDS, requires two subnets in 2 availability zones.
 
-    Will need to have ACL rules defined, and applied to the network ACL 
-      named "DataNetworkAcl"
+    If desired to have ACL rules defined, create and apply to "DataSubnet" and "DataSubnet2".
           
 #}
    

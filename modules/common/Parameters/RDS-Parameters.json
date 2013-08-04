@@ -9,6 +9,8 @@
     - DBName: name of the instantiated database.
     - DBUsername: username within the DB instance of database role with admin privileges over the database.
     - DBPassword: password for the database admin user.
+    - DBEngine: flavor of DB to create (default: "MySQL")
+    - DBEngineVersion: version of DB to use (will depend on engine type, default: "5.5" )
     - DBClass: size of the database to instantiate (default: db.m1.small)
     - DBAllocatedStorage: disk space in Gb set aside for runtime storage (default: 5 Gb)
     - MultiAZDatabase: whether the database should be HA across multiple availability zones (default: "false")
