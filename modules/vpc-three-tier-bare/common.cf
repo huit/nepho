@@ -9,16 +9,22 @@
 
   "Parameters" : { {% include 'Parameters/General-Instance-Parameters.json' %} },
 
-  "Mappings" : {  {% include 'Mappings/AWS-Instance-Mappings.json' %}  },
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
 
-  "Resources" : {
+  "Resources" : { 
 
 {# **** Define VPC network structures **** #}
 
     {% include 'Resources/VPC.json' %},
   
     {% include 'Resources/VPC-General-Public-Tier.json' %},
-    {% include 'Resources/VPC-General-Private-Tier.json' %},
+    {% include 'Resources/VPC-General-Private-Tier.json' %}, 
     {% include 'Resources/VPC-General-Data-Tier.json' %}
     
 {#    {% include 'Resources/VPC-Public-Web-Access-ACLs.json' %},   #}
@@ -26,7 +32,7 @@
 {#    {% include 'Resources/VPC-Data-Tier-Access-ACLs.json' %},    #}
 
 
-  },
+  }, 
   
   "Outputs" : { }
 }

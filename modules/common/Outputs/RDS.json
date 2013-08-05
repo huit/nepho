@@ -1,3 +1,21 @@
+{# 
+   Output strings specific to contacting the RDS database.
+#}   
+
+"DBConnectionString": {
+      "Description" : "Connection string for database",
+      "Value" : { "Fn::Join": [ "", [ "mysql://",
+                                      { "Ref" : "DBUseruname" },
+                                      ":",      
+                                      { "Ref" : "DBPassword" },       
+                                       "@",                               
+                                      { "Fn::GetAtt": [ "DBInstance", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "DBInstance", "Endpoint.Port" ] },
+                                      "/",
+                                      { "Ref": "DBName" }]]}
+},
+
 "JDBCConnectionString": {
       "Description" : "JDBC connection string for database",
       "Value" : { "Fn::Join": [ "", [ "jdbc:mysql://",

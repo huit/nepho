@@ -1,0 +1,100 @@
+
+    "BackendFleet" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] }],
+        "VPCZoneIdentifier" : [{ "Ref" : "PrivateSubnet" }],
+        "LaunchConfigurationName" : { "Ref" : "BackendLaunchConfig"  },
+        "MinSize" : "1",
+        "MaxSize" : "10",
+        "DesiredCapacity"   : { "Ref" : "BackendInstanceCount" },
+        "LoadBalancerNames" : [ { "Ref" : "PrivateElasticLoadBalancer" } ],
+        "Tags"              : [ { "Key" : "Network", "Value" : "Private", "PropagateAtLaunch" : "true" } ]
+      }
+    },
+       
+    "BackendLaunchConfig"  : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata" : {
+        "Comment1" : "Configure the Backend server to respond to requests",
+
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "packages" : {
+              "yum" : {
+                "httpd"        : []
+              }
+            },
+
+            "files" : {
+              "/var/www/html/index.html" : {
+                "content" : { "Fn::Join" : ["\n", [
+                   "<img src=\"https://s3.amazonaws.com/cloudformation-examples/cloudformation_graphic.png\" alt=\"AWS CloudFormation Logo\"/>",
+                   "<h1>Congratulations, this request was served from the backend fleet</h1>"
+                ]]},
+                "mode"    : "000644",
+                "owner"   : "root",
+                "group"   : "root"
+              }
+            },
+
+            "services" : {
+              "sysvinit" : {
+                "httpd" : {
+                  "enabled"       : "true",
+                  "ensureRunning" : "true",
+                  "files"         : [ "/var/www/html/index.html" ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Properties" : {
+        "ImageId"        : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "BackendInstanceType" }, "Arch" ] } ] },
+        "SecurityGroups" : [ { "Ref" : "BackendSecurityGroup" } ],
+        "InstanceType"   : { "Ref" : "BackendInstanceType" },
+        "KeyName"        : { "Ref" : "KeyName" },
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash -v\n",
+          "yum update -y aws-cfn-bootstrap\n",
+
+          "# Install Apache\n",
+          "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackId" }, " --resource BackendLaunchConfig ",
+          "    --region ", { "Ref" : "AWS::Region" }, "\n",
+
+          "# Signal completion\n",
+          "/opt/aws/bin/cfn-signal -e $? -r \"Backend setup done\" '", { "Ref" : "BackendWaitHandle" }, 
+          "'\n"
+        ]]}}
+      }
+    },
+
+    "BackendSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Allow access from private load balancer and bastion as well as outbound HTTP and HTTPS traffic",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "SourceSecurityGroupId" : { "Ref" : "PrivateLoadBalancerSecurityGroup" } } ,
+          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "SourceSecurityGroupId" : { "Ref" : "BastionHostSecurityGroup" } } ],
+        "SecurityGroupEgress" : [
+            { "IpProtocol" : "tcp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" },
+            { "IpProtocol" : "udp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" }
+         ]
+       }
+    },
+
+    "BackendWaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle"
+    },
+
+    "BackendWaitCondition" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "BackendFleet",
+      "Properties" : {
+        "Handle"  : { "Ref" : "BackendWaitHandle" },
+        "Timeout" : "300",
+        "Count"   : { "Ref" : "BackendInstanceCount" }
+      }
+    }

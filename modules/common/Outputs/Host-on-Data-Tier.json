@@ -5,7 +5,7 @@
 
 "DataHostIPAddress" : {
     "Description" : "IP address of host on the data tier instance",
-    "Value" : { "Fn::GetAtt" : ["DataHostInstance", "PrivateIpAddress"] }
+    "Value" : { "Fn::GetAtt" : ["DataHostInstance", "PrivateIp"] }
 }
 
     

@@ -1,0 +1,16 @@
+{#
+
+    A set of parameters to control NAT instances.
+    
+    Parameters:
+    
+    - NATInstanceType: EC2 instance type to use for NAT (default: m1.small)
+
+#} 
+
+"NATInstanceType" : {
+      "Description" : "NAT Host EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+}

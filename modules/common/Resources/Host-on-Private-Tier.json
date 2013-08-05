@@ -1,4 +1,14 @@
+{#
 
+   Inserts a basic host on the private tier, for testing purposes.
+   
+   Expects objects:
+   
+   - VPC: the VPC object
+   - KeyName: SSH key to install
+   - PrivateSubnet: subnet to place the bastion host on.
+
+#} 
     "PrivateHostSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
@@ -81,7 +91,7 @@
                                           "Arch" ] } ] },
         "SecurityGroupIds" : [{ "Ref" : "PrivateHostSecurityGroup" }],
         "SubnetId" : { "Ref" : "PrivateSubnet" },
-        "InstanceType" : { "Ref" : "InstanceType" },
+        "InstanceType" : "t1.micro",
         "KeyName" : { "Ref" : "KeyName" },
         "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ],
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [

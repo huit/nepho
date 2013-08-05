@@ -36,6 +36,7 @@ import argparse
 from jinja2 import Environment, FileSystemLoader
 
 import json
+import collections
 import yaml
 import string
 from hu.command import command
@@ -89,8 +90,8 @@ def main():
     
     if args['subcmd'] == 'show-template':
         try:
-            cf_json = json.loads(jinja_template.render())
-            print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
+            cf_json = json.loads(jinja_template.render(), object_pairs_hook=collections.OrderedDict)
+            print json.dumps(cf_json, indent=4, separators=(',', ': '))
         except ValueError:
             print jinja_template.render()
             
@@ -99,7 +100,7 @@ def main():
     if args['subcmd'] == 'validate-template':
         print "Jinja2 template loading succeeded."
         try:
-             cf_json = json.loads(jinja_template.render())
+             cf_json = json.loads(jinja_template.render(), object_pairs_hook=collections.OrderedDict)
         except ValueError:
             print "Invalid JSON: Raw text:"
             print "------------------------"
@@ -119,7 +120,7 @@ def main():
     # Load as JSON to validate it
     #
     try:
-        cf_json = json.loads(jinja_template.render())
+        cf_json = json.loads(jinja_template.render(), object_pairs_hook=collections.OrderedDict)
     except ValueError:
         print "Error parsing JSON"
         print jinja_template.render()
@@ -132,16 +133,17 @@ def main():
                'create-stack', 
                '--capabilities', 'CAPABILITY_IAM', 
                '--disable-rollback',
-               '--stack-name', stack_name, 
-               '--template-body', json.dumps(cf_json)
+               '--stack-name', stack_name
                ]
         if paramsMap is not None and len(paramsMap.keys()) > 0:
             main_args.append("--parameters")
             for key in paramsMap.keys():
                 main_args.append("parameter_key=%s,parameter_value=%s" % (key, paramsMap[key]))
-    
+        
+        main_args.append("--template-body")
+        main_args.append(json.dumps(cf_json))
 
-            return aws_driver.main(main_args)
+        return aws_driver.main(main_args)
 
     if args['subcmd'] == 'delete':
         
