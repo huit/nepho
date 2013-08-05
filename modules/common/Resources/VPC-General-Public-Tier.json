@@ -11,7 +11,7 @@
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
-        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "Public1", "CIDR" ]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "PublicA", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
           {"Key" : "Network", "Value" : "Public" }

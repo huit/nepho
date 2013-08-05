@@ -1,0 +1,28 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Simple Host Deployment",
+  
+  "Parameters" : { 
+  
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+{#
+    {% include 'Parameters/NAT-Instance-Parameters.json' %},    
+    {% include 'Parameters/Tiered-Instance-Parameters.json' %},
+#}
+    {% include 'Parameters/Puppet-Parameters.json' %} 
+    
+  },
+  
+  "Mappings" : {
+    {% include 'Mappings/AWS-Instance-Mappings.json' %}
+  },
+    
+  "Resources" : {   
+    {% include 'Resources/Frontend-Host-Puppet-Managed.json' %}
+  },
+  
+  "Outputs" : {
+    {% include 'Outputs/Frontend-Host-URL.json' %}  
+  }
+}

@@ -8,11 +8,11 @@
           
 #}
    
-    "PrivateSubnet" : {
+    "PrivateSubnet2" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
-        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "PrivateTier1A", "CIDR" ]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "PrivateTier2A", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
           {"Key" : "Network", "Value" : "Private" }
@@ -20,7 +20,7 @@
       }
     },
 
-    "PrivateRouteTable" : {
+    "PrivateRouteTable2" : {
       "Type" : "AWS::EC2::RouteTable",
       "Properties" : {
         "VpcId" : {"Ref" : "VPC"},
@@ -31,18 +31,18 @@
       }
     },
 
-    "PrivateSubnetRouteTableAssociation" : {
+    "PrivateSubnetRouteTableAssociation2" : {
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
-        "SubnetId" : { "Ref" : "PrivateSubnet" },
-        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+        "SubnetId" : { "Ref" : "PrivateSubnet2" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable2" }
       }
     },
     
-    "PrivateRoute" : {
+    "PrivateRoute2" : {
       "Type" : "AWS::EC2::Route",
       "Properties" : {
-        "RouteTableId" : { "Ref" : "PrivateRouteTable" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable2" },
         "DestinationCidrBlock" : "0.0.0.0/0",
         "InstanceId" : { "Ref" : "NATDevice" }
       }

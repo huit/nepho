@@ -21,7 +21,7 @@
       "Type" : "AWS::RDS::DBSubnetGroup",
       "Properties" : {
         "DBSubnetGroupDescription" : "Subnets available for the RDS DB Instance",
-        "SubnetIds" : [ { "Ref" : "DataSubnet" }, { "Ref" : "DataSubnet2" } ]
+        "SubnetIds" : [ { "Ref" : "DataSubnet" }, { "Ref" : "DataSubnetB" } ]
       }
     },
     
