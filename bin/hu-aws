@@ -101,8 +101,11 @@ def main():
         print "Jinja2 template loading succeeded."
         try:
              cf_json = json.loads(jinja_template.render(), object_pairs_hook=collections.OrderedDict)
-        except ValueError:
-            print "Invalid JSON: Raw text:"
+        except ValueError as e:
+            print "Invalid JSON: "
+            print e
+            print ""
+            print "Raw text:"
             print "------------------------"
             print jinja_template.render()
             sys.exit(1)      
