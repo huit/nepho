@@ -27,13 +27,15 @@
     {% include 'Resources/VPC.json' %},
   
     {% include 'Resources/VPC-General-Public-Tier.json' %},  
+
 {#    {% include 'Resources/VPC-Public-Web-Access-ACLs.json' %}, #}
-    {% include 'Resources/VPC-General-Private-Tier.json' %},
+
+    {% include 'Resources/VPC-General-Private-Tier.json' %},    
     {% include 'Resources/VPC-General-Data-Tier.json' %},   
     
 {# **** Bastion Host & NAT **** #}
 
-    {% include 'Resources/NAT.json' %},
+    {% include 'Resources/NAT.json' %}, 
     {% include 'Resources/BastionHost.json' %},
 
 {# **** Public Tier Application instances **** #}
@@ -41,18 +43,17 @@
     {% include 'Resources/Public-Load-Balancer-and-AutoScaler.json' %},
     {% include 'Resources/Frontend-Fleet-Example.json' %},
 
-
 {# **** Private Tier Application instances **** #}
 
     {% include 'Resources/Private-Load-Balancer-and-AutoScaler.json' %},
-    {% include 'Resources/Backend-Fleet-Example.json' %}
+    {% include 'Resources/Backend-Fleet-Example.json' %} 
 
   },
  
   "Outputs" : {
  
     {% include 'Outputs/BastionHost.json' %},
-    {% include 'Outputs/NAT.json' %},  
+{#    {% include 'Outputs/NAT.json' %},  #}
     {% include 'Outputs/PublicELB-URL.json' %}           
 
   } 

@@ -1,4 +1,18 @@
 
+    "FrontendFleet" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] }],
+        "VPCZoneIdentifier" : [{ "Ref" : "PrivateSubnet" }],
+        "LaunchConfigurationName" : { "Ref" : "FrontendLaunchConfig"  },
+        "MinSize" : "1",
+        "MaxSize" : "10",
+        "DesiredCapacity" : { "Ref" : "FrontendInstanceCount" },
+        "LoadBalancerNames" : [ { "Ref" : "PublicElasticLoadBalancer" } ],
+        "Tags" : [ { "Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
+      }
+    },  
+    
     "FrontendLaunchConfig"  : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Metadata" : {
@@ -27,12 +41,8 @@
 
               "/etc/httpd/conf.d/maptobackend.conf" : {
                 "content" : { "Fn::Join" : ["", [
-{#
                    "ProxyPass /backend http://", { "Fn::GetAtt" : [ "PrivateElasticLoadBalancer", "DNSName" ]}, "\n",
                    "ProxyPassReverse /backend http://", { "Fn::GetAtt" : [ "PrivateElasticLoadBalancer", "DNSName" ]}, "\n"
-#}                
-                   "ProxyPass /backend http://www.huit.harvard.edu\n",
-                   "ProxyPassReverse /backend http://www.huit.harvard.edu\n"
                 ]]},
                 "mode"    : "000644",
                 "owner"   : "root",
@@ -62,7 +72,7 @@
           "yum update -y aws-cfn-bootstrap\n",
 
           "# Install Apache and configure as a reverse Frontend\n",
-          "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackId" }, " --resource FrontendServerLaunchConfig ",
+          "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackId" }, " --resource FrontendLaunchConfig ",
           "    --region ", { "Ref" : "AWS::Region" }, "\n",
 
           "# Signal completion\n",

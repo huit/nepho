@@ -34,18 +34,4 @@
         "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"} ],
         "SecurityGroupEgress"  : [ { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"} ]
       }
-    },
-
-    "BackendFleet" : {
-      "Type" : "AWS::AutoScaling::AutoScalingGroup",
-      "Properties" : {
-        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] }],
-        "VPCZoneIdentifier" : [{ "Ref" : "PrivateSubnet" }],
-        "LaunchConfigurationName" : { "Ref" : "BackendLaunchConfig"  },
-        "MinSize" : "1",
-        "MaxSize" : "10",
-        "DesiredCapacity"   : { "Ref" : "BackendInstanceCount" },
-        "LoadBalancerNames" : [ { "Ref" : "PrivateElasticLoadBalancer" } ],
-        "Tags"              : [ { "Key" : "Network", "Value" : "Private", "PropagateAtLaunch" : "true" } ]
-      }
     }

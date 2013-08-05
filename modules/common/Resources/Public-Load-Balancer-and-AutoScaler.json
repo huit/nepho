@@ -16,8 +16,7 @@
       "Properties" : {
         "SecurityGroups" : [ { "Ref" : "PublicLoadBalancerSecurityGroup" } ],
         "Subnets" : [ { "Ref" : "PublicSubnet" } ],
-        "Listeners" : [ { "LoadBalancerPort" : "80",  "InstancePort" : "80",  "Protocol" : "HTTP" },
-                        { "LoadBalancerPort" : "443", "InstancePort" : "443", "Protocol" : "HTTP" }  ],
+        "Listeners" : [ { "LoadBalancerPort" : "80",  "InstancePort" : "80",  "Protocol" : "HTTP" }  ],
         "HealthCheck" : {
           "Target" : "HTTP:80/",
           "HealthyThreshold" : "3",
@@ -38,19 +37,4 @@
         "SecurityGroupEgress" : [  { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"},
                                    { "IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"} ]
       }
-    },
-
-    "FrontendFleet" : {
-      "Type" : "AWS::AutoScaling::AutoScalingGroup",
-      "Properties" : {
-        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "PublicSubnet", "AvailabilityZone" ] }],
-        "VPCZoneIdentifier" : [{ "Ref" : "PublicSubnet" }],
-        "LaunchConfigurationName" : { "Ref" : "FrontendLaunchConfig"  },
-        "MinSize" : "1",
-        "MaxSize" : "10",
-        "DesiredCapacity" : { "Ref" : "FrontendInstanceCount" },
-        "LoadBalancerNames" : [ { "Ref" : "PublicElasticLoadBalancer" } ],
-        "Tags" : [ { "Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
-      }
-    }  
-    
+    }

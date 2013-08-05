@@ -23,7 +23,8 @@
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
           {"Key" : "Network", "Value" : "Public" }
         ]
-      }
+      },
+      "DependsOn" : "PublicSubnet"
 },
 
 "AttachGateway" : {

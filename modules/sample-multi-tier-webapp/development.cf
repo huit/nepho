@@ -363,8 +363,12 @@
 
               "/etc/httpd/conf.d/maptobackend.conf" : {
                 "content" : { "Fn::Join" : ["", [
+                   "ProxyPass /backend http://127.0.0.1\n",
+                   "ProxyPassReverse /backend http://127.0.0.1\n"
+{#
                    "ProxyPass /backend http://", { "Fn::GetAtt" : [ "PrivateElasticLoadBalancer", "DNSName" ]}, "\n",
-                   "ProxyPassReverse /backend http://", { "Fn::GetAtt" : [ "PrivateElasticLoadBalancer", "DNSName" ]}, "\n"
+                   "ProxyPassReverse /backend http://", { "Fn::GetAtt" : [ "PrivateElasticLoadBalancer", "DNSName" ]}, "\n"  
+#}                                    
                 ]]},
                 "mode"    : "000644",
                 "owner"   : "root",

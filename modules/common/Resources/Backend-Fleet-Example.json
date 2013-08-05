@@ -1,4 +1,18 @@
-   
+
+    "BackendFleet" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] }],
+        "VPCZoneIdentifier" : [{ "Ref" : "PrivateSubnet" }],
+        "LaunchConfigurationName" : { "Ref" : "BackendLaunchConfig"  },
+        "MinSize" : "1",
+        "MaxSize" : "10",
+        "DesiredCapacity"   : { "Ref" : "BackendInstanceCount" },
+        "LoadBalancerNames" : [ { "Ref" : "PrivateElasticLoadBalancer" } ],
+        "Tags"              : [ { "Key" : "Network", "Value" : "Private", "PropagateAtLaunch" : "true" } ]
+      }
+    },
+       
     "BackendLaunchConfig"  : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Metadata" : {
@@ -50,7 +64,7 @@
           "    --region ", { "Ref" : "AWS::Region" }, "\n",
 
           "# Signal completion\n",
-{#          "/opt/aws/bin/cfn-signal -e $? -r \"Backend setup done\" '", { "Ref" : "BackendWaitHandle" }, #}
+          "/opt/aws/bin/cfn-signal -e $? -r \"Backend setup done\" '", { "Ref" : "BackendWaitHandle" }, 
           "'\n"
         ]]}}
       }
@@ -69,8 +83,8 @@
             { "IpProtocol" : "udp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" }
          ]
        }
-    }
-{#
+    },
+
     "BackendWaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle"
     },
@@ -84,4 +98,3 @@
         "Count"   : { "Ref" : "BackendInstanceCount" }
       }
     }
-#}
