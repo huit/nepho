@@ -1,0 +1,38 @@
+{#
+
+    Parameters to apply to instances on specific tiers.
+
+    Parameters:
+    
+    - FrontendInstanceType: EC2 instance type on public tier (default: m1.small).
+    - BackendtendInstanceType: EC2 instance type on public tier (default: m1.small).
+    - FrontendInstanceCount: # of these instances (default: 2)
+    - BackendInstanceCount: # of these instances (default: 2) 
+    
+#} 
+   
+"FrontendInstanceType" : {
+      "Description" : "Frontend Tier EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+},
+
+"BackendInstanceType" : {
+      "Description" : "Backend Tier EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+},
+
+"FrontendInstanceCount" : {
+      "Description" : "Number of EC2 instances desired in the frontend tier",
+      "Type" : "Number",
+      "Default" : "2"
+},
+
+"BackendInstanceCount" : {
+      "Description" : "Number of EC2 instances desired in the backend tier",
+      "Type" : "Number",
+      "Default" : "2"
+}

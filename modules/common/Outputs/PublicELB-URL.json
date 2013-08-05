@@ -1,0 +1,12 @@
+{#
+
+   Reports on the contact address of the main Public-facing ELB.
+   
+   Expects public ELB host instance called "PublicElasticLoadBalancer".
+
+#}
+
+  "URL" : {
+      "Description" : "URL of the website",
+      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "PublicElasticLoadBalancer", "DNSName" ]}]]}
+  }

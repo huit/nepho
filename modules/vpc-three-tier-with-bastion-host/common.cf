@@ -9,7 +9,13 @@
 
   "Parameters" : { {% include 'Parameters/General-Instance-Parameters.json' %} },
 
-  "Mappings" : {  {% include 'Mappings/AWS-Instance-Mappings.json' %}  },
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
 
   "Resources" : {
 

@@ -7,17 +7,16 @@
     2) a public network in the VPC named "PublicSubnet",
     3) a private network tier "PrivateSubnet",
     4) a Launch Config named "LaunchConfig"
-    5) typical set of isntance parameters, in partiular value "InstanceCount"
+    5) typical set of instance parameters, in partiular value "InstanceCount"
     
 #}
 
-    "ElasticLoadBalancer" : {
+    "PublicElasticLoadBalancer" : {
       "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
       "Properties" : {
-        "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
+        "SecurityGroups" : [ { "Ref" : "PublicLoadBalancerSecurityGroup" } ],
         "Subnets" : [ { "Ref" : "PublicSubnet" } ],
-        "Listeners" : [ { "LoadBalancerPort" : "80",  "InstancePort" : "80",  "Protocol" : "HTTP" },
-                        { "LoadBalancerPort" : "443", "InstancePort" : "443", "Protocol" : "HTTP" }  ],
+        "Listeners" : [ { "LoadBalancerPort" : "80",  "InstancePort" : "80",  "Protocol" : "HTTP" }  ],
         "HealthCheck" : {
           "Target" : "HTTP:80/",
           "HealthyThreshold" : "3",
@@ -28,29 +27,14 @@
       }
     },
 
-    "LoadBalancerSecurityGroup" : {
+    "PublicLoadBalancerSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable HTTP access on port 80",
+        "GroupDescription" : "Public ELB Security Group with HTTP access on port 80 from the internet",
         "VpcId" : { "Ref" : "VPC" },
         "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"},
                                    { "IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"} ],
         "SecurityGroupEgress" : [  { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"},
                                    { "IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"} ]
       }
-    },
-    
-    "WebServerGroup" : {
-      "Type" : "AWS::AutoScaling::AutoScalingGroup",
-      "Properties" : {
-        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] }],
-        "VPCZoneIdentifier" : [{ "Ref" : "PrivateSubnet" }],
-        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
-        "MinSize" : "1",
-        "MaxSize" : "10",
-        "DesiredCapacity" : { "Ref" : "InstanceCount" },
-        "LoadBalancerNames" : [ { "Ref" : "ElasticLoadBalancer" } ],
-        "Tags" : [ {"Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
-      }
-    }    
-    
+    }

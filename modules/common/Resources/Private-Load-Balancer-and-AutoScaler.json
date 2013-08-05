@@ -1,0 +1,37 @@
+{#
+    Load Balancer for traffic from the public tier to private on port 80.
+    
+    Assumes:
+    
+    1) that the VPC is named "VPC," 
+    2) a public network in the VPC named "PublicSubnet",
+    3) a private network tier "PrivateSubnet",
+    4) a Launch Config named "LaunchConfig"
+    5) typical set of instance parameters, in partiular value "InstanceCount"
+    
+#}
+    "PrivateElasticLoadBalancer" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "SecurityGroups" : [ { "Ref" : "PrivateLoadBalancerSecurityGroup" } ],
+        "Subnets" : [ { "Ref" : "PrivateSubnet" } ],
+        "Listeners" : [ { "LoadBalancerPort" : "80",  "InstancePort" : "80",  "Protocol" : "HTTP" } ],
+        "HealthCheck" : {
+          "Target" : "HTTP:80/",
+          "HealthyThreshold" : "3",
+          "UnhealthyThreshold" : "5",
+          "Interval" : "90",
+          "Timeout" : "60"
+        }
+      }
+    },
+
+    "PrivateLoadBalancerSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Private ELB Security Group with HTTP access on port 80 from the internet",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"} ],
+        "SecurityGroupEgress"  : [ { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"} ]
+      }
+    }
