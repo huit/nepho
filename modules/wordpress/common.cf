@@ -1,4 +1,5 @@
 {
+
   "AWSTemplateFormatVersion" : "2010-09-09",
 
   "Description" : "AWS CloudFormation Template for a three tier VPC with relevant components in place for an app stack.",
@@ -7,7 +8,9 @@
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %},    
-    {% include 'Parameters/Tiered-Instance-Parameters.json' %}    
+    {% include 'Parameters/Tiered-Instance-Parameters.json' %},
+    {% include 'Parameters/Puppet-Parameters.json' %} 
+    
   },
 
   "Mappings" : {  
@@ -18,6 +21,7 @@
     
   },
 
+
   "Resources" : {
 
 
@@ -27,11 +31,9 @@
     {% include 'Resources/VPC.json' %},
   
     {% include 'Resources/VPC-General-Public-Tier.json' %},  
-
-{#    {% include 'Resources/VPC-Public-Web-Access-ACLs.json' %}, #}
-
     {% include 'Resources/VPC-General-Private-Tier.json' %},    
-    {% include 'Resources/VPC-General-Data-Tier.json' %},   
+
+{#    {% include 'Resources/VPC-General-Data-Tier.json' %},    #}
     
 {# **** Bastion Host & NAT **** #}
 
@@ -40,21 +42,16 @@
 
 {# **** Public Tier Application instances **** #}
 
-    {% include 'Resources/Public-Load-Balancer-and-AutoScaler.json' %},
-    {% include 'Resources/Frontend-Fleet-Example.json' %},
-
-{# **** Private Tier Application instances **** #}
-
-    {% include 'Resources/Private-Load-Balancer-and-AutoScaler.json' %},
-    {% include 'Resources/Backend-Fleet-Example.json' %} 
+    {% include 'Resources/Public-Load-Balancer-and-AutoScaler.json' %}, 
+    {% include 'Resources/Frontend-Fleet-Puppet-Managed.json' %}
 
   },
  
   "Outputs" : {
- 
+
     {% include 'Outputs/BastionHost.json' %},
     {% include 'Outputs/NAT.json' %},  
     {% include 'Outputs/PublicELB-URL.json' %}           
 
-  } 
+  }
 }

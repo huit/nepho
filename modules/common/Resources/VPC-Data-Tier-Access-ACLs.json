@@ -4,6 +4,8 @@
       rules, assuming that access is restricted by the VPC and the public tier.
       
     Assumes a Network ACL named "PrivateNetworkAcl".
+    
+    THIS IS NOT IN GOOD WORKING ORDER.
 #}
 
 

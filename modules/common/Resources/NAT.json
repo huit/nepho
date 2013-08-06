@@ -40,11 +40,16 @@
         "GroupDescription" : "Enable internal access to the NAT device",
         "VpcId" : { "Ref" : "VPC" },
         "SecurityGroupIngress" : [
-           { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"} ,
-           { "IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"} ,
-           { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : { "Ref" : "SSHAccessRange" }} ],
+             { 
+               "IpProtocol" : "tcp", 
+               "FromPort" : "0",  
+               "ToPort" : "65535",  
+               "CidrIp" : { "Fn::FindInMap" : [ "SubnetMappings", "VPC", "CIDR" ]}
+             },
+             { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : { "Ref" : "SSHAccessRange" }}
+           ],
         "SecurityGroupEgress" : [
-           { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"} ,
-           { "IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"} ]
+             { "IpProtocol" : "tcp", "FromPort" : "0",  "ToPort" : "65535",  "CidrIp" : "0.0.0.0/0"}
+           ]
       }
     }

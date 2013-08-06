@@ -2,16 +2,23 @@
 
    Map out a subnet structure with different subnets in tiers across
      availability zones.
+     
+   A versus B indicates arbitrary, but different availability zones.
+   
 
 #}     
 "SubnetMappings" : {
 
-  "VPC"      : { "CIDR" : "10.0.0.0/16" },
-  "Public1"  : { "CIDR" : "10.0.0.0/24" },
-  "Public2"  : { "CIDR" : "10.0.1.0/24" },  
-  "Private1" : { "CIDR" : "10.0.10.0/24" },
-  "Private2" : { "CIDR" : "10.0.11.0/24" },
-  "Data1"    : { "CIDR" : "10.0.100.0/24" },
-  "Data2"    : { "CIDR" : "10.0.101.0/24" }    
+  "VPC"           : { "CIDR" : "10.0.0.0/16" },
+  "PublicA"       : { "CIDR" : "10.0.0.0/24" },
+  "PublicB"       : { "CIDR" : "10.0.1.0/24" },  
+  "PrivateTier1A" : { "CIDR" : "10.0.10.0/24" },
+  "PrivateTier1B" : { "CIDR" : "10.0.11.0/24" },  
+  "PrivateTier2A" : { "CIDR" : "10.0.20.0/24" },
+  "PrivateTier2B" : { "CIDR" : "10.0.21.0/24" },
+  "PrivateTier3A" : { "CIDR" : "10.0.30.0/24" },
+  "PrivateTier3B" : { "CIDR" : "10.0.31.0/24" },
+  "DataA"         : { "CIDR" : "10.0.100.0/24" },
+  "DataB"         : { "CIDR" : "10.0.101.0/24" }    
 
 }
