@@ -1,5 +1,4 @@
 "AWSNATAMI" : {
-{#      "us-east-1"      : { "AMI" : "ami-c6699baf" }, #}
       "us-east-1"      : { "AMI" : "ami-4f9fee26" },
       "us-west-2"      : { "AMI" : "ami-52ff7262" },
       "us-west-1"      : { "AMI" : "ami-3bcc9e7e" },

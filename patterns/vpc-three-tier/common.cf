@@ -23,7 +23,6 @@
 
 {# **** Define VPC network structures **** #}
 
-
     {% include 'Resources/VPC.json' %},
   
     {% include 'Resources/VPC-General-Public-Tier.json' %},  

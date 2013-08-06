@@ -11,7 +11,7 @@
      - KeyName
      
      Creates: 
-     - NATDevice: the isntance itself 
+     - NATDevice: the instance itself 
 #}
 
     "NATIPAddress" : {

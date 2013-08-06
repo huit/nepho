@@ -1,0 +1,47 @@
+{# 
+    Deploys a basic three tier VPC virtual datacenter.
+#}
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template for a basic bare two-tier VPC environment",
+
+
+  "Parameters" : { 
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/NAT-Instance-Parameters.json' %}  
+  },
+
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
+  
+
+  "Resources" : { 
+
+{# **** Define VPC network structures **** #}
+
+    {% include 'Resources/VPC.json' %},
+  
+    {% include 'Resources/VPC-General-Public-Tier.json' %},
+    {% include 'Resources/VPC-General-Private-Tier.json' %},
+
+{# **** Bastion Host and NAT **** #}
+
+    {% include 'Resources/NAT.json' %}, 
+    {% include 'Resources/BastionHost.json' %}
+    
+  }, 
+  
+  "Outputs" : {
+ 
+    {% include 'Outputs/BastionHost.json' %},
+    {% include 'Outputs/NAT.json' %}         
+
+   }
+}

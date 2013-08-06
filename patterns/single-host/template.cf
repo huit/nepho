@@ -6,10 +6,6 @@
   "Parameters" : { 
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
-{#
-    {% include 'Parameters/NAT-Instance-Parameters.json' %},    
-    {% include 'Parameters/Tiered-Instance-Parameters.json' %},
-#}
     {% include 'Parameters/Puppet-Parameters.json' %} 
     
   },

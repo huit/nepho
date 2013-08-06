@@ -1,6 +1,6 @@
 {#
 
-    Resource definitions for a shared s# bucket for application components 
+    Resource definitions for a shared s3 bucket for application components 
       to use concurrently.
       
     Relevant Objects Created:

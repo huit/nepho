@@ -27,12 +27,9 @@
 
 {# **** Define VPC network structures **** #}
 
-
-    {% include 'Resources/VPC.json' %},
-  
+    {% include 'Resources/VPC.json' %},  
     {% include 'Resources/VPC-General-Public-Tier.json' %},  
     {% include 'Resources/VPC-General-Private-Tier.json' %},    
-
 {#    {% include 'Resources/VPC-General-Data-Tier.json' %},    #}
     
 {# **** Bastion Host & NAT **** #}

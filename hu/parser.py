@@ -3,7 +3,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("subcommand", type=str, help="Specify the hu subcommand")
-    parser.add_argument("module", type=str, help="Specify the application environment to deploy")
+    parser.add_argument("deployment", type=str, help="Specify the application and pattern to deploy")
     parser.add_argument("-E", "--environment", type=str, help="Specify the environment", default='development')
     parser.add_argument("-N", "--name", type=str, help="Specify a custom name for the application stack", default='')    
     parser.add_argument("--aws", type=str, help="Specify a string to be passed through to the AWS driver", default='')
@@ -12,7 +12,7 @@ def parse_args():
 
     parsed = dict()
     parsed['subcommand'] = args.subcommand
-    parsed['module']     = args.module       
+    parsed['deployment']     = args.deployment       
     parsed['opts'] = dict()
     parsed['opts']['environment'] = args.environment
     parsed['opts']['name']        = args.name  

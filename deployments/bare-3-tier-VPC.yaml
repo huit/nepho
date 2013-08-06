@@ -1,0 +1,6 @@
+---
+
+development:
+  pattern: vpc-three-tier-bare
+  KeyName: parrott-ec2
+  
