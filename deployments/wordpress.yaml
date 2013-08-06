@@ -1,7 +1,7 @@
 ---
 
 development:
-  pattern: two-tier-managed-app
+  pattern: single-host
   KeyName: parrott-ec2
   GitRepo: https://github.com/huit/wordpress-puppet-build.git
   GitRepoBranch: master

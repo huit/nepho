@@ -7,9 +7,13 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "AWS CloudFormation Template for a basic bare three-tier VPC environment",
+  "Description" : "AWS CloudFormation Template for a basic three-tier VPC environment",
 
-  "Parameters" : { {% include 'Parameters/General-Instance-Parameters.json' %} },
+  "Parameters" : { 
+  
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/NAT-Instance-Parameters.json' %}   
+  },
 
   "Mappings" : {  
   
@@ -28,9 +32,18 @@
     {{ networks.public_network( 'Public',  'PublicA') }},
     {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }},   
     {{ networks.private_network('Data',  'DataA', 'NATDevice') }},      
-    {{ networks.private_network('DataB', 'DataB', 'NATDevice') }}
+    {{ networks.private_network('DataB', 'DataB', 'NATDevice') }},
   
+{# **** Bastion Host & NAT **** #}
+
+    {% include 'Resources/NAT.json' %}, 
+    {% include 'Resources/BastionHost.json' %}
+
   }, 
   
-  "Outputs" : { }
+  "Outputs" : {
+  
+    {% include 'Outputs/BastionHost.json' %}
+    
+  }
 }
