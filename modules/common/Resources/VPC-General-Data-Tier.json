@@ -15,7 +15,7 @@
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "AvailabilityZone" : "us-east-1a",
-        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "Data1", "CIDR" ]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "DataA", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
           {"Key" : "Network", "Value" : "Private" }
@@ -42,12 +42,12 @@
       }
     },
 
-    "DataSubnet2" : {
+    "DataSubnetB" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "AvailabilityZone" : "us-east-1b",        
-        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "Data2", "CIDR" ]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "DataB", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
           {"Key" : "Network", "Value" : "Private" }
@@ -55,7 +55,7 @@
       }
     },
 
-    "DataRouteTable2" : {
+    "DataRouteTableB" : {
       "Type" : "AWS::EC2::RouteTable",
       "Properties" : {
         "VpcId" : {"Ref" : "VPC"},
@@ -66,10 +66,10 @@
       }
     },
 
-    "DataSubnetRouteTableAssociation2" : {
+    "DataSubnetRouteTableAssociationB" : {
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
-        "SubnetId" : { "Ref" : "DataSubnet2" },
-        "RouteTableId" : { "Ref" : "DataRouteTable2" }
+        "SubnetId" : { "Ref" : "DataSubnetB" },
+        "RouteTableId" : { "Ref" : "DataRouteTableB" }
       }
     }

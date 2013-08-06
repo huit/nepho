@@ -42,32 +42,21 @@
     "BastionHostInstance" : {
       "Type" : "AWS::EC2::Instance",
       "Metadata" : {
-        "Comment" : "Install a simple PHP application and provide SSH access.",
+        "Comment" : "Install some basic tools and provide SSH access.",
         "AWS::CloudFormation::Init" : {
           "config" : {
             "packages" : {
               "yum" : {
-                "httpd"             : [],
-                "php"               : [],
                 "rsync"             : [],
                 "git"               : [],
                 "mysql"             : [],
-                "nmap"              : []
+                "nmap"              : [],
+                "telnet"            : [],
+                "emacs"             : []
               }
             },
 
             "files" : {
-
-              "/var/www/html/index.php" : {
-                "content" : { "Fn::Join" : ["", [
-                  "<?php\n",
-                  "echo '<h1>AWS Bastion Host.</h1> Access via SSH on port 22.';\n",
-                  "?>\n"
-                ]]},
-                "mode"    : "000644",
-                "owner"   : "apache",
-                "group"   : "apache"
-              },
 
 
               "/etc/cfn/cfn-hup.conf" : {
@@ -95,7 +84,6 @@
 
             "services" : {
               "sysvinit" : {
-                "httpd"    : { "enabled" : "true", "ensureRunning" : "true" },
                 "sshd"     : { "enabled" : "true", "ensureRunning" : "true" },                
                 "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
               }
@@ -124,20 +112,19 @@
           "  exit 1\n",
           "}\n",
 
-{#
-          "# Install the simple web page\n",
-          "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r BastionHostInstance ",
-          "         --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to run cfn-init'\n",
+          "# Setup tools on bastion host\n",
+          "/opt/aws/bin/cfn-init ",
+          "   --stack=", { "Ref" : "AWS::StackId" }, 
+          "   --resource=BastionHostInstance ",
+{#          
+          "   --access-key ",  { "Ref" : "HostKeys" },
+          "   --secret-key ", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]},
+#}
+          "   --region=", { "Ref" : "AWS::Region" }, 
+          " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
           
           "# Start up the cfn-hup daemon to listen for changes to the instance metadata\n",
           "/opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'\n",          
-#}
-          "# Install the simple web page\n",
-          "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r BastionHostInstance ",
-          "         --region ", { "Ref" : "AWS::Region" }, " \n",
-
-          "# Start up the cfn-hup daemon to listen for changes to the instance metadata\n",
-          "/opt/aws/bin/cfn-hup \n",
 
           "# All done so signal success\n",
           "/opt/aws/bin/cfn-signal -e 0 -r \"Bastion host setup complete\" '", { "Ref" : "BastionHostWaitHandle" }, "'\n"
@@ -160,4 +147,3 @@
         "Timeout" : "600"
       }
     }
-

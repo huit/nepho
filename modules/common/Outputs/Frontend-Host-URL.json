@@ -1,0 +1,4 @@
+"URL" : {
+      "Value" : { "Fn::Join" : ["", ["http://", { "Ref" : "FrontendEndpoint" } ]] },
+      "Description" : "Application URL"
+}
