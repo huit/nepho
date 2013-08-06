@@ -19,7 +19,7 @@
 
 {# ****  General host on EC2 **** #}
 
-    {%- macro host(name, management='none', ports='80 443') -%}
+    {%- macro host(name, management='none', ports=80, subnet='') -%}
     
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
@@ -155,7 +155,7 @@
                   "enabled"       : "true",
                   "ensureRunning" : "true",
                   "files"         : [ "/var/www/html/index.html" ]
-                }
+                },
                 {% endif %}                
                 "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
               }
@@ -168,6 +168,9 @@
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
         "SecurityGroups" : [ {"Ref" : "{{ name }}SecurityGroup"} ],
+        {% if subnet is defined  %}
+        "SubnetId" : { "Ref" : "{{ subnet }}" },
+        {% endif %}        
         "KeyName"        : { "Ref" : "KeyName" },
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
         

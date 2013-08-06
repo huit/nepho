@@ -1,13 +1,15 @@
 {# 
-    Deploys a basic three tier VPC virtual datacenter.
+    Deploys a basic three tier VPC virtual datacenter, with test hosts on each tier.
 #}
 
 {% import 'Resources/Network-Tier.json' as networks %}
+{% import 'Resources/Host.json' as host %}
+{% import 'Outputs/Host-URL.json' as host_url %}
 
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "AWS CloudFormation Template for a basic three-tier VPC environment",
+  "Description" : "AWS CloudFormation Template for a basic three-tier VPC environment with test hosts",
 
   "Parameters" : { 
   
@@ -37,14 +39,26 @@
 {# **** Bastion Host & NAT **** #}
 
     {% include 'Resources/NAT.json' %}, 
-    {% include 'Resources/BastionHost.json' %}
-
+    {% include 'Resources/BastionHost.json' %},
+{#
+    {% include 'Resources/Host-on-Private-Tier.json' %},
+    {% include 'Resources/Host-on-Data-Tier.json' %}
+#}
+    {{ host.host( name='PrivateTierHost', ports=[22], subnet='PrivateSubnet') }},
+    {{ host.host( name='DataTierHost',    ports=[22], subnet='DataSubnet') }}
+        
   }, 
   
   "Outputs" : {
   
     {% include 'Outputs/BastionHost.json' %},
     {% include 'Outputs/NAT.json' %}
+    {#
+    {% include 'Outputs/Host-on-Private-Tier.json' %},
+    {% include 'Outputs/Host-on-Data-Tier.json' %}  #}     
     
   }
 }
+
+
+ 
