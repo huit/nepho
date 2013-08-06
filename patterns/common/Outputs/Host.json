@@ -1,0 +1,21 @@
+{#
+
+   Reports on the Bastion host instance ID and public IP address.
+   
+   Expects Bastion host instance called "BastionHostInstance".
+
+#} 
+
+    {%- macro host(name) -%}
+    
+    "{{ name }}InstanceId" : {
+      "Description" : "Instance Id of host",
+      "Value" : { "Ref" : "{{ name }}Instance" }
+    },
+
+    "{{ name }}IPAddress" : {
+      "Description" : "IP address of host",
+      "Value" : { "Fn::GetAtt" : ["{{ name }}Instance", "PrivateIp"] }
+    }
+  
+    {%- endmacro %}  

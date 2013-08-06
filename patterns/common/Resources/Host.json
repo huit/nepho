@@ -61,12 +61,12 @@
     "{{ name }}Endpoint" : {
       "Type" : "AWS::EC2::EIP",
       "Properties" : {
-        "InstanceId" : { "Ref" : "{{ name }}Host" }
+        "InstanceId" : { "Ref" : "{{ name }}Instance" }
       }
     },
       
       
-    "{{ name }}Host": {  
+    "{{ name }}Instance": {  
       "Type" : "AWS::EC2::Instance",
       "Metadata" : {
         "Comment" : "Single host.",      
@@ -139,8 +139,8 @@
                 "content": { "Fn::Join" : ["", [
                   "[cfn-auto-reloader-hook]\n",
                   "triggers=post.update\n",
-                  "path=Resources.{{ name }}Host.Metadata.AWS::CloudFormation::Init\n",
-                  "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackName" }, " -r {{ name }}Host ",
+                  "path=Resources.{{ name }}Instance.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackName" }, " -r {{ name }}Instance ",
                                                    " --credential-file /etc/cfn/cfn-credentials ",
                                                    " --region     ", { "Ref" : "AWS::Region" }, "\n",
                   "runas=root\n"
@@ -187,7 +187,7 @@
           "## Initialize CloudFormation bits\n",
           "/opt/aws/bin/cfn-init -v ",
           "   --stack ", { "Ref" : "AWS::StackName" }, 
-          "   --resource {{ name }}Host",
+          "   --resource {{ name }}Instance",
           "   --access-key ",  { "Ref" : "{{ name }}Keys" },
           "   --secret-key ", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},
           "   --region ", { "Ref" : "AWS::Region" }, " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
@@ -314,7 +314,7 @@
 
     "{{ name }}WaitCondition" : {
       "Type" : "AWS::CloudFormation::WaitCondition",
-      "DependsOn" : "{{ name }}Host",
+      "DependsOn" : "{{ name }}Instance",
       "Properties" : {
         "Handle" : {"Ref" : "{{ name }}WaitHandle"},
         "Timeout" : "600"

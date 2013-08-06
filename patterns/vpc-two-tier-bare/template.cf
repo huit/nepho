@@ -1,6 +1,8 @@
 {# 
-    Deploys a basic three tier VPC virtual datacenter.
+    Deploys a basic, bare two tier VPC virtual datacenter.
 #}
+
+{% import 'Resources/Network-Tier.json' as networks %}
 
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
@@ -25,9 +27,9 @@
 {# **** Define VPC network structures **** #}
 
     {% include 'Resources/VPC.json' %},
-  
-    {% include 'Resources/VPC-General-Public-Tier.json' %},
-    {% include 'Resources/VPC-General-Private-Tier.json' %}
+
+    {{ networks.public_network( 'Public',  'PublicA') }},
+    {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }}
 
   }, 
   
