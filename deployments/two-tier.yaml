@@ -1,0 +1,9 @@
+---
+
+development:
+  pattern: vpc-two-tier
+  KeyName: parrott-ec2
+
+testing:
+  pattern: vpc-two-tier-with-test-hosts
+  KeyName: parrott-ec2  
