@@ -1,0 +1,66 @@
+{#
+
+    Defines a macro for a private network tier, with gateway and routes
+      for a VPC with network 10.0.x.y
+
+    Will need to have ACL rules defined, and applied to the subnet
+      named "PrivateSubnet"
+          
+#}
+
+{#
+
+    Macros that Defines the public network on 10.0.0.x, with routes
+      for a VPC with network 10.0.x.y
+
+    You may want to have ACL rules defined, and applied to the subnet
+      named "[Name]Subnet"
+          
+#}
+
+{# ****  General private network tier **** #}
+
+    {%- macro private_network(name, subnet_space, nat_device, type='Private') -%}
+    
+    "{{ name }}Subnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "{{ subnet_space }}", "CIDR" ]},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
+          {"Key" : "Network", "Value" : "{{ type }}" }
+        ]
+      }
+    },
+
+    "{{ name }}RouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "VPC"},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
+          {"Key" : "Network", "Value" : "{{ type }}" }
+        ]
+      }
+    },
+
+    "{{ name }}Route" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "{{ name }}RouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "{{ nat_device }}" }
+      },
+      "DependsOn": "AttachGateway"
+    },
+
+    "{{ name }}SubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "{{ name }}Subnet" },
+        "RouteTableId" : { "Ref" : "{{ name }}RouteTable" }
+      }
+    }  
+
+    {%- endmacro %} 

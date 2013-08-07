@@ -1,0 +1,6 @@
+---
+
+development:
+  pattern: vpc-three-tier-with-test-hosts
+  KeyName: parrott-ec2
+  
