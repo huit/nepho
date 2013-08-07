@@ -72,7 +72,6 @@ def main():
         f = open(yaml_file)
         yamlMap = yaml.safe_load(f)
         f.close()
-        print yamlMap
         envMap = yamlMap[env_name]
         for k in envMap.keys():
             paramsMap[k] = envMap[k]

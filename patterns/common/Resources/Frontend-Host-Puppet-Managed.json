@@ -17,8 +17,6 @@
    
 #}
 
-{% import 'resources.json' as resources %}
-
     "FrontendServerUser" : {
       "Type" : "AWS::IAM::User",
       "Properties" : {
@@ -275,8 +273,6 @@
       }       
    },
    
-   {{ resources.wait('Frontend', timeout='600' ) }}
-{#   
     "FrontendWaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle"
     },
@@ -289,4 +285,3 @@
         "Timeout" : "600"
       }
     }
-#}

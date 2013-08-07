@@ -31,8 +31,8 @@
 
     {% include 'Resources/VPC.json' %},
 
-    {{ networks.public_network( 'Public',  'PublicA') }},
-    {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }}
+    {{ networks.public_network(  name='Public',  subnet_space='PublicA') }},
+    {{ networks.private_network( name='Private', subnet_space='PrivateTier1A', nat_device='NATDevice') }},
   
 {# **** Bastion Host & NAT **** #}
 

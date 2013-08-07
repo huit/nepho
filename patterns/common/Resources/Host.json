@@ -17,9 +17,9 @@
    
 #}
 
-{# ****  General host on EC2 **** #}
+{# ****  General host on EC2, in or out of a VPC **** #}
 
-    {%- macro host(name, management='none', ports=80, subnet='') -%}
+    {%- macro host(name, management='none', ports=80, subnet='', public='no') -%}
     
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
@@ -48,7 +48,8 @@
     "{{ name }}SecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable HTTP",
+        {% if subnet is defined  %}"VpcId" : { "Ref" : "VPC" },{% endif %}
+        "GroupDescription" : "Security group with access for {{ ports }}",
         "SecurityGroupIngress" : [
           {% for p in ports %}
           {"IpProtocol" : "tcp", "FromPort" : "{{ p }}",  "ToPort" :  "{{ p }}", "CidrIp" : "0.0.0.0/0"},
@@ -58,12 +59,16 @@
       }      
     },  
 
+    {% if public != 'no' or subnet is not defined  %}
     "{{ name }}Endpoint" : {
       "Type" : "AWS::EC2::EIP",
       "Properties" : {
-        "InstanceId" : { "Ref" : "{{ name }}Instance" }
+        "InstanceId" : { 
+          {% if subnet is defined  %}"Domain" : "vpc",{% endif %}        
+          "Ref" : "{{ name }}Instance" }
       }
     },
+    {% endif %}
       
       
     "{{ name }}Instance": {  
@@ -167,9 +172,12 @@
       "Properties": {
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
-        "SecurityGroups" : [ {"Ref" : "{{ name }}SecurityGroup"} ],
+
         {% if subnet is defined  %}
         "SubnetId" : { "Ref" : "{{ subnet }}" },
+        "SecurityGroupIds" : [ {"Ref" : "{{ name }}SecurityGroup"} ],
+        {% else %}
+        "SecurityGroups" : [ {"Ref" : "{{ name }}SecurityGroup"} ],
         {% endif %}        
         "KeyName"        : { "Ref" : "KeyName" },
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
