@@ -1,6 +1,7 @@
 
 {% import 'Resources/Network-Tier.json' as networks %}
-  
+{% import 'Resources/Host.json' as host %}
+{% import 'Resources/Load-Balancer.json' as elb %}  
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
@@ -29,18 +30,19 @@
 
     {% include 'Resources/VPC.json' %},
 
-    {{ networks.public_network( 'Public',  'PublicA') }},
-    {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }},   
-    {{ networks.private_network('Data',  'DataA', 'NATDevice') }},      
-    {{ networks.private_network('DataB', 'DataB', 'NATDevice') }},
+    {{ networks.public_network( name='Public',  subnet_space='PublicA') }},
+    {{ networks.private_network(name='Private', subnet_space='PrivateTier1A', nat_device='NATDevice') }},   
+    {{ networks.private_network(name='Data',    subnet_space='DataA',         nat_device='NATDevice') }},      
+    {{ networks.private_network(name='DataB',   subnet_space='DataB',         nat_device='NATDevice') }},
     
 {# **** Bastion Host & NAT **** #}
 
     {% include 'Resources/NAT.json' %}, 
     {% include 'Resources/BastionHost.json' %},
 
-{# **** Public Tier Application instances **** #}
+{# **** Private Tier Application instances **** #}
 
+    {{ elb.load_balancer(name='Public', subnet='PublicSubnet', port=80) }},
     {% include 'Resources/Public-Load-Balancer-and-AutoScaler.json' %},
     {% include 'Resources/Frontend-Fleet-Example.json' %},
 

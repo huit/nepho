@@ -17,7 +17,7 @@
   },
     
   "Resources" : {   
-    {{ host.host( 'Frontend',  'puppet', [80, 443, 8080, 8443]) }}
+    {{ host.host( name='SingleServer',  management='puppet', ports=[80, 443, 8080, 8443]) }}
 
   },
   

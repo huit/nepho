@@ -2,6 +2,8 @@
 
    Single Host server managed via puppet.
    
+   TODO: update
+   
    Expects the following params:
    - GitRepo: puppet git repo to checkout and apply
    - GitRepoBranch: branch of above
@@ -19,7 +21,7 @@
 
 {# ****  General host on EC2, in or out of a VPC **** #}
 
-    {%- macro host(name, management='none', ports=80, subnet='', public='no') -%}
+    {%- macro host(name, management='none', ports=80, subnet=None, public='no') -%}
     
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
@@ -48,7 +50,7 @@
     "{{ name }}SecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        {% if subnet is defined  %}"VpcId" : { "Ref" : "VPC" },{% endif %}
+        {% if subnet is not none  %}"VpcId" : { "Ref" : "VPC" },{% endif %} 
         "GroupDescription" : "Security group with access for {{ ports }}",
         "SecurityGroupIngress" : [
           {% for p in ports %}
@@ -59,12 +61,12 @@
       }      
     },  
 
-    {% if public != 'no' or subnet is not defined  %}
+    {% if public != 'no' or subnet is none  %}
     "{{ name }}Endpoint" : {
       "Type" : "AWS::EC2::EIP",
       "Properties" : {
         "InstanceId" : { 
-          {% if subnet is defined  %}"Domain" : "vpc",{% endif %}        
+          {% if subnet is not none %}"Domain" : "vpc",{% endif %}        
           "Ref" : "{{ name }}Instance" }
       }
     },
@@ -173,7 +175,7 @@
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
 
-        {% if subnet is defined  %}
+        {% if subnet is not none  %}
         "SubnetId" : { "Ref" : "{{ subnet }}" },
         "SecurityGroupIds" : [ {"Ref" : "{{ name }}SecurityGroup"} ],
         {% else %}

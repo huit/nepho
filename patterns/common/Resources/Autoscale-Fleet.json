@@ -22,7 +22,7 @@
       }
     },  
     
-    "FrontendLaunchConfig"  : {
+    "{{ name }}LaunchConfig"  : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Metadata" : {
         "Comment1" : "Configure the FrontendServer to forward /backend requests to the backend servers",
