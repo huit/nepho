@@ -1,0 +1,56 @@
+{#
+
+    Resource definitions for a shared s3 bucket for application components 
+      to use concurrently.
+      
+    Relevant Objects Created:
+    
+    - S3Bucket
+    - S3Keys
+    
+ #}
+      
+"S3Bucket" : {
+      "Type" : "AWS::S3::Bucket",
+      "DeletionPolicy" : "Retain"
+    },
+
+"BucketPolicy" : {
+      "Type" : "AWS::S3::BucketPolicy",
+      "Properties" : {
+        "PolicyDocument": {
+          "Version"      : "2008-10-17",
+          "Id"           : "UploadPolicy",
+          "Statement"    : [{
+            "Sid"        : "EnableReadWrite",
+            "Action"     : ["s3:GetObject", "s3:PutObject", "s3:PutObjectACL" ],
+            "Effect"     : "Allow",
+            "Resource"   : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "S3Bucket"} , "/*"]]},
+            "Principal"  : { "AWS": {"Fn::GetAtt" : ["S3User", "Arn"]} }
+          }]
+        },
+        "Bucket" : {"Ref" : "S3Bucket"}
+      }
+    },
+
+"S3User" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": { "Statement":[{
+            "Effect":"Allow",
+            "Action":"s3:*",
+            "Resource":"*"
+          }]}
+        }]
+      }
+    },
+
+"S3Keys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "S3User"}
+      }
+}

@@ -1,0 +1,61 @@
+
+{% import 'Resources/Network-Tier.json' as networks %}
+  
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template for a three tier VPC with relevant components in place for an app stack.",
+
+  "Parameters" : { 
+  
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/NAT-Instance-Parameters.json' %},    
+    {% include 'Parameters/Tiered-Instance-Parameters.json' %}    
+  },
+
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
+
+  "Resources" : {
+
+
+{# **** Define VPC network structures **** #}
+
+
+    {% include 'Resources/VPC.json' %},
+
+    {{ networks.public_network( 'Public',  'PublicA') }},
+    {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }},   
+    {{ networks.private_network('Data',  'DataA', 'NATDevice') }},      
+    {{ networks.private_network('DataB', 'DataB', 'NATDevice') }},
+    
+{# **** Bastion Host & NAT **** #}
+
+    {% include 'Resources/NAT.json' %}, 
+    {% include 'Resources/BastionHost.json' %},
+
+{# **** Public Tier Application instances **** #}
+
+    {% include 'Resources/Public-Load-Balancer-and-AutoScaler.json' %},
+    {% include 'Resources/Frontend-Fleet-Example.json' %},
+
+{# **** Private Tier Application instances **** #}
+
+    {% include 'Resources/Private-Load-Balancer-and-AutoScaler.json' %},
+    {% include 'Resources/Backend-Fleet-Example.json' %} 
+
+  },
+ 
+  "Outputs" : {
+ 
+    {% include 'Outputs/BastionHost.json' %},
+    {% include 'Outputs/NAT.json' %},  
+    {% include 'Outputs/PublicELB-URL.json' %}           
+
+  } 
+}

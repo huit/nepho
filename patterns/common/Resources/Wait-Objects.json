@@ -1,0 +1,18 @@
+{# **** Wait-related CloudFormation objects **** #}
+
+    {%- macro wait(name, timeout='600', type='text') -%}
+    
+    "{{ name }}WaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle"
+    },
+
+    "{{ name }}WaitCondition" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "FrontendHost",
+      "Properties" : {
+        "Handle" : {"Ref" : "{{ name }}WaitHandle"},
+        "Timeout" : "{{ timeout }}"
+      }
+    }
+
+    {%- endmacro %} 

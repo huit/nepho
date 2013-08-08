@@ -59,31 +59,45 @@ def main():
     args_json = command()
     args=json.loads(args_json)
 
-    # Very basic parsing to determine plugin and environment to use
+    # Very basic parsing to determine deployment and environment to use
     plugin_name = args['subcmd']
-    mod_name = args['module']
+    deployment_name = args['deployment']
     env_name = args['opts']['environment']
-    stack_name = '%s-%s' % (mod_name, env_name)
-    if args['opts']['name'] is not None and len(args['opts']['name']) > 1:
-        stack_name = args['opts']['name']
-    cf_filename='%s.cf' % (env_name)
-    cf_dir='./modules/%s' % (mod_name)
-    #cf_file='./modules/%s/%s.cf' % (plugin_name, env_name)
     
-    yaml_file = './modules/%s/%s.yaml' % (mod_name, env_name)
-    
-    paramsMap = None
+    # Load settings from YAML deployment file
+    paramsMap = dict()
+    pattern = None
+    yaml_file = './deployments/%s.yaml' % (deployment_name)
     try:
         f = open(yaml_file)
-        paramsMap = yaml.safe_load(f)
+        yamlMap = yaml.safe_load(f)
         f.close()
-    except IOError: pass
-    
+        envMap = yamlMap[env_name]
+        for k in envMap.keys():
+            paramsMap[k] = envMap[k]
+    except IOError as e: 
+        print "Error parsing deployment file \"%s\"" % (yaml_file)
+        print " Check for the file and that it is properly formatted YAML."
+        print "Error:"
+        print e
+        sys.exit(1)   
+        
+    pattern =  paramsMap['pattern']
+    paramsMap.pop('pattern')
+       
+    stack_name = '%s-%s' % (deployment_name, env_name)
+    if args['opts']['name'] is not None and len(args['opts']['name']) > 1:
+        stack_name = args['opts']['name']
+        
+    cf_dir='./patterns/%s' % (pattern)
+    cf_filename='template.cf'
+    cf_file = '%s/%s' % (cf_dir, cf_filename)
+    #paramsMap['template_file'] = cf_file
         
     #
     # Use Jinja2
     # 
-    template_dirs = [cf_dir, 'modules/common/']
+    template_dirs = [cf_dir, 'patterns/common/']
     jinjaFSloader = FileSystemLoader(template_dirs)
     env = Environment(loader=jinjaFSloader)    
     jinja_template = env.get_template(cf_filename)

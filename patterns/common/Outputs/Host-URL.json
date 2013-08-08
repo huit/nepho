@@ -1,0 +1,16 @@
+{#
+
+   Reports on the Bastion host instance ID and public IP address.
+   
+   Expects Bastion host instance called "BastionHostInstance".
+
+#} 
+
+    {%- macro url(name) -%}
+    
+    "URL" : {
+      "Value" : { "Fn::Join" : ["", ["http://", { "Ref" : "{{ name }}Endpoint" } ]] },
+      "Description" : "{{ name }}Application URL"
+    }
+    
+    {%- endmacro %}  
