@@ -38,3 +38,5 @@
         "SecurityGroupEgress"  : [ { "IpProtocol" : "tcp", "FromPort" : "{{ port }}",  "ToPort" : "{{ port }}",  "CidrIp" : "0.0.0.0/0"} ]        
       }
     }
+
+    {%- endmacro  %}   

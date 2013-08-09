@@ -20,8 +20,8 @@
 #}
 
 {# ****  General host on EC2, in or out of a VPC **** #}
-
-    {%- macro host(name, management='none', ports=80, subnet=None, public='no') -%}
+ elb=None, elb2=None, rds=None,
+    {%- macro host(name, ports=80, subnet=None, elb=None, elb2=None, rds=None, public='no') -%}
     
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
@@ -194,13 +194,28 @@
           "   --secret-key ", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},
           "   --region ", { "Ref" : "AWS::Region" }, " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
 
-		  "# Setup some platform variables\n",
-		  
-          "EXTRA_PKGS='", { "Ref" : "ExtraPackages" }, "'\n",
-
-          "# pull & setup puppet modules and run manifest\n",
+          {# **** Inject environment variasbles about the deployment **** #}
+          
+		  "# Inject some platform variables\n",
+          {% if elb is not none  %}"NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
+          {% if elb2 is not none  %}"NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
+		  {% if rds is not none  %}"NEPHO_DATABASE_CONNECT_STRING='", 
+		  { "Fn::Join": [ "", [ "mysql://",
+                                      { "Ref" : "DBUsername" },
+                                      ":",      
+                                      { "Ref" : "DBPassword" },       
+                                       "@",                               
+                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                                      "/",
+                                      { "Ref": "DBName" }]]}, "'\n", 
+		  {% endif %}
+		 
+          {% if management !='script' and management != 'none' %}
           "NEPHO_GIT_REPO_URL='", { "Ref" : "GitRepo" }, "'\n",
           "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "GitRepoBranch" }, "'\n",
+          {% endif %}
 
           {#  **** Include script snippets here ...  **** #}
           
@@ -209,7 +224,7 @@
           {% endfor %}  
 
           "# Signal completion\n",
-          "/opt/aws/bin/cfn-signal -e $? -r \"Host setup by puppet complete\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n" 
+          "/opt/aws/bin/cfn-signal -e $? -r \"Host setup by {{ management }}\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n" 
 
         ]]}}
 
