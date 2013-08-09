@@ -1,4 +1,5 @@
 ---
 
 development:
-  pattern: 
+  pattern: rds
+  
