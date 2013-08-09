@@ -98,7 +98,7 @@ def get_management_settings(map):
         pkgs = [ "httpd" ]
     
     if management == 'script':    
-       mgmt_script_file = paramsMap.pop('script')  
+       mgmt_script_file = map.pop('script')  
        pkgs= ['bash']  
     
     if management == 'puppet': 
@@ -233,7 +233,7 @@ def main():
         cf_dict = parse_cf_json( get_cf_template(pattern, context) )
     except ValueError:
         print "Error parsing JSON"
-        print get_cf_template(pattern)
+        print get_cf_template(pattern,context)
         sys.exit(1)
                 
     if args['subcmd'] == 'deploy':
