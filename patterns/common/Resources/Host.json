@@ -93,7 +93,8 @@
                 "aws-amitools-ec2" : [],
                 "aws-apitools-mon" : [],
                 "aws-apitools-elb" : [],
-                "aws-apitools-rds" : []        
+                "aws-apitools-rds" : [],
+                "git"              : []        
               }
             },
                   

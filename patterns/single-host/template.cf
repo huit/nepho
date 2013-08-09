@@ -1,5 +1,6 @@
-{% import 'Resources/Host.json' as host %}
-{% import 'Outputs/Host-URL.json' as host_url %}
+{% import 'Resources/Host.json' as host  with context %}
+{% import 'Outputs/Host-URL.json' as host_url with context %}
+
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
@@ -17,11 +18,11 @@
   },
     
   "Resources" : {   
-    {{ host.host( name='SingleServer',  management='puppet', ports=[80, 443, 8080, 8443]) }}
+    {{ host.host( name='SingleServer',  management='puppet', ports=[80, 443]) }}
 
   },
   
   "Outputs" : {
-    {{ host_url.url("Frontend") }}  
+    {{ host_url.url("SingleServer") }}  
   }
 }
