@@ -2,7 +2,25 @@
 import pdb
 import hu
 from hu.command import command
+from hu.aws import clidriver 
+import sys
+import json
 
-output = command()
+ 
+def main():
+    
+    output = command()
+    args = json.loads(output)
+
+    driver = args['opts']['driver']
+
+    if driver == 'aws':
+      
+        return hu.aws.clidriver.main(output)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+    
 print output
 # vim:ft=python

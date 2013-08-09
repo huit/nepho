@@ -154,12 +154,13 @@ def get_cf_json(orderDict, pretty=False):
         outstr = json.dumps(orderDict)
     return outstr
  
-def main():
+def main(args_json=None):
     # Create an aws-cli driver
     aws_driver = setup_awscli_driver()
 
     # Read in command line options as JSON    
-    args_json = command()
+    if args_json is None:
+        args_json = command()
     args=json.loads(args_json)
 
     # Very basic parsing to determine deployment and environment to use
