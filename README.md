@@ -76,23 +76,23 @@ Given a working (1) design pattern, and (2) deployment file, the following comma
 
 Print out the generated template file as JSON:
 
-    $ ./bin/hu-aws -E [environment] show-template [deployment]
+    $ ./bin/hu -E [environment] show-template [deployment]
     
 Validate the template file
 
-    $ ./bin/hu-aws -E [environment] validate-template [deployment]
+    $ ./bin/hu -E [environment] validate-template [deployment]
 
 Print out the template parameters that you can specify in the deployment file:
 
-    $ ./bin/hu-aws -E [environment] show-params [deployment]
+    $ ./bin/hu -E [environment] show-params [deployment]
 
 Do the actual deploy of the application and pattern:
 
-    $ ./bin/hu-aws -E [environment] deploy [deployment]
+    $ ./bin/hu -E [environment] deploy [deployment]
 
 Delete the deployment from the provider:
 
-    $ ./bin/hu-aws -E [environment] delete [deployment]
+    $ ./bin/hu -E [environment] delete [deployment]
 
 
 TBD: more detailed options, etc.
