@@ -1,3 +1,8 @@
+#
+# Slap together some basic files depending on the tier.
+#
+
+
 OUTFILE=/var/www/html/index.html
 cat <<'EOF' > ${OUTFILE}
 <img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation_graphic.png" alt="AWS CloudFormation Logo"/>
@@ -7,15 +12,15 @@ The first subnet is public and contains and internet facing load balancer, a NAT
 access from the private subnet and a bastion host to allow SSH access to the hosts in the private subnet. 
 The second subnet is private and contains a Frontend fleet of EC2 instances, an internal load balancer 
 and a Backend fleet of EC2 instances.</p>
-<p>To serve a web page from the backend service, click <a href="/backend/backend.html">here</a>.</p>
+<p>To serve a web page from the backend service, click <a href="/backend/">here</a>.</p>
 EOF
 chmod 644  ${OUTFILE}
 chown root:root ${OUTFILE}
 
 OUTFILE=/etc/httpd/conf.d/maptobackend.conf
 cat <<'EOF' > ${OUTFILE}
-ProxyPass /backend http://", { "Fn::GetAtt" : [ "PrivateElasticLoadBalancer", "DNSName" ]}
-ProxyPassReverse /backend http://", { "Fn::GetAtt" : [ "PrivateElasticLoadBalancer", "DNSName" ]} 
+ProxyPass /backend http://${NEPHO_BACKEND_HOSTNAME}
+ProxyPassReverse /backend http://${NEPHO_BACKEND_HOSTNAME}
 EOF
 chmod 644  ${OUTFILE}
 chown root:root ${OUTFILE}
@@ -27,4 +32,7 @@ cat <<'EOF' > ${OUTFILE}
 EOF
 chmod 644  ${OUTFILE}
 chown root:root ${OUTFILE}
+            
+/sbin/chkconfig httpd on
+/sbin/service httpd start 
             

@@ -44,7 +44,10 @@
 {# **** Public Tier Application instances **** #}
 
     {{ elb.load_balancer(name='Public', subnet='PublicSubnet',  port=80) }},
-    {{ fleet.fleet(      name='Public', subnet='PrivateSubnet', elb='PublicElasticLoadBalancer', ports=[80]) }},  
+    {{ fleet.fleet(      name='Public', subnet='PrivateSubnet', 
+                         elb='PublicElasticLoadBalancer', elb2='PrivateElasticLoadBalancer', 
+                         ports=[80]) 
+                    }},  
 
 {# **** Private Tier Application instances **** #}
 
