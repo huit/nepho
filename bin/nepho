@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import pdb
-import hu
-from hu.command import command
-from hu.aws import clidriver 
+import nepho
+from nepho.command import command
+from nepho.aws import clidriver 
 import sys
 import json
 
@@ -16,7 +16,7 @@ def main():
 
     if driver == 'aws':
       
-        return hu.aws.clidriver.main(output)
+        return nepho.aws.clidriver.main(output)
 
 
 if __name__ == '__main__':

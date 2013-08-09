@@ -39,12 +39,12 @@ import json
 import collections
 import yaml
 import string
-from hu.command import command
-#from hu.aws import Deployment
-#from hu.aws import Template
+from nepho.command import command
+#from nepho.aws import Deployment
+#from nepho.aws import Template
 
 
-LOG = logging.getLogger('hu-dummy')
+LOG = logging.getLogger('nepho-dummy')
 
 def setup_awscli_driver():
     emitter = HierarchicalEmitter()

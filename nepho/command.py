@@ -1,5 +1,5 @@
-from hu.parser import parse_args
-from hu.plugin import serialize
+from nepho.parser import parse_args
+from nepho.plugin import serialize
 
 __all__ = ["command"]
 
