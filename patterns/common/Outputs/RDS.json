@@ -2,7 +2,7 @@
    Output strings specific to contacting the RDS database.
 #}   
 
-    {%- macro rds(name) -%}
+    {%- macro mysql(name) -%}
     
     "{{ name }}DBConnectionString": {
       "Description" : "Connection string for database",
@@ -26,6 +26,16 @@
                                       { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
                                       "/",
                                       { "Ref": "DBName" }]]}
+    },
+
+    "{{ name }}DBCommandLine": {
+      "Description" : "Connection string for database",
+      "Value" : { "Fn::Join": [ "", [ 
+          "mysql -u ",{ "Ref" : "DBUsername" },
+          " -p",{ "Ref" : "DBPassword" },       
+          " -h "{ "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Address" ] },
+          " -P ",{ "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
+          " ", { "Ref": "DBName" }]]}
     }
 
     {% endmacro %}
