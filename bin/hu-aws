@@ -132,7 +132,20 @@ def main():
         return aws_driver.main(main_args)
                 
         #print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
-    
+    if args['subcmd'] == 'show-params':
+        
+        try:
+             cf_json = json.loads(jinja_template.render(), object_pairs_hook=collections.OrderedDict)
+        except ValueError as e:
+            print "Invalid JSON: run the \"validate-template\" subcommand to debug."
+            sys.exit(1)      
+        
+        paramsJSON= cf_json['Parameters']
+        print "Template parameters:"
+        print "---------------------------"
+        print json.dumps(paramsJSON, indent=4, separators=(',', ': '))
+        sys.exit(1) 
+              
     #
     # Load as JSON to validate it
     #
