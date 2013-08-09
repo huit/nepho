@@ -2,9 +2,9 @@
     Deploys a basic three tier VPC virtual datacenter, with test hosts on each tier.
 #}
 
-{% import 'Resources/Network-Tier.json' as networks %}
-{% import 'Resources/Host.json' as host %}
-{% import 'Outputs/Host.json' as host_out %}
+{% import 'Resources/Network-Tier.json' as networks with context %}
+{% import 'Resources/Host.json'         as host     with context %}
+{% import 'Outputs/Host.json'           as host_out with context %}
 
 {
   "AWSTemplateFormatVersion" : "2010-09-09",

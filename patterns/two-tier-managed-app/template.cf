@@ -1,3 +1,12 @@
+{% import 'Parameters/instance-Parameters.json' as inst_params %}
+{% import 'Resources/Network-Tier.json'  as networks with context %}
+{% import 'Resources/Host.json'          as host     with context %}
+{% import 'Resources/Load-Balancer.json' as elb      with context %}  
+{% import 'Resources/Autoscale-Fleet.json' as fleet  with context %} 
+{% import 'Outputs/Host.json'            as host_out with context %}
+
+{# TODO: fully make this macro-ized #}
+
 {
 
   "AWSTemplateFormatVersion" : "2010-09-09",
@@ -8,8 +17,8 @@
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %},    
-    {% include 'Parameters/Tiered-Instance-Parameters.json' %},
-    {% include 'Parameters/Puppet-Parameters.json' %} 
+    {{ inst_params.inst_params(name="Public") }},  
+    {{ inst_params.inst_params(name="Private") }}
     
   },
 
@@ -21,17 +30,15 @@
     
   },
 
-
   "Resources" : {
-
 
 {# **** Define VPC network structures **** #}
 
-    {% include 'Resources/VPC.json' %},  
-    {% include 'Resources/VPC-General-Public-Tier.json' %},  
-    {% include 'Resources/VPC-General-Private-Tier.json' %},    
-{#    {% include 'Resources/VPC-General-Data-Tier.json' %},    #}
-    
+    {% include 'Resources/VPC.json' %},
+
+    {{ networks.public_network(  name='Public',  subnet_space='PublicA') }},
+    {{ networks.private_network( name='Private', subnet_space='PrivateTier1A', nat_device='NATDevice') }},
+ 
 {# **** Bastion Host & NAT **** #}
 
     {% include 'Resources/NAT.json' %}, 
