@@ -1,0 +1,12 @@
+---
+
+development:
+
+  pattern: single-host
+  management: script
+  script: ./deployments/scripts/simple-website.sh
+  packages: [httpd, php] 
+  
+  KeyName: parrott-ec2
+
+  

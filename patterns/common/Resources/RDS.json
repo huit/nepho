@@ -1,0 +1,63 @@
+{#
+
+    Resources for RDS database on a data tier with 2 subnets we assume 
+      is named "DataSubnet" and "DataSubnet2".
+      
+    Expects objects:
+    
+    - SubnetMappings: mappings object for the various subnet ranges
+    - VPC: ref to VPC
+    - DataSubnet and DataSubnat2: the data tier subnets to place the DB on
+    
+      Also expects all the parameter values setup in the RDS parameters block
+    
+    Creates relevant objects:
+    
+    - DBInstance
+    
+#}    
+
+    {%- macro rds(name, subnet1, subnet2, db_access_range) -%}
+    
+    {% if subnet1 is defined  %}
+    "{{ name }}DBSubnetGroup" : {
+      "Type" : "AWS::RDS::DBSubnetGroup",
+      "Properties" : {
+        "DBSubnetGroupDescription" : "Subnets available for the RDS DB Instance",
+        "SubnetIds" : [ { "Ref" : "{{ subnet1 }}" }, { "Ref" : "{{ subnet2 }}" } ]
+      }
+    },
+    {% endif %}
+    
+    "{{ name }}DBSecurityGroup" : {
+      "Type" : "AWS::RDS::DBSecurityGroup",
+      "Properties" : {
+        {% if subnet1 is defined  %}
+        "DBSecurityGroupIngress": { "CIDRIP": { "Fn::FindInMap" : [ "SubnetMappings", "VPC", "CIDR" ]} },
+        {% else %}
+        "DBSecurityGroupIngress": { "CIDRIP": "{{ db_access_range }}" },
+        {% endif %}
+        {% if subnet1 is defined  %}"EC2VpcId" : { "Ref" : "VPC" },{% endif %}
+        "GroupDescription" : "Security group for RDS DB Instance"
+      }
+    },
+
+    "{{ name }}DBInstance" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+        "DBName"             : { "Ref" : "DBName" },
+        "AllocatedStorage"   : { "Ref" : "DBAllocatedStorage" },
+        "DBInstanceClass"    : { "Ref" : "DBClass" },
+        "Engine"             : { "Ref" : "DBEngine" }, 
+        "EngineVersion"      : { "Ref" : "DBEngineVersion" }, 
+        "MasterUsername"     : { "Ref" : "DBUsername" } ,
+        "MasterUserPassword" : { "Ref" : "DBPassword" },
+        {% if subnet1 is defined  %}"DBSubnetGroupName"  : { "Ref" : "{{ name }}DBSubnetGroup" },{% endif %}
+        "DBSecurityGroups"   : [ { "Ref" : "{{ name }}DBSecurityGroup" } ],
+        "MultiAZ"            : { "Ref" : "MultiAZDatabase" }
+        
+      }
+    }
+    
+    {%- endmacro %} 
+            

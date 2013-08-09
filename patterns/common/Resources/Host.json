@@ -2,6 +2,8 @@
 
    Single Host server managed via puppet.
    
+   TODO: update
+   
    Expects the following params:
    - GitRepo: puppet git repo to checkout and apply
    - GitRepoBranch: branch of above
@@ -18,8 +20,8 @@
 #}
 
 {# ****  General host on EC2, in or out of a VPC **** #}
-
-    {%- macro host(name, management='none', ports=80, subnet='', public='no') -%}
+ elb=None, elb2=None, rds=None,
+    {%- macro host(name, ports=80, subnet=None, elb=None, elb2=None, rds=None, public='no') -%}
     
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
@@ -48,7 +50,7 @@
     "{{ name }}SecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        {% if subnet is defined  %}"VpcId" : { "Ref" : "VPC" },{% endif %}
+        {% if subnet is not none  %}"VpcId" : { "Ref" : "VPC" },{% endif %} 
         "GroupDescription" : "Security group with access for {{ ports }}",
         "SecurityGroupIngress" : [
           {% for p in ports %}
@@ -59,12 +61,12 @@
       }      
     },  
 
-    {% if public != 'no' or subnet is not defined  %}
+    {% if public != 'no' or subnet is none  %}
     "{{ name }}Endpoint" : {
       "Type" : "AWS::EC2::EIP",
       "Properties" : {
         "InstanceId" : { 
-          {% if subnet is defined  %}"Domain" : "vpc",{% endif %}        
+          {% if subnet is not none %}"Domain" : "vpc",{% endif %}        
           "Ref" : "{{ name }}Instance" }
       }
     },
@@ -80,6 +82,9 @@
           
             "packages" : {
               "yum" : {
+                {% for pkg in packages %}
+                "{{ pkg }}" : [],
+                {% endfor %}               
                 "curl"         : [],
                 "wget"         : [],
                 "aws-cli"      : [],
@@ -88,19 +93,8 @@
                 "aws-amitools-ec2" : [],
                 "aws-apitools-mon" : [],
                 "aws-apitools-elb" : [],
-                "aws-apitools-rds" : [], 
-                {% if management == 'none' %}
-                "httpd"            : [], 
-                {% endif %}                
-                {% if management == 'puppet' %}               
-                "gcc"          : [],
-                "ruby"         : [],
-                "ruby-devel"   : [],
-                "rubygems"     : [],  
-                "puppet"       : [],
-                {% endif %}
-                "git"          : []
-                        
+                "aws-apitools-rds" : [],
+                "git"              : []        
               }
             },
                   
@@ -173,7 +167,7 @@
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
 
-        {% if subnet is defined  %}
+        {% if subnet is not none  %}
         "SubnetId" : { "Ref" : "{{ subnet }}" },
         "SecurityGroupIds" : [ {"Ref" : "{{ name }}SecurityGroup"} ],
         {% else %}
@@ -200,116 +194,37 @@
           "   --secret-key ", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},
           "   --region ", { "Ref" : "AWS::Region" }, " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
 
-{% if management == 'puppet' %}   
-"function prepare_rhel6_for_puppet {\n",
-
-"\n",
-"    local extra_pkgs=$*\n",
-"\n",
-"    # Get the puppet labs repo installed\n",
-"    rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm\n",
-"\n",
-"    # Get EPEL installed\n",
-"    EPEL_RPM=http://mirror.utexas.edu/epel/6/i386/epel-release-6-8.noarch.rpm\n",
-"    if ! [ -f /etc/yum.repos.d/epel.repo ]; then\n",
-"        rpm -ihv ${EPEL_RPM} || /bin/true        \n",
-"    fi\n",
-"\n",
-"    # We need to disable yum priorities, because of the stupid Amazon repo priorities \n",
-"    #  prevent getting latest puppet\n",
-"    export PATH=\"${PATH}:/usr/local/bin\"\n",
-"    PKGS=puppet\n",
-"    yum -y --enablerepo=epel --disableplugin=priorities update ${PKGS}\n",
-"\n",
-"    # install r10k using gem\n",
-"    gem install r10k\n",
-"\n",
-"    echo $( facter operatingsystem )\n",
-"    # to convince puppet we're a RHEL derivative, and then get EPEL installed\n",
-"    [ -r /etc/redhat-release ] || echo \"CentOS release 6.4 (Final)\" > /etc/redhat-release\n",
-"    #    [ -f /etc/system-release ] && cp -af /etc/system-release /etc/redhat-release \n",
-"\n",
-"}\n",
-
-"\n",
-"# Run puppet on a suitable repo\n",
-"function do_puppet {\n",
-"\n",
-"    local site_file=${1:-manifests/site.pp}\n",
-"\n",
-"    #r10k deploy environment --puppetfile Puppetfile\n",
-"    if [ -r Puppetfile ]; then\n",
-"            HOME=/root r10k puppetfile install\n",
-"    fi\n",
-"    puppet apply ${site_file}  --modulepath=./modules\n",
-"\n",
-"}\n",
-"\n",
-"#\n",
-"# Pull private data from S3\n",
-"#    Takes a set of urls as an argument,\n",
-"#   and leaves a set of files/dirs in current directory\n",
-"#\n",
-"function pull_private_data {\n",
-"    local urls=$@\n",
-"\n",
-"    for url in $urls; do    \n",
-"        protocol=$( echo $url | awk -F: '{print $1}' )\n",
-"\n",
-"        if [ 'https' = \"${protocol}\" ]; then\n",
-"            wget -q ${url}\n",
-"        fi    \n",
-"        \n",
-"        if [ 'git' = \"${protocol}\" ]; then\n",
-"            git clone ${url}\n",
-"        fi\n",
-"\n",    
-"        if [ 's3' = \"${protocol}\" ]; then\n",
-"            local fname=$(  echo $url | awk -F/ '{print $NF}' )\n",
-"            s3cmd get ${url} ${fname}\n",
-"        fi\n",    
-"    done\n",
-"}\n",
-"\n",
-"#\n",
-"# pull repo with git\n",
-"#\n",
-"function git_pull {\n",
-"\n",
-"    local repo=$1\n",
-"    local branch=$2\n",
-"\n",
-"    if ! [ x = \"x${branch}\" ]; then \n",
-"        branch_arg=\"--branch $branch\"\n",
-"    fi\n",
-"    \n",
-"    \n",
-"    git clone ${branch_arg} $repo \n",
-"    dir=$( echo ${repo} | awk -F/ '{print $NF}' | sed 's/\\.git//' )\n",
-"    cd ${dir}\n",
-"\n",
-"    git submodule sync || /bin/true\n",
-"    git submodule update --init  || /bin/true\n",
-"\n",
-"    echo\n",
-"}\n",
-
-
-
+          {# **** Inject environment variasbles about the deployment **** #}
           
-          "EXTRA_PKGS='", { "Ref" : "ExtraPackages" }, "'\n",
-          "prepare_rhel6_for_puppet \n",
+		  "# Inject some platform variables\n",
+          {% if elb is not none  %}"NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
+          {% if elb2 is not none  %}"NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
+		  {% if rds is not none  %}"NEPHO_DATABASE_CONNECT_STRING='", 
+		  { "Fn::Join": [ "", [ "mysql://",
+                                      { "Ref" : "DBUsername" },
+                                      ":",      
+                                      { "Ref" : "DBPassword" },       
+                                       "@",                               
+                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                                      "/",
+                                      { "Ref": "DBName" }]]}, "'\n", 
+		  {% endif %}
+		 
+          {% if management !='script' and management != 'none' %}
+          "NEPHO_GIT_REPO_URL='", { "Ref" : "GitRepo" }, "'\n",
+          "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "GitRepoBranch" }, "'\n",
+          {% endif %}
 
-          "# pull & setup puppet modules and run manifest\n",
-          "PUPPET_REPO_URL='", { "Ref" : "GitRepo" }, "'\n",
-          "PUPPET_REPO_BRANCH='", { "Ref" : "GitRepoBranch" }, "'\n",
-          "cd /tmp\n",
-          "git_pull ${PUPPET_REPO_URL} ${PUPPET_REPO_BRANCH}\n",
-          "do_puppet ./manifests/site.pp > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",    
-{% endif %}
+          {#  **** Include script snippets here ...  **** #}
+          
+          {% for line in script_array %}
+          {{ line }},
+          {% endfor %}  
 
           "# Signal completion\n",
-          "/opt/aws/bin/cfn-signal -e $? -r \"Host setup by puppet complete\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n" 
+          "/opt/aws/bin/cfn-signal -e $? -r \"Host setup by {{ management }}\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n" 
 
         ]]}}
 

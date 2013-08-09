@@ -16,6 +16,30 @@
    - BastionHostInstance: the instance itself
 
 #}  
+
+    "BastionUser" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": { "Statement":[{
+            "Effect": "Allow",
+            "Action": [
+              "cloudformation:DescribeStackResource"
+            ],
+            "Resource": "*"
+          }]}
+        }]
+      }
+    },
+
+    "BastionKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "BastionUser"}
+      }
+    },    
     
     "BastionHostIPAddress" : {
       "Type" : "AWS::EC2::EIP",
@@ -58,7 +82,16 @@
 
             "files" : {
 
-
+              "/etc/cfn/cfn-credentials" : {
+                "content" : { "Fn::Join" : ["", [
+                  "AWSAccessKeyId=", { "Ref" : "BastionKeys" }, "\n",
+                  "AWSSecretKey=", {"Fn::GetAtt": ["BastionKeys", "SecretAccessKey"]}, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              
               "/etc/cfn/cfn-hup.conf" : {
                 "content" : { "Fn::Join" : ["", [
                   "[main]\n",
@@ -76,6 +109,7 @@
                   "triggers=post.update\n",
                   "path=Resources.BastionHostInstance.Metadata.AWS::CloudFormation::Init\n",
                   "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r BastionHostInstance ",
+                                                   " --credential-file /etc/cfn/cfn-credentials ",                  
                                                    " --region     ", { "Ref" : "AWS::Region" }, "\n",
                   "runas=root\n"
                 ]]}
@@ -116,10 +150,8 @@
           "/opt/aws/bin/cfn-init ",
           "   --stack=", { "Ref" : "AWS::StackId" }, 
           "   --resource=BastionHostInstance ",
-{#          
-          "   --access-key ",  { "Ref" : "HostKeys" },
-          "   --secret-key ", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]},
-#}
+          "   --access-key ",  { "Ref" : "BastionKeys" },
+          "   --secret-key ", {"Fn::GetAtt": ["BastionKeys", "SecretAccessKey"]},
           "   --region=", { "Ref" : "AWS::Region" }, 
           " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
           

@@ -4,19 +4,16 @@
 {% import 'Resources/Load-Balancer.json' as elb      with context %}  
 {% import 'Resources/Autoscale-Fleet.json' as fleet  with context %} 
 {% import 'Outputs/Host.json'            as host_out with context %}
-
-{# TODO: fully make this macro-ized #}
-
 {
 
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "AWS CloudFormation Template for a three tier VPC with relevant components in place for an app stack.",
+  "Description" : "AWS CloudFormation Template for a two tier VPC with relevant components in place for an app stack.",
 
   "Parameters" : { 
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
-    {% include 'Parameters/NAT-Instance-Parameters.json' %},    
+    {% include 'Parameters/NAT-Instance-Parameters.json' %}, 
     {{ inst_params.inst_params(name="Public") }},  
     {{ inst_params.inst_params(name="Private") }}
     
@@ -46,9 +43,16 @@
 
 {# **** Public Tier Application instances **** #}
 
-    {% include 'Resources/Public-Load-Balancer-and-AutoScaler.json' %}, 
-    {% include 'Resources/Frontend-Fleet-Puppet-Managed.json' %}
+    {{ elb.load_balancer(name='Public', subnet='PublicSubnet',  port=80) }},
+    {{ fleet.fleet(      name='Public', subnet='PrivateSubnet', 
+                         elb='PublicElasticLoadBalancer', elb2='PrivateElasticLoadBalancer', 
+                         ports=[80]) 
+                    }},  
 
+{# **** Private Tier Application instances **** #}
+
+    {{ elb.load_balancer( name='Private', subnet='PrivateSubnet',  port=80) }},
+    {{ fleet.fleet(       name='Private', subnet='PrivateSubnet', elb='PrivateElasticLoadBalancer', ports=[80]) }}
   },
  
   "Outputs" : {
