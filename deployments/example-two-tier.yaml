@@ -1,0 +1,12 @@
+---
+
+development:
+
+  pattern: two-tier-elb-app
+  management: script
+  script: ./deployments/scripts/example-tiered-app.sh
+  packages: [httpd emacs] 
+  
+  KeyName: parrott-ec2
+
+  
