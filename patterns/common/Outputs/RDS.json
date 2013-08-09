@@ -16,9 +16,9 @@
                                       { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
                                       "/",
                                       { "Ref": "DBName" }]]}
-   },
+    },
 
-   "{{ name }}JDBCConnectionString": {
+    "{{ name }}JDBCConnectionString": {
       "Description" : "JDBC connection string for database {{ name }}",
       "Value" : { "Fn::Join": [ "", [ "jdbc:mysql://",
                                       { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Address" ] },
@@ -26,6 +26,6 @@
                                       { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
                                       "/",
                                       { "Ref": "DBName" }]]}
-   }
+    }
 
     {% endmacro %}
