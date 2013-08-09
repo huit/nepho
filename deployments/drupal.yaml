@@ -1,8 +1,9 @@
 ---
 
 development:
-  pattern: 
+  pattern: drupal
   SiteEMail: robparrott@gmail.com
   SiteAdmin: admin
   SitePassword: Passw0rd
   KeyName: parrott-ec2
+  
