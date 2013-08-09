@@ -2,7 +2,7 @@
     Deploys a basic three tier VPC virtual datacenter.
 #}
 
-{% import 'Resources/Network-Tier.json' as networks %}
+{% import 'Resources/Network-Tier.json' as networks with context %}
 
 {
   "AWSTemplateFormatVersion" : "2010-09-09",

@@ -11,16 +11,16 @@
     
 #}
 
-    {%- macro load_balancer(name, subnet='', inports=80, outports=80 ) -%}
+    {%- macro load_balancer(name, subnet='', port=80) -%}
     
     "{{ name }}ElasticLoadBalancer" : {
       "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
       "Properties" : {
         "SecurityGroups" : [ { "Ref" : "{{ name }}LoadBalancerSecurityGroup" } ],
         {% if subnet is defined  %}"Subnets" : [ { "Ref" : "{{ subnet }}" } ],{% endif %}
-        "Listeners" : [ { "LoadBalancerPort" : "80",  "InstancePort" : "80",  "Protocol" : "HTTP" }  ],
+        "Listeners" : [ { "LoadBalancerPort" : "{{ port }}",  "InstancePort" : "{{ port }}",  "Protocol" : "HTTP" }  ],
         "HealthCheck" : {
-          "Target" : "HTTP:80/",
+          "Target" : "HTTP:{{ port }}/",
           "HealthyThreshold" : "3",
           "UnhealthyThreshold" : "5",
           "Interval" : "90",
@@ -34,19 +34,9 @@
       "Properties" : {
         "GroupDescription" : "{{ name }} ELB Security Group with HTTP access on port 80 from the internet",
         {% if subnet is defined  %}"VpcId" : { "Ref" : "VPC" },{% endif %}
-        "SecurityGroupIngress" : [ 
-          {% for p in inports %}
-             {"IpProtocol" : "tcp", "FromPort" : "{{ p }}",  "ToPort" :  "{{ p }}", "CidrIp" : "0.0.0.0/0"}
-             {% if not p == last(inports) %},{% endif %}
-          {% endfor %}
-            
-         ],
-        "SecurityGroupEgress" : [ 
-          {% for p in outports %}
-             {"IpProtocol" : "tcp", "FromPort" : "{{ p }}",  "ToPort" :  "{{ p }}", "CidrIp" : "0.0.0.0/0"}
-             {% if not p == last(inports) %},{% endif %}
-          {% endfor %}
-            
-         ]         
+        "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "{{ port }}",  "ToPort" : "{{ port }}",  "CidrIp" : "0.0.0.0/0"} ],
+        "SecurityGroupEgress"  : [ { "IpProtocol" : "tcp", "FromPort" : "{{ port }}",  "ToPort" : "{{ port }}",  "CidrIp" : "0.0.0.0/0"} ]        
       }
     }
+
+    {%- endmacro  %}   
