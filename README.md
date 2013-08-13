@@ -68,9 +68,8 @@ which SSH public key, registered with AWS, to use.
 Usage
 -----
 
-We are working toward a plugin-oriented architecture for orwechstration tools, but for now
-you'll need to invoke the driver directly, in particular `./bin/hu-awd` for 
-Amazon Web Services.
+We are working toward a plugin-oriented architecture for orchestration tools, but for now
+the driver is specific to Amazon Web Services.
 
 Given a working (1) design pattern, and (2) deployment file, the following commands are available:
 
@@ -146,11 +145,11 @@ Deploy a 3 tier VPC that's bare (i.e. no application instances ot databases). Be
 relevant keypair in `modules/vpc-three-tier-bare/development.yaml` to reflect yours (see issue on implementing local 
 overrides for parameters).
 
-    $ ./bin/hu-aws validate-template -E development vpc-three-tier-bare
-    $ ./bin/hu-aws deploy -E development vpc-three-tier-bare
-    $ ./bin/hu-aws deploy -E development vpc-three-tier-bare
+    $ ./bin/nepho validate-template -E development vpc-three-tier-bare
+    $ ./bin/nepho deploy -E development vpc-three-tier-bare
+    $ ./bin/nepho deploy -E development vpc-three-tier-bare
     $ aws cloudformation list-stacks
-    $ ./bin/hu-aws destroy -E development vpc-three-tier-bare
+    $ ./bin/nepho destroy -E development vpc-three-tier-bare
     
 There is also a "populated" application VPC module in progress.    
 
