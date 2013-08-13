@@ -1,0 +1,12 @@
+---
+
+development:
+
+  pattern: single-host
+  management: puppet
+  
+  KeyName: parrott-ec2
+  GitRepo: https://github.com/huit/jenkins-puppet-build.git
+  GitRepoBranch: master
+  ExtraPackages: emacs netstat
+  
