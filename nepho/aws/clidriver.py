@@ -267,6 +267,10 @@ def main(args_json=None):
                ]
         return aws_driver.main(main_args)
 
+    # If we end up here, then the subcommand is not known.
+    print "Unknown subcommand \"%s\"." % (args['subcmd'])
+    print "Run nepho --help for details."
+    sys.exit(1)    
 
 if __name__ == '__main__':
     sys.exit(main())
