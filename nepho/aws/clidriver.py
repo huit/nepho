@@ -54,7 +54,22 @@ def setup_awscli_driver():
     load_plugins(session.full_config.get('plugins', {}), event_hooks=emitter)
     return awscli.clidriver.CLIDriver(session=session)
     
+def scan_deployments(deployment_dir="./deployments"):
+    
+    from os import listdir
+    from os.path import isfile, join
+    files = [ f for f in listdir(deployment_dir) if isfile(join(deployment_dir,f)) ]
 
+    deployDict = dict()
+    for filename in files:
+        deployment_name = string.replace(filename, ".yaml", "")
+        f = open("%s/%s" % (deployment_dir, filename))
+        fDict = yaml.safe_load(f)
+        f.close()        
+        deployDict[deployment_name] = fDict
+    
+    return deployDict
+        
 def load_deployment_file(deployment, environment):
     """ 
         Takes in a YAML deployment file and environment setting and 
@@ -168,6 +183,18 @@ def main(args_json=None):
     deployment_name = args['deployment']
     env_name = args['opts']['environment']
 
+    if args['subcmd'] == 'list-deployments':
+        deployments = scan_deployments()
+        print "\nAvailable deployments and environments:"
+        print "-----------------------------------------"
+        for dk in deployments.keys(): 
+            deployDict = deployments[dk]
+            env_str = string.join( deployDict.keys(), ", " )
+            print "  %s:  %s" % (dk, env_str)
+        print ""
+        
+        sys.exit(0)
+        
     # determine name of this deployment instance
     stack_name = '%s-%s' % (deployment_name, env_name)
     if args['opts']['name'] is not None and len(args['opts']['name']) > 1:
@@ -184,6 +211,8 @@ def main(args_json=None):
     # Determine how to manage deployed instances
     context = get_management_settings(paramsMap)   
             
+
+                    
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
         try:

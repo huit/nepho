@@ -2,7 +2,7 @@ import argparse
 
 __SUBCOMAMND_HELP__ = """
 Specify the nepho subcommand. Options include:
-  "show-template", "validate-template", "show-params", "deploy", "delete".
+  "list-deployments", "show-template", "validate-template", "show-params", "deploy", "delete".
 """
 
 __DEPLOYMENT_HELP__= """
