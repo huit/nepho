@@ -56,7 +56,7 @@
         "PolicyDocument": {
           "Id":"PrivateBucketPolicy",
           "Statement":[ {
-              "Sid":"ReadAccess",
+              "Sid":"ReadWriteAccess",
 	          "Action":["s3:GetObject"],
 	          "Effect":"Allow",
 	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "/*" ]]},
@@ -119,7 +119,12 @@
                 "gcc"             : [],
                 "gcc-c++"         : [],
                 "puppet"          : [],
-                {% endif %}                          
+                {% endif %}   
+                {% if bucket is not None %}
+                "fuse"         : [],
+                "fuse-libs"    : [],
+                "python-pip"   : [],
+                {% endif %}                       
                 "curl"         : [],
                 "wget"         : [],
                 "aws-cli"      : [],
@@ -252,8 +257,10 @@
                           "/",
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
-		  {% endif %}
-		  
+		  {% endif %}		  		 
+		  {% if bucket is not None %}NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",{% endif %}
+		  {% if bucket is not None %}NEPHO_S3_BUCKET_URL='", { "Fn::GetAtt" : [ "{{ bucket }}", "DNSName" ]}, "'\n",{% endif %}
+
 		 
           {% if management !='script' and management != 'none' %}
           "NEPHO_GIT_REPO_URL='", { "Ref" : "GitRepo" }, "'\n",
