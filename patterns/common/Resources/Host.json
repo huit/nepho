@@ -20,8 +20,17 @@
 #}
 
 {# ****  General host on EC2, in or out of a VPC **** #}
- elb=None, elb2=None, rds=None,
-    {%- macro host(name, ports=80, subnet=None, elb=None, elb2=None, rds=None, public='no') -%}
+
+    {%- macro host(
+                    name, 
+                    ports=80, 
+                    subnet=None, 
+                    elb=None, 
+                    elb2=None, 
+                    rds=None, 
+                    bucket=None, 
+                    public='no'
+                  ) -%}
     
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
@@ -39,6 +48,25 @@
         }]
       }
     },
+
+    {% if bucket is not none  %}   
+    "{{ name }}BucketPolicy" : {
+      "Type" : "AWS::S3::BucketPolicy",
+      "Properties" : {
+        "PolicyDocument": {
+          "Id":"PrivateBucketPolicy",
+          "Statement":[ {
+              "Sid":"ReadAccess",
+	          "Action":["s3:GetObject"],
+	          "Effect":"Allow",
+	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "/*" ]]},
+	          "Principal":{ "AWS": { "Fn::GetAtt" : [ "{{ name }}User", "Arn" ]} }
+          } ]
+        },
+        "Bucket" : {"Ref" : "{{ bucket }}"}
+      }
+    },
+    {% endif %}
 
     "{{ name }}Keys" : {
       "Type" : "AWS::IAM::AccessKey",
@@ -78,13 +106,20 @@
       "Metadata" : {
         "Comment" : "Single host.",      
         "AWS::CloudFormation::Init" : {
-          "config" : {
-          
+          "config" : {        
             "packages" : {
               "yum" : {
                 {% for pkg in packages %}
                 "{{ pkg }}" : [],
-                {% endfor %}               
+                {% endfor %}  
+                {% if management == 'puppet' %}
+                "ruby"            : [],
+                "rubygems"        : [],
+                "ruby-devel"      : [],
+                "gcc"             : [],
+                "gcc-c++"         : [],
+                "puppet"          : [],
+                {% endif %}                          
                 "curl"         : [],
                 "wget"         : [],
                 "aws-cli"      : [],
@@ -198,19 +233,27 @@
           
 		  "# Inject some platform variables\n",
           {% if elb is not none  %}"NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
-          {% if elb2 is not none  %}"NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
-		  {% if rds is not none  %}"NEPHO_DATABASE_CONNECT_STRING='", 
-		  { "Fn::Join": [ "", [ "mysql://",
-                                      { "Ref" : "DBUsername" },
-                                      ":",      
-                                      { "Ref" : "DBPassword" },       
-                                       "@",                               
-                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
-                                      ":",
-                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
-                                      "/",
-                                      { "Ref": "DBName" }]]}, "'\n", 
+          {% if elb2 is not none %}"NEPHO_BACKEND_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
+		  {% if rds is not none  %}
+		  "NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+		  "NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+		  "NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+		  "NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
+		  "NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",	  
+		  "NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
+		            "", [ "mysql://",
+                          { "Ref" : "DBUsername" },
+                          ":",      
+                          { "Ref" : "DBPassword" },       
+                          "@",                               
+                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                          ":",
+                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                          "/",
+                          { "Ref": "DBName" }
+                       ]]}, "'\n", 
 		  {% endif %}
+		  
 		 
           {% if management !='script' and management != 'none' %}
           "NEPHO_GIT_REPO_URL='", { "Ref" : "GitRepo" }, "'\n",

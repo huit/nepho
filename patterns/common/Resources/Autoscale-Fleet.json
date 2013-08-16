@@ -5,8 +5,22 @@
 
 {# ****  General host on EC2, in or out of a VPC **** #}
 
-    {%- macro fleet(name, subnet=None, elb=None, elb2=None, rds=None, ports=[80]) -%}
+    {%- macro fleet(
+                     name, 
+                     subnet=None, 
+                     elb=None, 
+                     elb2=None, 
+                     bucket=None, 
+                     rds=None, 
+                     ports=[80]
+                   ) -%}
     
+    {# ************************
+    
+             IAM Objects
+       
+       ************************ #}
+         
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
       "Properties" : {
@@ -24,13 +38,39 @@
       }
     },
 
+    {% if bucket is not none  %}   
+    "{{ name }}BucketPolicy" : {
+      "Type" : "AWS::S3::BucketPolicy",
+      "Properties" : {
+        "PolicyDocument": {
+          "Id":"PrivateBucketPolicy",
+          "Statement":[ {
+              "Sid":"ReadAccess",
+	          "Action":["s3:GetObject"],
+	          "Effect":"Allow",
+	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "/*" ]]},
+	          "Principal":{ "AWS": { "Fn::GetAtt" : [ "{{ name }}User", "Arn" ]} }
+          } ]
+        },
+        "Bucket" : {"Ref" : "{{ bucket }}"}
+      }
+    },
+    {% endif %}
+    
     "{{ name }}Keys" : {
       "Type" : "AWS::IAM::AccessKey",
       "Properties" : {
         "UserName" : {"Ref": "{{ name }}User"}
       }
     },
-        
+      
+    {# ************************
+    
+           Autoscale & Instance 
+             Objects
+       
+       ************************ #}
+               
     "{{ name }}Fleet" : {
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
       "Properties" : {
@@ -42,7 +82,8 @@
         "DesiredCapacity" : { "Ref" : "{{ name }}InstanceCount" },
         "LoadBalancerNames" : [ { "Ref" : "{{ elb }}" } ],
         "Tags" : [ { "Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
-      }
+      },
+      "DependsOn" : "NATIPAddress"
     },  
     
     
@@ -75,7 +116,27 @@
           "config" : {
             "packages" : {
               "yum" : {
-                "httpd"        : []
+                {% for pkg in packages %}
+                "{{ pkg }}" : [],
+                {% endfor %}  
+                {% if management == 'puppet' %}
+                "ruby"            : [],
+                "rubygems"        : [],
+                "ruby-devel"      : [],
+                "gcc"             : [],
+                "gcc-c++"         : [],
+                "puppet"          : [],
+                {% endif %}                
+                "curl"         : [],
+                "wget"         : [],
+                "aws-cli"      : [],
+                "aws-scripts-ses" : [],
+                "aws-apitools-ec2" : [], 
+                "aws-amitools-ec2" : [],
+                "aws-apitools-mon" : [],
+                "aws-apitools-elb" : [],
+                "aws-apitools-rds" : [],
+                "git"              : []        
               }
             },
 
@@ -171,17 +232,24 @@
 		  "# Inject some platform variables\n",
           {% if elb is not none  %}"NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
           {% if elb2 is not none  %}"NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
-		  {% if rds is not none  %}"NEPHO_DATABASE_CONNECT_STRING='", 
-		  { "Fn::Join": [ "", [ "mysql://",
-                                      { "Ref" : "DBUsername" },
-                                      ":",      
-                                      { "Ref" : "DBPassword" },       
-                                       "@",                               
-                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
-                                      ":",
-                                      { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
-                                      "/",
-                                      { "Ref": "DBName" }]]}, "'\n", 
+		  {% if rds is not none  %}
+		  "NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+		  "NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+		  "NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+		  "NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
+		  "NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",  
+		  "NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
+		            "", [ "mysql://",
+                          { "Ref" : "DBUsername" },
+                          ":",      
+                          { "Ref" : "DBPassword" },       
+                          "@",                               
+                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                          ":",
+                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                          "/",
+                          { "Ref": "DBName" }
+                       ]]}, "'\n", 
 		  {% endif %}
 		  
           "# pull & setup puppet modules and run manifest\n",
