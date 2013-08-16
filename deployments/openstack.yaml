@@ -1,0 +1,12 @@
+---
+
+development:
+
+  pattern: multi-hosts
+  management: script
+  script: ./deployments/scripts/setup-openstack-puppet-testing.sh
+  packages: [httpd, emacs, telnet, httpd, mysql, mysql-server, mysql-devel, gcc-c++, ruby, ruby-devel, rubygems, puppet] 
+  
+  KeyName: parrott-ec2
+
+  
