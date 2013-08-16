@@ -17,7 +17,7 @@ Usually something like "development," testing", or "production."
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("subcommand", type=str, help=__SUBCOMAMND_HELP__)
-    parser.add_argument("deployment", type=str, help=__DEPLOYMENT_HELP__)
+    parser.add_argument("deployment", type=str, help=__DEPLOYMENT_HELP__, default="")
     parser.add_argument("-E", "--environment", type=str, help=__ENV_HELP__, default='development')
     parser.add_argument("-N", "--name", type=str, help="Specify a custom name for the application stack", default='')    
     parser.add_argument("--driver", type=str, help="Specify the orchestration driver", default='aws')    
