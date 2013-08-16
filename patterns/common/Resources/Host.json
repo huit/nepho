@@ -120,7 +120,7 @@
                 "gcc-c++"         : [],
                 "puppet"          : [],
                 {% endif %}   
-                {% if bucket is not None %}
+                {% if bucket is not none %}
                 "fuse"         : [],
                 "fuse-libs"    : [],
                 "python-pip"   : [],
@@ -258,8 +258,8 @@
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
 		  {% endif %}		  		 
-		  {% if bucket is not None %}NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",{% endif %}
-		  {% if bucket is not None %}NEPHO_S3_BUCKET_URL='", { "Fn::GetAtt" : [ "{{ bucket }}", "DNSName" ]}, "'\n",{% endif %}
+		  {% if bucket is not none %}NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",{% endif %}
+		  {% if bucket is not none %}NEPHO_S3_BUCKET_URL='", { "Fn::GetAtt" : [ "{{ bucket }}", "DNSName" ]}, "'\n",{% endif %}
 
 		 
           {% if management !='script' and management != 'none' %}
