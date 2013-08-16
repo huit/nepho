@@ -31,7 +31,8 @@
         "SourceDestCheck" : "false",
         "ImageId" : { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
         "SecurityGroupIds" : [{ "Ref" : "NATSecurityGroup" }]
-      }
+      },
+      "DependsOn" : "AttachGateway"
     },
 
     "NATSecurityGroup" : {
