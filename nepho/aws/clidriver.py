@@ -220,6 +220,7 @@ def main(args_json=None):
             print get_cf_json(cf_dict, pretty=True)
         except ValueError:
             print raw_template
+        sys.exit(0)
                           
     if args['subcmd'] == 'validate-template':
         raw_template = get_cf_template(pattern, context)

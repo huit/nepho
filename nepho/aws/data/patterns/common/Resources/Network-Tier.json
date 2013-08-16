@@ -86,12 +86,13 @@
     "{{ name }}Route" : {
       "Type" : "AWS::EC2::Route",
       "Properties" : {
+        {% if nat_device is defined %}
+        "InstanceId" : { "Ref" : "{{ nat_device }}" },
+        {% else %}
+        "GatewayId" : { "Ref" : "InternetGateway" },
+        {% endif %}      
         "RouteTableId" : { "Ref" : "{{ name }}RouteTable" },
         "DestinationCidrBlock" : "0.0.0.0/0"
-        {% if nat_device is defined %}
-          ,
-        "InstanceId" : { "Ref" : "{{ nat_device }}" }
-        {% endif %}
       },
       "DependsOn": "AttachGateway"
     },
