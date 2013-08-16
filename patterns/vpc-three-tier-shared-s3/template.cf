@@ -1,0 +1,53 @@
+{# 
+    Deploys a basic three tier VPC virtual datacenter.
+#}
+
+{% import 'Resources/Network-Tier.json' as networks with context %}
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template for a basic three-tier VPC environment",
+
+  "Parameters" : { 
+  
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/NAT-Instance-Parameters.json' %}   
+  },
+
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
+
+  "Resources" : { 
+
+{# **** Define VPC network structures **** #}
+
+   
+    {% include 'Resources/VPC.json' %},
+
+    {% s3.bucket(name='Shared') %}
+    
+    {{ networks.public_network( 'Public',  'PublicA') }},
+    {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }},   
+    {{ networks.private_network('Data',  'DataA', 'NATDevice') }},      
+    {{ networks.private_network('DataB', 'DataB', 'NATDevice') }},
+  
+{# **** Bastion Host & NAT **** #}
+
+    {% include 'Resources/NAT.json' %}, 
+    {% include 'Resources/BastionHost.json' %}
+
+  }, 
+  
+  "Outputs" : {
+  
+    {% include 'Outputs/BastionHost.json' %},
+    {% include 'Outputs/NAT.json' %}
+    
+  }
+}
