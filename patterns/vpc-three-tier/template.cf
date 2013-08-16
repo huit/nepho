@@ -27,6 +27,7 @@
 
 {# **** Define VPC network structures **** #}
 
+   
     {% include 'Resources/VPC.json' %},
 
     {{ networks.public_network( 'Public',  'PublicA') }},

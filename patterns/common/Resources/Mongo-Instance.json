@@ -1,0 +1,243 @@
+{#
+
+   Single Host server managed via puppet.
+   
+   TODO: update
+   
+   Expects the following params:
+   - GitRepo: puppet git repo to checkout and apply
+   - GitRepoBranch: branch of above
+   - ExtraPkgs: extra RPM packages to install
+   - InstanceCount: number of desired instances
+   - InstanceType
+   
+   Expects the following objects:
+   - PrivateSubnet
+   - PublicElasticLoadBalancer
+   - PublicLoadBalancerSecurityGroup
+   - BastionHostSecurityGroup
+   
+#}
+
+    {# ****  MongoDB host on EC2 **** #}
+
+    {%- macro mongodb(name, access_range="0.0.0.0/0") -%}
+
+    "{{ name }}MongoUser" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": { "Statement":[{
+            "Effect": "Allow",
+            "Action": [
+              "cloudformation:DescribeStackResource"
+            ],
+            "Resource": "*"
+          }]}
+        }]
+      }
+    },
+
+    "{{ name }}MongoHostKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "{{ name }}MongoUser"}
+      }
+    },
+    
+    "{{ name }}MongoSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "{{ name }} MongoDB security group",
+        "SecurityGroupIngress" : [ 
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : "{{ access_range }}"
+           }
+         ]
+      }
+    },
+
+    "{{ name }}MongodIngress" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "GroupName" : { "Ref" : "{{ name }}MongoSecurityGroup" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "27017",
+                "ToPort" : "27017",
+                "SourceSecurityGroupName" : { "Ref" : "{{ name }}MongoSecurityGroup" }
+            }
+    },
+
+    "{{ name }}MongoStatusIngress" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+                "GroupName" : { "Ref" : "{{ name }}MongoSecurityGroup" },
+                "IpProtocol" : "tcp",
+                "FromPort" : "28017",
+                "ToPort" : "28017",
+                "SourceSecurityGroupName" : { "Ref" : "{{ name }}MongoSecurityGroup" }
+      }
+    },
+
+    "{{ name }}MongoInstance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata" : {
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            
+            "packages" : {
+              "yum" : {
+                "mdadm" : [],
+                "sysstat" : []
+              }
+            },
+            
+            "files" : {
+              "/etc/yum.repos.d/10gen.repo" : {
+                "content" : { "Fn::Join" : ["", [
+                                    "[10gen]\n",
+                                    "name=10gen Repository\n",
+                                    "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n",
+                                    "gpgcheck=0\n"
+                                ] ] },
+                "mode" : "000644",
+                "owner" : "root",
+                "group" : "root"
+              }
+            }
+          }
+        }
+      },
+
+      "Properties" : {
+        "InstanceType" : { "Ref" : "{{ name }} MongoInstanceType" },
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "SecurityGroups" : [ { "Ref" : "{{ name }}MongoSecurityGroup" } ],
+        "KeyName" : { "Ref" : "KeyName" },
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+                    "#!/bin/bash\n",
+                    "yum update -y aws-cfn-bootstrap\n",
+
+                    "## Error reporting helper function\n",
+                    "function error_exit\n",
+                    "{\n",
+                    "   /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "{{ name }}WaitHandleMongoInstance" }, "'\n",
+                    "   exit 1\n",
+                    "}\n",
+
+                    "## Initialize CloudFormation bits\n",
+                    "/opt/aws/bin/cfn-init -v -s ", { "Ref" : "AWS::StackName" }, " -r {{ name }}MongoInstance",
+                    "   --access-key ",  { "Ref" : "{{ name }}MongoHostKeys" },
+                    "   --secret-key ", {"Fn::GetAtt": ["{{ name }}MongoHostKeys", "SecretAccessKey"]},
+                    "   --region ", { "Ref" : "AWS::Region" }, " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
+
+                    "## Waiting for EBS mounts to become available\n",
+                    "while [ ! -e /dev/sdh1 ]; do echo waiting for /dev/sdh1 to attach; sleep 10; done\n",
+                    "while [ ! -e /dev/sdh2 ]; do echo waiting for /dev/sdh2 to attach; sleep 10; done\n",
+                    "while [ ! -e /dev/sdh3 ]; do echo waiting for /dev/sdh3 to attach; sleep 10; done\n",
+                    "while [ ! -e /dev/sdh4 ]; do echo waiting for /dev/sdh4 to attach; sleep 10; done\n",
+
+                    "yum -y install mongo-10gen-server > /tmp/yum-mongo.log 2>&1\n",
+
+                    "## Create RAID10 and persist configuration\n",
+                    "mdadm --verbose --create /dev/md0 --level=10 --chunk=256 --raid-devices=4 /dev/sdh1 /dev/sdh2 /dev/sdh3 /dev/sdh4 > /tmp/mdadm.log 2>&1\n",
+                    "echo '`mdadm --detail --scan`' | tee -a /etc/mdadm.conf\n",
+
+                    "## Set read-ahead on each device\n",
+                    "blockdev --setra 128 /dev/md0\n",
+                    "blockdev --setra 128 /dev/sdh1\n",
+                    "blockdev --setra 128 /dev/sdh2\n",
+                    "blockdev --setra 128 /dev/sdh3\n",
+                    "blockdev --setra 128 /dev/sdh4\n",
+
+                    "## Create physical and logical volumes\n",
+                    "dd if=/dev/zero of=/dev/md0 bs=512 count=1\n",
+                    "pvcreate /dev/md0\n",
+                    "vgcreate vg0 /dev/md0\n",
+                    "lvcreate -l 90%vg -n data vg0\n",
+                    "lvcreate -l 5%vg -n log vg0\n",
+                    "lvcreate -l 5%vg -n journal vg0\n",
+
+                    "## Create filesystems and mount point info\n",
+                    "mke2fs -t ext4 -F /dev/vg0/data > /tmp/mke2fs1.log 2>&1\n",
+                    "mke2fs -t ext4 -F /dev/vg0/log > /tmp/mke2fs2.log 2>&1\n",
+                    "mke2fs -t ext4 -F /dev/vg0/journal > /tmp/mke2fs3.log 2>&1\n",
+
+                    "mkdir /data\n",
+                    "mkdir /log\n",
+                    "mkdir /journal\n",
+
+                    "echo '/dev/vg0/data /data ext4 defaults,auto,noatime,noexec 0 0' | tee -a /etc/fstab\n",
+                    "echo '/dev/vg0/log /log ext4 defaults,auto,noatime,noexec 0 0' | tee -a /etc/fstab\n",
+                    "echo '/dev/vg0/journal /journal ext4 defaults,auto,noatime,noexec 0 0' | tee -a /etc/fstab\n",
+                    
+                    "mount /data > /tmp/mount1.log 2>&1\n",
+                    "mount /log > /tmp/mount2.log 2>&1\n",
+                    "mount /journal > /tmp/mount3.log 2>&1\n",
+
+                    "ln -s /journal /data/journal\n",
+
+                    "chown -R mongod:mongod /data > /tmp/chown1.log 2>&1\n",
+                    "chown -R mongod:mongod /log > /tmp/chown2.log 2>&1\n",
+                    "chown -R mongod:mongod /journal > /tmp/chown3.log 2>&1\n",
+
+                    "## Update mongod configuration\n",
+                    "cat <<EOF > /etc/mongod.conf\n",
+                    "logpath=/log/mongod.log\n",
+                    "logappend=true\n",
+                    "fork=true\n",
+                    "dbpath=/data\n",
+                    "rest=true\n",
+                    "EOF\n",
+
+                    "## Start mongod\n",
+                    "/etc/init.d/mongod start > /tmp/mongod-start.log 2>&1\n",
+
+                    "## CloudFormation signal that setup is complete\n",
+                    "/opt/aws/bin/cfn-signal -e 0 -r \"{{ name }}MongoInstance setup complete\" '", { "Ref" : "{{ name }}WaitHandleMongoInstance" }, "'\n"
+                ] ] } }
+          }
+        },
+
+        {% for n in [1,2,3,4] %}
+
+        "{{ name }}MongoVolume{{ n }}" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "{{ name }}MongoVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "{{ name }}MongoInstance", "AvailabilityZone" ]}
+            }
+        },
+
+        "{{ name }}MongoVolumeMount{{ n }}" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "{{ name }}MongoInstance" },
+                "VolumeId" : { "Ref" : "{{ name }}MongoVolume{{ n }}" },
+                "Device" : "/dev/sdh{{ n }}"
+            }
+        },
+        
+        {% endfor %}        
+       
+
+    "{{ name }}WaitHandleMongoInstance" : {
+            "Type" : "AWS::CloudFormation::WaitConditionHandle",
+            "Properties" : {}
+    },
+
+    "{{ name }}WaitConditionMongoInstance" : {
+            "Type" : "AWS::CloudFormation::WaitCondition",
+            "DependsOn" : "MongoInstance",
+            "Properties" : {
+                "Handle" : { "Ref" : "{{ name }}WaitHandleMongoInstance" },
+                "Timeout" : "300"
+            }
+    }
+
+    {%- endmacro %}     

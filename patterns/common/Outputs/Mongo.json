@@ -1,0 +1,21 @@
+{#
+
+   Reports on the MongoDB host instance params.
+   
+
+#} 
+
+    {%- macro host(name) -%}
+    
+    "{{ name }}InstanceId" : {
+      "Description" : "Instance Id of host",
+      "Value" : { "Ref" : "{{ name }}MongoInstance" }
+    },
+
+
+    "{{ name }}IPAddress" : {
+      "Description" : "IP address of host",
+      "Value" : { "Fn::GetAtt" : ["{{ name }}MongoInstance", "PrivateIp"] }
+    }
+  
+    {%- endmacro %}  
