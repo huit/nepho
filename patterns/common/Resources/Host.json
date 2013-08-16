@@ -275,7 +275,8 @@
    },
     
     "{{ name }}WaitHandle" : {
-      "Type" : "AWS::CloudFormation::WaitConditionHandle"
+      "Type" : "AWS::CloudFormation::WaitConditionHandle",
+      "DependsOn" : "NATIPAddress"
     },
 
     "{{ name }}WaitCondition" : {
