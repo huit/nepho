@@ -30,6 +30,8 @@
    
     {% include 'Resources/VPC.json' %},
 
+    {% s3.bucket(name='Shared') %}
+    
     {{ networks.public_network( 'Public',  'PublicA') }},
     {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }},   
     {{ networks.private_network('Data',  'DataA', 'NATDevice') }},      

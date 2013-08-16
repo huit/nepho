@@ -1,0 +1,10 @@
+---
+
+development:
+
+  pattern: vpc-two-tier-ref
+  management: none
+  
+  KeyName: parrott-ec2
+
+  

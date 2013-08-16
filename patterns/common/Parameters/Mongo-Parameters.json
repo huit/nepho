@@ -1,0 +1,27 @@
+{#
+
+    Parameters to apply to MongoDB instances.
+
+    Parameters:
+    - [name]MongoInstanceType: EC2 instance type for the MongoDB server (default: m1.small).
+    - [name]MongoVolumeSize: Size of volume used in a RAID 10 array (default: 10 GB).
+
+#} 
+  
+  
+    {%- macro mongo_params(name) -%}
+   
+    "{{ name }}MongoInstanceType" : {
+      "Description" : "{{ name }} Tier EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "{{ name }}MongoVolumeSize" : {
+      "Description" : "Volume size for each EBS volume",
+      "Type" : "Number",
+      "Default" : "10"
+    }
+        
+    {%- endmacro -%}

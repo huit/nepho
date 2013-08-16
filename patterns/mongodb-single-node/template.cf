@@ -1,0 +1,21 @@
+{% import 'Parameters/Mongo-Parameters.json' as mongo_params with context %}
+{% import 'Resources/Mongo-Instance.json' as mongo with context %}
+{% import 'Outputs/Mongo.json'   as mongo_out with context %}
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Deploy a database.",
+  
+  "Parameters" : {
+    {{ mongo_params.mongo( name="My" ) }}
+  },
+
+  "Resources" : {
+    {{ mongo.mongodb( name="My", db_access_range="0.0.0.0/0") }}
+  },
+
+  "Outputs" : {
+    {{ mongo_out.mongo( name="My") }}
+  }
+}

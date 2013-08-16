@@ -26,7 +26,8 @@
           "Interval" : "90",
           "Timeout" : "60"
         }
-      }
+      },
+      "DependsOn" : "AttachGateway"
     },
 
     "{{ name }}LoadBalancerSecurityGroup" : {
