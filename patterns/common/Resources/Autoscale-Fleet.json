@@ -72,6 +72,7 @@
        ************************ #}
                
     "{{ name }}Fleet" : {
+      {% if subnet is not none  %}"DependsOn" : "NATIPAddress",{% endif %}
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
       "Properties" : {
         "AvailabilityZones" : [{ "Fn::GetAtt" : [ "{{ subnet }}", "AvailabilityZone" ] }],
@@ -82,8 +83,7 @@
         "DesiredCapacity" : { "Ref" : "{{ name }}InstanceCount" },
         "LoadBalancerNames" : [ { "Ref" : "{{ elb }}" } ],
         "Tags" : [ { "Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
-      },
-      "DependsOn" : "NATIPAddress"
+      }
     },  
     
     

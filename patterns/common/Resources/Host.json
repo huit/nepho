@@ -282,8 +282,8 @@
    },
     
     "{{ name }}WaitHandle" : {
-      "Type" : "AWS::CloudFormation::WaitConditionHandle",
-      "DependsOn" : "NATIPAddress"
+      {% if subnet is not none  %}"DependsOn" : "NATIPAddress",{% endif %}
+      "Type" : "AWS::CloudFormation::WaitConditionHandle"
     },
 
     "{{ name }}WaitCondition" : {
