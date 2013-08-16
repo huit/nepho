@@ -5,17 +5,19 @@
       
     Relevant Objects Created:
     
-    - S3Bucket
-    - S3Keys
+    - {{ name }}S3Bucket
+    - {{ name }}S3Keys
     
  #}
+ 
+    {%- macro bucket(name) -%}
       
-"S3Bucket" : {
+    "{{ name }}S3Bucket" : {
       "Type" : "AWS::S3::Bucket",
       "DeletionPolicy" : "Retain"
     },
 
-"BucketPolicy" : {
+    "{{ name }}BucketPolicy" : {
       "Type" : "AWS::S3::BucketPolicy",
       "Properties" : {
         "PolicyDocument": {
@@ -25,15 +27,15 @@
             "Sid"        : "EnableReadWrite",
             "Action"     : ["s3:GetObject", "s3:PutObject", "s3:PutObjectACL" ],
             "Effect"     : "Allow",
-            "Resource"   : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "S3Bucket"} , "/*"]]},
-            "Principal"  : { "AWS": {"Fn::GetAtt" : ["S3User", "Arn"]} }
+            "Resource"   : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "{{ name }}S3Bucket"} , "/*"]]},
+            "Principal"  : { "AWS": {"Fn::GetAtt" : ["{{ name }}S3User", "Arn"]} }
           }]
         },
-        "Bucket" : {"Ref" : "S3Bucket"}
+        "Bucket" : {"Ref" : "{{ name }}S3Bucket"}
       }
     },
 
-"S3User" : {
+    "{{ name }}S3User" : {
       "Type" : "AWS::IAM::User",
       "Properties" : {
         "Path": "/",
@@ -48,9 +50,11 @@
       }
     },
 
-"S3Keys" : {
+    "{{ name }}S3Keys" : {
       "Type" : "AWS::IAM::AccessKey",
       "Properties" : {
-        "UserName" : {"Ref": "S3User"}
+        "UserName" : {"Ref": "{{ name }}S3User"}
       }
-}
+    }
+    
+    {%- endmacro -%}
