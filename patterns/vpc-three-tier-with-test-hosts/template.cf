@@ -40,10 +40,7 @@
 
     {% include 'Resources/NAT.json' %}, 
     {% include 'Resources/BastionHost.json' %},
-{#
-    {% include 'Resources/Host-on-Private-Tier.json' %},
-    {% include 'Resources/Host-on-Data-Tier.json' %}
-#}
+
     {{ host.host( name='PrivateTierHost', ports=[22], subnet='PrivateSubnet') }},
     {{ host.host( name='DataTierHost',    ports=[22], subnet='DataSubnet') }}
         
