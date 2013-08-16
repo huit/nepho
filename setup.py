@@ -15,10 +15,10 @@ setup(
     package_data = {
       'nepho': [
         'data/deployments/*.yaml',
-        'data/deployments/scripts/*.sh',
+        'data/deployments/scripts/*.sh'
         ],
       'nepho.aws': [
-        'data/patterns/*/*.cf'
+        'data/patterns/*/*.cf',
         'data/drivers/*.sh'
         ]
       },
