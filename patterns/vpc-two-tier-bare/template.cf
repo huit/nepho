@@ -29,7 +29,7 @@
     {% include 'Resources/VPC.json' %},
 
     {{ networks.public_network( 'Public',  'PublicA') }},
-    {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }}
+    {{ networks.private_network('Private', 'PrivateTier1A') }}
 
   }, 
   
