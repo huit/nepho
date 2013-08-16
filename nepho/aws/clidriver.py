@@ -6,10 +6,12 @@
 #
 # This simple code is mostly taken from awscli.clidriver
 #
-# 
+#
 
 import sys
 import logging
+
+from pkg_resources import resource_filename
 
 import botocore.session
 from botocore.hooks import first_non_none_response
@@ -53,9 +55,8 @@ def setup_awscli_driver():
     session.user_agent_version = __version__
     load_plugins(session.full_config.get('plugins', {}), event_hooks=emitter)
     return awscli.clidriver.CLIDriver(session=session)
-    
-def scan_deployments(deployment_dir="./deployments"):
-    
+
+def scan_deployments(deployment_dir=resource_filename('nepho', 'data/deployments')):
     from os import listdir
     from os.path import isfile, join
     files = [ f for f in listdir(deployment_dir) if isfile(join(deployment_dir,f)) ]
@@ -65,38 +66,38 @@ def scan_deployments(deployment_dir="./deployments"):
         deployment_name = string.replace(filename, ".yaml", "")
         f = open("%s/%s" % (deployment_dir, filename))
         fDict = yaml.safe_load(f)
-        f.close()        
+        f.close()
         deployDict[deployment_name] = fDict
-    
+
     return deployDict
-        
+
 def load_deployment_file(deployment, environment):
-    """ 
-        Takes in a YAML deployment file and environment setting and 
+    """
+        Takes in a YAML deployment file and environment setting and
             returns a dict of values
     """
     paramsMap = dict()
-    yaml_file = './deployments/%s.yaml' % (deployment)
+    yaml_file = resource_filename('nepho', 'data/deployments/%s.yaml') % (deployment)
     try:
         f = open(yaml_file)
         yamlMap = yaml.safe_load(f)
         f.close()
-        
+
         if not yamlMap.has_key(environment):
             print "Environment \"%s\" is not present in deployment file %s" % (environment, yaml_file)
-            sys.exit(1) 
-            
+            sys.exit(1)
+
         envMap = yamlMap[environment]
         for k in envMap.keys():
             paramsMap[k] = envMap[k]
-    except IOError as e: 
+    except IOError as e:
         print "Error parsing deployment file \"%s\"" % (yaml_file)
         print " Check for the file and that it is properly formatted YAML."
         print "Error:"
         print e
-        sys.exit(1)        
-    
-    return paramsMap  
+        sys.exit(1)
+
+    return paramsMap
 
 def get_management_settings(map):
     " Returns dict as a context for the template for how to handle system management"
@@ -104,63 +105,64 @@ def get_management_settings(map):
 
     if map.has_key('management'):
         management = map.pop('management')
-    
-    mgmt_script_file =  None
+
+    mgmt_script_dir   = resource_filename('nepho', 'data/deployments')
+    mgmt_script_file  = None
     mgmt_script_array = []
     pkgs = []
-    
-    if management == 'none': 
+
+    if management == 'none':
         pkgs = [ "httpd" ]
-    
-    if management == 'script':    
-       mgmt_script_file = map.pop('script')  
-       pkgs= ['bash']  
-    
-    if management == 'puppet': 
-        mgmt_script_file = './drivers/aws/puppet-snippet.sh'
+
+    if management == 'script':
+       mgmt_script_file = '%s/%s' % (mgmt_script_dir, map.pop('script'))
+       pkgs= ['bash']
+
+    if management == 'puppet':
+        mgmt_script_file = '%s/%s' % (mgmt_script_dir, 'puppet-snippet.sh')
         pkgs = ["gcc", "ruby","ruby-devel", "rubygems", "puppet" ]
-        
-    # Load script into a array of lines              
+
+    # Load script into a array of lines
     if mgmt_script_file is not None:
         f = open(mgmt_script_file)
         for line in f:
             lstr = json.dumps(line.strip() + "\n")
             mgmt_script_array.append(lstr)
-        f.close()       
-    
+        f.close()
+
     if map.has_key('packages'):
         for pkg in map['packages']:
             pkgs.append(pkg)
         map.pop('packages')
-            
-    mgmtMap = dict( 
+
+    mgmtMap = dict(
                      management = management,
                      script_array = mgmt_script_array,
                      packages = pkgs
                    )
-    
+
     return mgmtMap
-   
+
 def get_cf_template(pattern, context):
-        
-    cf_dir='./patterns/%s' % (pattern)
+
+    cf_dir = resource_filename('nepho.aws', 'data/patterns/%s') % (pattern)
     cf_filename='template.cf'
     cf_file = '%s/%s' % (cf_dir, cf_filename)
     #paramsMap['template_file'] = cf_file
-        
+
     # Use Jinja2
-    template_dirs = [cf_dir, 'patterns/common/']
+    template_dirs = [cf_dir, resource_filename('nepho.aws', 'data/patterns/common')]
     jinjaFSloader = FileSystemLoader(template_dirs)
-    env = Environment(loader=jinjaFSloader)    
-    jinja_template = env.get_template(cf_filename)   
-    
+    env = Environment(loader=jinjaFSloader)
+    jinja_template = env.get_template(cf_filename)
+
     # Render it
-    return jinja_template.render(context) 
-    
+    return jinja_template.render(context)
+
 def parse_cf_json(str):
     cf_dict =  json.loads(str, object_pairs_hook=collections.OrderedDict)
     return cf_dict
-          
+
 def get_cf_json(orderDict, pretty=False):
     outstr = None
     if pretty:
@@ -168,12 +170,12 @@ def get_cf_json(orderDict, pretty=False):
     else:
         outstr = json.dumps(orderDict)
     return outstr
- 
+
 def main(args_json=None):
     # Create an aws-cli driver
     aws_driver = setup_awscli_driver()
 
-    # Read in command line options as JSON    
+    # Read in command line options as JSON
     if args_json is None:
         args_json = command()
     args=json.loads(args_json)
@@ -187,32 +189,32 @@ def main(args_json=None):
         deployments = scan_deployments()
         print "\nAvailable deployments and environments:"
         print "-----------------------------------------"
-        for dk in deployments.keys(): 
+        for dk in deployments.keys():
             deployDict = deployments[dk]
             env_str = string.join( deployDict.keys(), ", " )
             print "  %s:  %s" % (dk, env_str)
         print ""
-        
+
         sys.exit(0)
-        
+
     # determine name of this deployment instance
     stack_name = '%s-%s' % (deployment_name, env_name)
     if args['opts']['name'] is not None and len(args['opts']['name']) > 1:
         stack_name = args['opts']['name']
-                               
-                                      
+
+
     # Load settings from YAML deployment file
-    paramsMap = load_deployment_file(deployment_name, env_name) 
-    
-        
+    paramsMap = load_deployment_file(deployment_name, env_name)
+
+
     pattern =  paramsMap['pattern']
     paramsMap.pop('pattern')
-    
-    # Determine how to manage deployed instances
-    context = get_management_settings(paramsMap)   
-            
 
-                    
+    # Determine how to manage deployed instances
+    context = get_management_settings(paramsMap)
+
+
+
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
         try:
@@ -221,7 +223,7 @@ def main(args_json=None):
         except ValueError:
             print raw_template
         sys.exit(0)
-                          
+
     if args['subcmd'] == 'validate-template':
         raw_template = get_cf_template(pattern, context)
         print "Jinja2 template loading succeeded."
@@ -234,29 +236,29 @@ def main(args_json=None):
             print "Raw text:"
             print "------------------------"
             print raw_template
-            sys.exit(1)      
+            sys.exit(1)
         print "JSON valid."
         main_args=[
-               'cloudformation', 
-               'validate-template', 
+               'cloudformation',
+               'validate-template',
                '--template-body', get_cf_json(cf_dict)
                ]
         return aws_driver.main(main_args)
-                
+
         #print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
-    if args['subcmd'] == 'show-params': 
+    if args['subcmd'] == 'show-params':
         try:
              cf_dict = parse_cf_json( get_cf_template(pattern, context) )
         except ValueError as e:
             print "Invalid JSON: run the \"validate-template\" subcommand to debug."
-            sys.exit(1)      
-        
+            sys.exit(1)
+
         paramsJSON= cf_dict['Parameters']
         print "Template parameters:"
         print "---------------------------"
         print get_cf_json(paramsJSON, pretty=True)
-        sys.exit(1) 
-              
+        sys.exit(1)
+
     #
     # Load as JSON to validate it
     #
@@ -266,13 +268,13 @@ def main(args_json=None):
         print "Error parsing JSON"
         print get_cf_template(pattern,context)
         sys.exit(1)
-                
+
     if args['subcmd'] == 'deploy':
-        
+
         main_args=[
-               'cloudformation', 
-               'create-stack', 
-               '--capabilities', 'CAPABILITY_IAM', 
+               'cloudformation',
+               'create-stack',
+               '--capabilities', 'CAPABILITY_IAM',
                '--disable-rollback',
                '--stack-name', stack_name
                ]
@@ -280,7 +282,7 @@ def main(args_json=None):
             main_args.append("--parameters")
             for key in paramsMap.keys():
                 main_args.append("parameter_key=%s,parameter_value=%s" % (key, paramsMap[key]))
-                
+
         main_args.append("--template-body")
         raw_templ = get_cf_template(pattern, context)
         templ_json = get_cf_json( parse_cf_json(raw_templ) )
@@ -289,10 +291,10 @@ def main(args_json=None):
         return aws_driver.main(main_args)
 
     if args['subcmd'] == 'delete':
-        
+
         main_args=[
-               'cloudformation', 
-               'delete-stack', 
+               'cloudformation',
+               'delete-stack',
                '--stack-name', stack_name
                ]
         return aws_driver.main(main_args)
@@ -300,8 +302,8 @@ def main(args_json=None):
     # If we end up here, then the subcommand is not known.
     print "Unknown subcommand \"%s\"." % (args['subcmd'])
     print "Run nepho --help for details."
-    sys.exit(1)    
+    sys.exit(1)
 
 if __name__ == '__main__':
     sys.exit(main())
-    
+
