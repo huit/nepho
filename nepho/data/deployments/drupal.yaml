@@ -3,7 +3,7 @@
 development:
   pattern: single-host #two-tier-ref
   management: script
-  script: ./deployments/scripts/drupal.sh
+  script: scripts/drupal.sh
   packages: [emacs, telnet, ruby, rubygems, ruby-devel, gcc, gcc-c++, puppet] 
     
 #  SiteEMail: robparrott@gmail.com
