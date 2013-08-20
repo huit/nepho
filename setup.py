@@ -22,10 +22,10 @@ setup(
         'data/drivers/*.sh'
         ]
       },
-    requires     = [
-      'argparse (>=1.2)',
-      'boto (>=2.0)',
-      'awscli (>=0.13)',
+    install_requires = ]
+      'argparse>=1.2',
+      'boto>=2.0',
+      'awscli>=0.13',
       'Jinja2',
       'PyYAML'
     ],
