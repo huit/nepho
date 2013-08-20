@@ -22,7 +22,7 @@ setup(
         'data/drivers/*.sh'
         ]
       },
-    install_requires = ]
+    install_requires = [
       'argparse>=1.2',
       'boto>=2.0',
       'awscli>=0.13',
