@@ -1,0 +1,12 @@
+--- # nepho scenario 'simple-website'
+description: 'The simplest of websites'
+driver      : 'cloudformation'
+
+stages:
+  development: &development
+    pattern  : double-host
+    bootstrap: script
+    script   : 'assets/bootstrap.sh'
+    packages : ['httpd', 'DANNYPKG']
+    KeyName  : 'DANNYKEY'
+  staging: *development
