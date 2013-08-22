@@ -1,11 +1,8 @@
-# List, load, and view scenario configurations
 import yaml
 import glob
 from pkg_resources import resource_filename
 from os import listdir, environ, getenv
 from os.path import isfile, isdir, join, expanduser, basename
-from pprint import pprint
-from textwrap import TextWrapper
 
 def merge(user, system):
     if isinstance(user,dict) and isinstance(system,dict):
@@ -17,23 +14,28 @@ def merge(user, system):
     return user
 
 # Return a list of the filesystem paths to all scenarios directories, with user
-# scenarios listed *after* system scenarios
-def scenario_find_all():
+# scenarios listed *after* system scenarios (this is important for later
+# merging).
+def all_scenarios():
+    system_scenarios_dir = resource_filename('nepho', 'data/scenarios')
     # If a user config dir is set use it, otherwise look in ~/.nepho
     user_config_dir      = getenv('NEPHO_CONFIG_DIR', join(expanduser("~"), ".nepho"))
     user_scenarios_dir   = join(user_config_dir, "scenarios")
-    system_scenarios_dir = resource_filename('nepho', 'data/scenarios')
+
     scenario_dirs = list()
     scenario_dirs.extend(glob.glob(join(system_scenarios_dir, '*')))
     if isdir(user_scenarios_dir):
         scenario_dirs.extend(glob.glob(join(user_scenarios_dir, '*')))
     return scenario_dirs
 
-def scenario_load_and_merge(paths):
+# Take multiple directory paths for the same scenario, find and read/validate
+# each YAML file, and merge values, with later paths taking precedence. Return
+# result as a dict.
+def load_and_merge_scenario(paths):
     scenario = None
     for p in paths:
         scenario_key = basename(p)
-        scenario_file = join(p, "%s.yaml") % scenario_key
+        scenario_file = join(p, "%s.yaml") % (scenario_key)
         if isfile(scenario_file):
             try:
                 scenario_yaml = yaml.safe_load(open(scenario_file))
@@ -47,62 +49,32 @@ def scenario_load_and_merge(paths):
                 scenario = scenario_yaml
     return scenario
 
-def scenario_list():
-    scenario_dirs = scenario_find_all()
-    scenarios = dict()
-    for sdir in scenario_dirs:
-        skey = basename(sdir)
-        sfile = join(sdir, "%s.yaml") % skey
-        if isfile(sfile):
-            syaml = yaml.safe_load(open(sfile))
-            try:
-                new_scenario = {
-                    'description': syaml['description'],
-                    'driver':      syaml['driver']
-                }
-            except KeyError as err:
-                err.args = ("YAML scenario file is missing a required key/value pair",)
-                raise
-
-            if skey in scenarios:
-                scenarios[skey] = merge(new_scenario, scenarios[skey])
-            else:
-                scenarios[skey] = new_scenario
-
-    return scenarios
-
-def scenario_describe(name, environment=None, debug=None):
-    scenario_dirs = scenario_find_all()
+# Find a scenario YAML file(s) and load into a hash
+def find_scenario(name):
+    scenario_dirs = all_scenarios()
     search = "%s" % join("scenarios", name)
     paths = [dir for dir in scenario_dirs if search in dir]
 
-    s = scenario_load_and_merge(paths)
+    return load_and_merge_scenario(paths)
 
-    wrapper = TextWrapper(width=80, subsequent_indent="             ")
+# Load in all available scenarios, de-duplicate, merge, and return result as a
+# dict
+def load_and_merge_all_scenarios():
+    scenario_dirs = all_scenarios()
 
-    print "-"*80
-    print "Name:        %s" % (name)
-    print "Driver:      %s" % (s['driver'])
-    print wrapper.fill("Description: %s" % (s['description']))
-    print "-"*80
+    # Create a dict containing the name of each scenario and a list of all
+    # its paths
+    sall = dict()
+    for sdir in scenario_dirs:
+        skey = basename(sdir)
+        if skey not in sall:
+            sall[skey] = []
+        sall[skey].append(sdir)
 
-    s = s.pop('stages', None)
-    if environment != None:
-        print "Scenario configuration [%s]:\n" % (environment)
-        s = s.pop(environment, None)
-    else:
-        print "Scenario configuration:\n"
+    # Iterate through the list and merge each scenario for display (costly but
+    # what's a better option?)
+    merged_scenarios = dict()
+    for name, paths in sall.iteritems():
+        merged_scenarios[name] = load_and_merge_scenario(paths)
 
-    pprint(s)
-    print "-"*80
-    print "Pattern parameters:"
-    # print cf json parameters (or pp list)
-    print "-"*80
-    if debug == True:
-        print "Pattern configuration:"
-        # find driver in yaml, load and call driver.describe or similar
-        print "-"*80
-    return
-
-def scenario_load(name):
-    return
+    return merged_scenarios
