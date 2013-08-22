@@ -38,7 +38,9 @@ def load_and_merge_scenario(paths):
         scenario_file = join(p, "%s.yaml") % (scenario_key)
         if isfile(scenario_file):
             try:
-                scenario_yaml = yaml.safe_load(open(scenario_file))
+                f = open(scenario_file)
+                scenario_yaml = yaml.safe_load(f)
+                f.close()
             except IOError as e:
                 print "Error loading or parsing deployment scenario file \"%s\"" % (scenario_file)
                 print e

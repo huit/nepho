@@ -1,5 +1,10 @@
 from nepho import scenario
+#from nepho.aws import clidriver
 
+# Valid actions are:
+# - create - create a stack
+# - delete - delete and clean up a stack
+# - show   - print the full pattern configuration and parameters
 def call_provider(provider, action, name):
 	s = scenario.find_scenario(name)
 
@@ -11,12 +16,4 @@ def call_provider(provider, action, name):
 
 	print "Call provider with: %s %s %s" % (provider, action, name)
 
-#plugin
-#import json
-
-#def serialize(subcmd,deployment,opts):
-#    payload = dict()
-#    payload['subcmd'] = subcmd
-#    payload['deployment'] = deployment    
-#    payload['opts'] = opts
-#    return json.dumps(payload, sort_keys=True, indent=2,)
+	#nepho.aws.clidriver.main(stuff)

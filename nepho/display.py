@@ -19,17 +19,18 @@ def display_scenario_list(provider=None):
 # a single environment.  If called in debug mode, also load in the scenario's
 # pattern from the provider and display user parameters and the complete
 # provider debug output.
-def display_scenario_description(name, environment=None, debug=None):
+def display_scenario_description(name, environment=None):
     s = scenario.find_scenario(name)
-    wrapper = TextWrapper(width=80, subsequent_indent="             ")
+    wrapper = TextWrapper(width=80, subsequent_indent="              ")
 
     print "-"*80
-    print "Name:        %s" % (name)
-    print "Providers:   %s (default: %s)" % (", ".join(s['providers']), s['default_provider'])
-    print wrapper.fill("Description: %s" % (s['description']))
+    print "Name:         %s" % (name)
+    print "Providers:    %s (default: %s)" % (", ".join(s['providers']), s['default_provider'])
+    print "Environments: %s" % (", ".join(s['environments']))
+    print wrapper.fill("Description:  %s" % (s['description']))
     print "-"*80
 
-    s = s.pop('stages', None)
+    s = s.pop('environments', None)
     
     if environment != None:
         print "Scenario configuration [%s]:\n" % (environment)

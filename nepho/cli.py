@@ -7,7 +7,7 @@ from textwrap import TextWrapper
 def parse_args():
     script = basename(__file__)
     providers = ['aws', 'heat', 'vagrant']
-    actions = ['list', 'describe', 'create', 'delete', 'debug']
+    actions = ['list', 'describe', 'create', 'delete', 'show']
 
     parser = argparse.ArgumentParser()
     parser.description = 'Simplified cloud orchestration tool for constructing virtual data centers'
@@ -23,18 +23,18 @@ def parse_args():
     # - Make sure action is valid (argparse can do this, but it makes the help screen ugly)
     # - Scenario is required unless action is list
     # - Environment is required if action is create, delete
-    # - Provider is required if action is debug
-    if args.action not in ['list', 'describe', 'create', 'delete', 'debug']:
+    # - Provider is required if action is show
+    if args.action not in ['list', 'active', 'describe', 'create', 'delete', 'show']:
         parser.error("Invalid action specified.  Run \"%s --help\" for more information." % (parser.prog))
     elif args.action != 'list' and args.scenario == None:
         parser.error("Please provide a scenario or run \"%s list\" to view all available scenarios." % (parser.prog))
     elif args.action in ['create', 'delete'] and args.env == None:
         parser.error("You must specify an environment (e.g. development). Run \"%s describe %s\" to see available environments" % (parser.prog, args.scenario))
-    elif args.action in ['debug'] and args.provider == None:
+    elif args.action in ['show'] and args.provider == None:
         parser.error("You must specify a provider (e.g. aws). Run \"%s describe %s\" to see available environments" % (parser.prog, args.scenario))
     else:
         return {
-            'action':     args.action,
+            'action':      args.action,
             'scenario':    args.scenario,
             'environment': args.env,
             'custom_name': args.name,
@@ -51,9 +51,9 @@ def command():
         display_scenario_list(args['provider'])
     elif action == 'describe':
         display_scenario_description(args['scenario'], args['environment'])
-    elif action == 'debug':
-        display_scenario_description(args['scenario'], args['environment'], debug=True)
-        call_provider(args['scenario'], action)
+    elif action == 'show':
+        display_scenario_description(args['scenario'], args['environment'])
+        call_provider(args['provider'], action, args['scenario'])
     elif action in ['create', 'delete']:
         call_provider(args['provider'], action, args['scenario'])
     else:
