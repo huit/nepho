@@ -9,8 +9,6 @@ etc. The goal is to package CloudFormation and
 similar template resources, configuration management code,
 and application code into a plugin-like format. 
 
-The framewotk
-
 Status
 ------
 
@@ -19,12 +17,47 @@ This project is very new, but we have some working code, and are building the fr
 Installation
 ------------
 
-Requires:
+Requirements:
 
+- git
 - python 2.6 or newer
+- setuptools
 - boto
 - awscli
 - jinja2
+
+To install, clone this repository:
+
+    $> git clone https://github.com/huit/nepho
+
+Next make sure that you can install the needed python libraries for the tool using 
+a python tool like `easy_install` or `pip`. Here we'll assume that `pip` is available for this; 
+on some systems you may need to install globally as root, so precede each command with `sudo`.
+
+    $> pip install aswcli boto jinja2 PyYAML
+
+Once these libraries are available we can also setup our nepho code.
+
+#### Local Development Installation
+
+To run nepho from the locally checked out source code, we can simply setup some environment variables to
+tell our shell and python where to look:
+
+   $> export PATH=$PATH:./bin
+   $> export PYTHONPATH=./nepho:$PYHTHONPATH
+   
+The patterns are now located at `./` and deployment files are located under `nepho/data/deployments/`
+
+#### System-wide Development Installation
+
+If you want a system-wide installation, you can use setuptool.
+From the root of the cloned `nepho` directory, (i.e. `cd ./nepho`) install the tool into your local tree
+
+    $> python setup.py develop
+
+This will install nepho into the system tree in such a way that it points back to the locally checked out copy.
+
+NOTE: the following sections will need to be adjusted based on the new install process.
 
 
 Configuration
@@ -69,29 +102,30 @@ Usage
 -----
 
 We are working toward a plugin-oriented architecture for orchestration tools, but for now
-the driver is specific to Amazon Web Services.
+the driver is specific to Amazon Web Services. (Note: in the following, we assume that the
+`nepho` command is in your `PATH`, and that your `PYTHONPATH` is setup properly to include the `nepho/` directory.)
 
 Given a working (1) design pattern, and (2) deployment file, the following commands are available:
 
 Print out the generated template file as JSON:
 
-    $ ./bin/nepho -E [environment] show-template [deployment]
+    $ nepho -E [environment] show-template [deployment]
     
 Validate the template file
 
-    $ ./bin/nepho -E [environment] validate-template [deployment]
+    $ nepho -E [environment] validate-template [deployment]
 
 Print out the template parameters that you can specify in the deployment file:
 
-    $ ./bin/nepho -E [environment] show-params [deployment]
+    $ nepho -E [environment] show-params [deployment]
 
 Do the actual deploy of the application and pattern:
 
-    $ ./bin/nepho -E [environment] deploy [deployment]
+    $ nepho -E [environment] deploy [deployment]
 
 Delete the deployment from the provider:
 
-    $ ./bin/nepho -E [environment] delete [deployment]
+    $ nepho -E [environment] delete [deployment]
 
 
 TBD: more detailed options, etc.
