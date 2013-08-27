@@ -281,13 +281,13 @@ def main(args_json=None):
         if paramsMap is not None and len(paramsMap.keys()) > 0:
             main_args.append("--parameters")
             for key in paramsMap.keys():
-                main_args.append("parameter_key=%s,parameter_value=%s" % (key, paramsMap[key]))
-
+                main_args.append("ParameterKey=%s,ParameterValue=%s" % (key, paramsMap[key]))
+        
         main_args.append("--template-body")
         raw_templ = get_cf_template(pattern, context)
         templ_json = get_cf_json( parse_cf_json(raw_templ) )
         main_args.append( templ_json )
-
+        
         return aws_driver.main(main_args)
 
     if args['subcmd'] == 'delete':

@@ -31,10 +31,14 @@ To install, clone this repository:
     $> git clone https://github.com/huit/nepho
 
 Next make sure that you can install the needed python libraries for the tool using 
-a python tool like `easy_install` or `pip`. Here we'll assume that `pip` is available for this; 
-on some systems you may need to install globally as root, so precede each command with `sudo`.
+a python tool like `easy_install` or `pip`. Install pip using easy_install:
 
-    $> pip install aswcli boto jinja2 PyYAML
+    $> easy_install pip
+
+From here on out,  we'll assume that `pip` is available for this; on some systems you may need 
+to install globally as root, so precede each command with `sudo`.
+
+    $> pip install aswcli boto jinja2 PyYAML virtualenv
 
 Once these libraries are available we can also setup our nepho code.
 
@@ -43,8 +47,8 @@ Once these libraries are available we can also setup our nepho code.
 To run nepho from the locally checked out source code, we can simply setup some environment variables to
 tell our shell and python where to look:
 
-   $> export PATH=$PATH:./bin
-   $> export PYTHONPATH=./nepho:$PYHTHONPATH
+    $> export PATH=$PATH:./bin
+    $> export PYTHONPATH=./nepho:$PYHTHONPATH
    
 The patterns are now located at `./` and deployment files are located under `nepho/data/deployments/`
 
@@ -72,12 +76,11 @@ deployment file that creates a standalone Wordpress site is below:
 
       pattern: single-host
       management: puppet
-      packages: [php, openssl] 
+      packages: [php, openssl, telnet, netstat] 
   
       KeyName: parrott-ec2
       GitRepo: https://github.com/huit/wordpress-puppet-build.git
       GitRepoBranch: master
-      ExtraPackages: telnet netstat
 
 This deplyoment file specifies a single `environment` named "development" for deploying this app;
 you can imagine also creating a "testing" and "production" environment with different 

@@ -22,10 +22,4 @@
       "Default": "master",
       "Description" : "The url of the git repo to pull and apply",
       "Type": "String"
-},
-
-"ExtraPackages": {
-      "Description" : "Any extra packages to include on this build",
-      "Default": "emacs-nox",
-      "Type": "String"
-    }
+}
