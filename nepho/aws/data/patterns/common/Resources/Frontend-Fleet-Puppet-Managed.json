@@ -211,7 +211,6 @@
 
 
           
-          "EXTRA_PKGS='", { "Ref" : "ExtraPackages" }, "'\n",
           "prepare_rhel6_for_puppet \n",
 
           "# pull & setup puppet modules and run manifest\n",

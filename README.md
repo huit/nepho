@@ -76,12 +76,11 @@ deployment file that creates a standalone Wordpress site is below:
 
       pattern: single-host
       management: puppet
-      packages: [php, openssl] 
+      packages: [php, openssl, telnet, netstat] 
   
       KeyName: parrott-ec2
       GitRepo: https://github.com/huit/wordpress-puppet-build.git
       GitRepoBranch: master
-      ExtraPackages: telnet netstat
 
 This deplyoment file specifies a single `environment` named "development" for deploying this app;
 you can imagine also creating a "testing" and "production" environment with different 
