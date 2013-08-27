@@ -31,10 +31,14 @@ To install, clone this repository:
     $> git clone https://github.com/huit/nepho
 
 Next make sure that you can install the needed python libraries for the tool using 
-a python tool like `easy_install` or `pip`. Here we'll assume that `pip` is available for this; 
-on some systems you may need to install globally as root, so precede each command with `sudo`.
+a python tool like `easy_install` or `pip`. Install pip using easy_install:
 
-    $> pip install aswcli boto jinja2 PyYAML
+    $> easy_install pip
+
+From here on out,  we'll assume that `pip` is available for this; on some systems you may need 
+to install globally as root, so precede each command with `sudo`.
+
+    $> pip install aswcli boto jinja2 PyYAML virtualenv
 
 Once these libraries are available we can also setup our nepho code.
 
