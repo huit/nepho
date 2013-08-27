@@ -1,12 +1,17 @@
 --- # nepho scenario 'simple-website'
 description: 'The simplest of websites'
-driver      : 'cloudformation'
+providers:
+  - 'aws'
+  - 'heat'
+  - 'vagrant'
+default_provider: 'aws'
 
-stages:
+environments:
   development: &development
-    pattern  : double-host
-    bootstrap: script
-    script   : 'assets/bootstrap.sh'
-    packages : ['httpd', 'DANNYPKG']
-    KeyName  : 'DANNYKEY'
+    pattern: single-host
+    provisioner: script
+    script: 'bootstrap.sh'
+    packages: ['httpd']
+    parameters:
+      KeyName: 'parrott-ec2'
   staging: *development

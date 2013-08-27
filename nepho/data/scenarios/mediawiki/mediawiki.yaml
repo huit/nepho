@@ -1,16 +1,16 @@
----
-description: MediaWiki wiki site with all the trimmings
-driver: vagrant
+--- # nepho scenario 'mediawiki'
+description: 'MediaWiki wiki site with all the trimmings'
+providers:
+  - 'aws'
+default_provider: 'aws'
 
-development:
-
-  pattern: single-host
-  management: puppet
-  packages: [php, openssl, emacs] 
-  
-  KeyName: parrott-ec2
-  GitRepo: https://github.com/huit/mediawiki-puppet-build.git
-  GitRepoBranch: master
-  ExtraPackages: telnet netstat 
-  
-  
+environments:
+  development: &development
+    pattern: single-host
+    provisioner: puppet
+    packages: [php, openssl, emacs]
+    parameters:
+      KeyName: parrott-ec2
+      GitRepo: https://github.com/huit/mediawiki-puppet-build.git
+      GitRepoBranch: master
+      ExtraPackages: telnet netstat 
