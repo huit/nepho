@@ -1,12 +1,14 @@
 ---
 
 production:
-    pattern: vpc-two-tier
-    management: puppet
 
-    KeyName: steveH
-    GitRepo: https://github.com/huit/mediawiki-puppet-build.git
-    GitRepoBranch: steveH
+  pattern: vpc-two-tier
+  management: puppet
+  packages: [augeas, redhat-lsb]
+  
+  KeyName: steveH
+  GitRepo: https://github.com/huit/mediawiki-puppet-build.git
+  GitRepoBranch: steveH
 
 development:
 
@@ -17,5 +19,3 @@ development:
   KeyName: steveH
   GitRepo: https://github.com/huit/mediawiki-puppet-build.git
   GitRepoBranch: master
-  
-  
