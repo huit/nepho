@@ -43,8 +43,8 @@ Once these libraries are available we can also setup our nepho code.
 To run nepho from the locally checked out source code, we can simply setup some environment variables to
 tell our shell and python where to look:
 
-   $> export PATH=$PATH:./bin
-   $> export PYTHONPATH=./nepho:$PYHTHONPATH
+    $> export PATH=$PATH:./bin
+    $> export PYTHONPATH=./nepho:$PYHTHONPATH
    
 The patterns are now located at `./` and deployment files are located under `nepho/data/deployments/`
 
