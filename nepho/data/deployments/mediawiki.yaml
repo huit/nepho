@@ -1,14 +1,21 @@
 ---
 
+production:
+    pattern: vpc-two-tier
+    management: puppet
+
+    KeyName: steveH
+    GitRepo: https://github.com/huit/mediawiki-puppet-build.git
+    GitRepoBranch: steveH
+
 development:
 
   pattern: single-host
   management: puppet
-  packages: [php, openssl, emacs] 
+  packages: [php, openssl, emacs, telnet, netstat] 
   
   KeyName: parrott-ec2
   GitRepo: https://github.com/huit/mediawiki-puppet-build.git
   GitRepoBranch: master
-  ExtraPackages: telnet netstat 
   
   
