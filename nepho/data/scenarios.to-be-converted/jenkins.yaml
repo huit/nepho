@@ -4,9 +4,10 @@ development:
 
   pattern: single-host
   management: puppet
+  packages: [emacs, telnet, netstat] 
   
   KeyName: parrott-ec2
   GitRepo: https://github.com/huit/jenkins-puppet-build.git
   GitRepoBranch: master
-  ExtraPackages: emacs netstat
+
   
