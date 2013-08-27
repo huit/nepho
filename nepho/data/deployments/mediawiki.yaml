@@ -1,21 +1,22 @@
----
-
-production:
-
-  pattern: vpc-two-tier
-  management: puppet
-  packages: [augeas, redhat-lsb]
-  
-  KeyName: steveH
-  GitRepo: https://github.com/huit/mediawiki-puppet-build.git
-  GitRepoBranch: steveH
-
-development:
-
-  pattern: single-host
-  management: puppet
-  packages: [php, openssl, emacs, telnet, netstat] 
-  
-  KeyName: steveH
-  GitRepo: https://github.com/huit/mediawiki-puppet-build.git
+--- 
+development: 
+  GitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
   GitRepoBranch: master
+  KeyName: steveH
+  management: puppet
+  packages: 
+    - php
+    - openssl
+    - emacs
+    - telnet
+    - netstat
+  pattern: single-host
+production: 
+  GitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
+  GitRepoBranch: steveH
+  KeyName: steveH
+  management: puppet
+  packages: 
+    - augeas
+    - redhat-lsb
+  pattern: sample-multi-tier-webapp
