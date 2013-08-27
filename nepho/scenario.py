@@ -3,6 +3,7 @@ import glob
 from pkg_resources import resource_filename
 from os import listdir, environ, getenv
 from os.path import isfile, isdir, join, expanduser, basename
+from sys import exit
 
 def merge(user, system):
     if isinstance(user,dict) and isinstance(system,dict):
@@ -44,7 +45,7 @@ def load_and_merge_scenario(paths):
             except IOError as e:
                 print "Error loading or parsing deployment scenario file \"%s\"" % (scenario_file)
                 print e
-                sys.exit(1)
+                exit(1)
             if scenario != None:
                 scenario = merge(scenario_yaml, scenario)
             else:
@@ -57,7 +58,11 @@ def find_scenario(name):
     search = "%s" % join("scenarios", name)
     paths = [dir for dir in scenario_dirs if search in dir]
 
-    return load_and_merge_scenario(paths)
+    if paths == []:
+        print "Scenario file \"%s\" could not be found" % (name)
+        exit(1)
+    else:
+        return load_and_merge_scenario(paths)
 
 # Load in all available scenarios, de-duplicate, merge, and return result as a
 # dict
