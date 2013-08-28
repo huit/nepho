@@ -15,17 +15,17 @@ Follow the instructions in the wiki for [manual setup](https://github.com/huit/n
 
 Deployments are configured by using YAML files located in the `./nepho/data/deployments` directory. A sample deployment file that creates a standalone Wordpress site is below:
 
-    ```yaml
-    ---
-    development:
-      pattern: single-host
-      management: puppet
-      packages: [php, openssl, telnet, netstat] 
-  
-      KeyName: parrott-ec2
-      ConfigMgmtGitRepo: https://github.com/huit/wordpress-puppet-build.git
-      ConfigMgmtGitRepoBranch: master
-    ```
+```yaml
+---
+development:
+  pattern: single-host
+  management: puppet
+  packages: [php, openssl, telnet, netstat] 
+
+  KeyName: parrott-ec2
+  ConfigMgmtGitRepo: https://github.com/huit/wordpress-puppet-build.git
+  ConfigMgmtGitRepoBranch: master
+```
 
 This deplyoment file specifies a single `environment` named "development" for deploying this app; you can imagine also creating a "staging" and "production" environment with different config values and design patterns involved.
 
