@@ -1,13 +1,13 @@
 {#
 
-   AutoScaling group with servers that are managed via puppet.
+   Single Host server managed via puppet.
    
    Expects the following params:
    - GitRepo: puppet git repo to checkout and apply
    - GitRepoBranch: branch of above
    - ExtraPkgs: extra RPM packages to install
-   - FrontendInstanceCount: number of desired instances
-   - FrontendInstanceType
+   - InstanceCount: number of desired instances
+   - InstanceType
    
    Expects the following objects:
    - PrivateSubnet
@@ -17,25 +17,54 @@
    
 #}
 
-    "FrontendFleet" : {
-      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+    "FrontendServerUser" : {
+      "Type" : "AWS::IAM::User",
       "Properties" : {
-        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "PrivateSubnet", "AvailabilityZone" ] }],
-        "VPCZoneIdentifier" : [{ "Ref" : "PrivateSubnet" }],
-        "LaunchConfigurationName" : { "Ref" : "FrontendLaunchConfig"  },
-        "MinSize" : "1",
-        "MaxSize" : "10",
-        "DesiredCapacity" : { "Ref" : "FrontendInstanceCount" },
-        "LoadBalancerNames" : [ { "Ref" : "PublicElasticLoadBalancer" } ],
-        "Tags" : [ { "Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": { "Statement":[{
+            "Effect": "Allow",
+            "Action": [
+              "cloudformation:DescribeStackResource"
+            ],
+            "Resource": "*"
+          }]}
+        }]
       }
-    },  
-    
-    "FrontendLaunchConfig"  : {
-      "Type" : "AWS::AutoScaling::LaunchConfiguration",
-      "Metadata" : {
-        "Comment1" : "Configure the FrontendServer by bootstrapping into a puppet build.",
+    },
 
+    "FrontendServerKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "FrontendServerUser"}
+      }
+    },
+
+    "FrontendSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" :  "80", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"},
+          {"IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : { "Ref" : "SSHAccessRange"}}
+        ]
+      }      
+    },  
+
+    "FrontendEndpoint" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "InstanceId" : { "Ref" : "FrontendHost" }
+      }
+    },
+      
+      
+    "FrontendHost": {  
+      "Type" : "AWS::EC2::Instance",
+      "Metadata" : {
+        "Comment" : "Single host built via puppet.",      
         "AWS::CloudFormation::Init" : {
           "config" : {
           
@@ -58,36 +87,57 @@
                 "aws-apitools-rds" : []                            
               }
             },
-            
+                  
+            "files" : {
 
-            "files" : {    
-        
-              "/tmp/touch.tmp" : {
-                "content" :  "touched",
-                "mode"    : "000644",
+              "/etc/cfn/cfn-credentials" : {
+                "content" : { "Fn::Join" : ["", [
+                  "AWSAccessKeyId=", { "Ref" : "FrontendServerKeys" }, "\n",
+                  "AWSSecretKey=", {"Fn::GetAtt": ["FrontendServerKeys", "SecretAccessKey"]}, "\n"
+                ]]},
+                "mode"    : "000400",
                 "owner"   : "root",
                 "group"   : "root"
-              }
-            }
+              },
 
-{#
+              "/etc/cfn/cfn-hup.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[main]\n",
+                  "stack=", { "Ref" : "AWS::StackName" }, "\n",
+                  "credential-file=/etc/cfn/cfn-credentials\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                "content": { "Fn::Join" : ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.FrontendHost.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackName" }, " -r FrontendHost ",
+                                                   " --credential-file /etc/cfn/cfn-credentials ",
+                                                   " --region     ", { "Ref" : "AWS::Region" }, "\n",
+                  "runas=root\n"
+                ]]}
+              }
+            },
+
             "services" : {
               "sysvinit" : {
-                "puppet-agent" : {
-                  "enabled"       : "true",
-                  "ensureRunning" : "true",
-                  "files"         : [ "/etc/httpd/conf.d/maptobackend.conf", "/var/www/html/index.html" ]
-                }
-              }           
+                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
+              }
             }
-#}   
           }
         }
-      },
-      "Properties" : {
-        "ImageId"        : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "FrontendInstanceType" }, "Arch" ] } ] },
-        "SecurityGroups" : [ { "Ref" : "FrontendSecurityGroup" } ],
-        "InstanceType"   : { "Ref" : "FrontendInstanceType" },
+      },      
+
+      "Properties": {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "SecurityGroups" : [ {"Ref" : "FrontendSecurityGroup"} ],
         "KeyName"        : { "Ref" : "KeyName" },
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
         
@@ -104,16 +154,10 @@
           "## Initialize CloudFormation bits\n",
           "/opt/aws/bin/cfn-init -v ",
           "   --stack ", { "Ref" : "AWS::StackName" }, 
-          "   --resource FrontendLaunchConfig",
-
-{#
-          "   --access-key ",  { "Ref" : "HostKeys" },
-          "   --secret-key ", {"Fn::GetAtt": ["HostKeys", "SecretAccessKey"]},
-#}
-
+          "   --resource FrontendHost",
+          "   --access-key ",  { "Ref" : "FrontendServerKeys" },
+          "   --secret-key ", {"Fn::GetAtt": ["FrontendServerKeys", "SecretAccessKey"]},
           "   --region ", { "Ref" : "AWS::Region" }, " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
-
-{#          {% include 'Resources/UserData-Puppet-Helper-Scripts.json' %}, #}
 
 "function prepare_rhel6_for_puppet {\n",
 
@@ -211,7 +255,6 @@
 
 
           
-          "EXTRA_PKGS='", { "Ref" : "ExtraPackages" }, "'\n",
           "prepare_rhel6_for_puppet \n",
 
           "# pull & setup puppet modules and run manifest\n",
@@ -226,36 +269,18 @@
 
         ]]}}
 
-      },
-      "DependsOn" : "PublicRoute"
-    },
-
-    "FrontendSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "GroupDescription" : "Allow access from load balancer and bastion as well as outbound HTTP and HTTPS traffic",
-        "VpcId" : { "Ref" : "VPC" },
-        "SecurityGroupIngress" : [
-            { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "SourceSecurityGroupId" : { "Ref" : "PublicLoadBalancerSecurityGroup" } } ,
-            { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "SourceSecurityGroupId" : { "Ref" : "BastionHostSecurityGroup" } } ],
-        "SecurityGroupEgress" : [
-            { "IpProtocol" : "tcp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" },
-            { "IpProtocol" : "udp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" }
-          ]
-      }
-    },
-    
+      }       
+   },
+   
     "FrontendWaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle"
     },
 
-    "FrontendWaitCondition" : {
+    "FrontendHostWaitCondition" : {
       "Type" : "AWS::CloudFormation::WaitCondition",
-      "DependsOn" : "FrontendFleet",
+      "DependsOn" : "FrontendHost",
       "Properties" : {
-        "Handle"  : { "Ref" : "FrontendWaitHandle" },
-        "Timeout" : "300",
-        "Count"   : { "Ref" : "FrontendInstanceCount" }
+        "Handle" : {"Ref" : "FrontendWaitHandle"},
+        "Timeout" : "600"
       }
     }
- 
