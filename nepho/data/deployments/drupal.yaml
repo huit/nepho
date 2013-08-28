@@ -10,6 +10,6 @@ development:
 #  SiteAdmin: admin
 #  SitePassword: Passw0rd
   KeyName: parrott-ec2
-  GitRepo: https://github.com/robparrott/puppet-drupal.git
-  GitRepoBranch: master
+  ConfigMgmtGitRepo: https://github.com/robparrott/puppet-drupal.git
+  ConfigMgmtGitRepoBranch: master
     

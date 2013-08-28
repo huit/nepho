@@ -263,8 +263,8 @@
 
 		 
           {% if management !='script' and management != 'none' %}
-          "NEPHO_GIT_REPO_URL='", { "Ref" : "GitRepo" }, "'\n",
-          "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "GitRepoBranch" }, "'\n",
+          "NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
+          "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
 
           {#  **** Include script snippets here ...  **** #}

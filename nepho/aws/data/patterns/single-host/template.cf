@@ -8,8 +8,7 @@
   
   "Parameters" : { 
   
-    {% include 'Parameters/General-Instance-Parameters.json' %},
-    {% include 'Parameters/Puppet-Parameters.json' %} 
+    {% include 'Parameters/General-Instance-Parameters.json' %}
     
   },
   
