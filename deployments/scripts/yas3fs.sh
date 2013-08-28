@@ -1,7 +1,7 @@
 export MOUNT_PATH=/srv/s3
 export YAS3FS_PATH=/opt/yas3fs
 export BUCKET_PATH=
-LOG_PATH=/var/log
+export LOG_PATH=/var/log
 
 yum update python-boto
 python-pip install fusepy

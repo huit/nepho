@@ -1,7 +1,7 @@
 {#
 
     Resource definitions for a shared s3 bucket for application components 
-      to use concurrently.
+      to use concurrently, with SNS and SQS components
       
     Relevant Objects Created:
     
@@ -17,6 +17,47 @@
       "DeletionPolicy" : "Retain"
     },
 
+    "{{ name }}SQSQueue" : {
+      "Type" : "AWS::SQS::Queue"
+    },
+
+    "{{ name }}SNSTopic" : {
+      "Type" : "AWS::SNS::Topic",
+      "Properties" : {
+        "Subscription" : [{
+          "Protocol" : "sqs",
+          "Endpoint" : { "Fn::GetAtt" : [ "{{ name }}SQSQueue", "Arn" ] }
+        }]
+      }
+    },
+
+    "{{ name }}AllowSNS2SQSPolicy" : {
+      "Type" : "AWS::SQS::QueuePolicy",
+      "Properties" : {       
+        "Queues" : [ { "Ref" : "{{ name }}SQSQueue" } ],
+        "PolicyDocument":  {
+          "Version": "2008-10-17",
+          "Id": "PublicationPolicy",
+          "Statement" : [
+            {
+              "Sid": "Allow-SNS-SendMessage",
+              "Effect": "Allow",          
+              "Principal" : {
+                "AWS": "*"
+              },
+              "Action": ["sqs:SendMessage"],
+              "Resource": { "Fn::GetAtt" : [ "{{ name }}SQSQueue", "Arn" ] },
+              "Condition" : {
+                "ArnEquals" : {
+                  "aws:SourceArn": { "Ref" : "{{ name }}SNSTopic" }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+    
     "{{ name }}BucketPolicy" : {
       "Type" : "AWS::S3::BucketPolicy",
       "Properties" : {

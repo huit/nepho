@@ -43,7 +43,7 @@
       "Type" : "AWS::S3::BucketPolicy",
       "Properties" : {
         "PolicyDocument": {
-          "Id":"PrivateBucketPolicy",
+          "Id":"{{ name }}BucketPolicyDoc",
           "Statement":[ {
               "Sid":"ReadAccess",
 	          "Action":["s3:GetObject"],
@@ -85,7 +85,6 @@
         "Tags" : [ { "Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
       }
     },  
-    
     
     "{{ name }}SecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
@@ -154,6 +153,27 @@
               },
               {% endif %}
 
+              "/etc/aws.cfg" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[default]\n",
+                  "aws_access_key_id=", { "Ref" : "{{ name }}Keys" }, "\n",
+                  "aws_secret_access_key=", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              
+              "/etc/profile.d/aws-cfg-file.sh" : {
+                "content" : { "Fn::Join" : ["", [
+                  "export AWS_CONFIG_FILE=/etc/aws.cfg\n"
+                ]]},
+                "mode"    : "000444",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              
               "/etc/cfn/cfn-credentials" : {
                 "content" : { "Fn::Join" : ["", [
                   "AWSAccessKeyId=", { "Ref" : "{{ name }}Keys" }, "\n",
