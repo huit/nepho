@@ -12,11 +12,9 @@ development:
     - netstat
   pattern: single-host
 production: 
-  GitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
-  GitRepoBranch: steveH
+  pattern: vpc-two-tier-ref
   KeyName: steveH
   management: puppet
-  packages: 
-    - augeas
-    - redhat-lsb
-  pattern: sample-multi-tier-webapp
+  packages: [augeas, redhat-lsb, php, openssl, emacs, telnet, netstat] 
+  ConfigMgmtGitRepo: https://github.com/huit/mediawiki-puppet-build.git
+  ConfigMgmtGitRepoBranch: rds_support

@@ -6,7 +6,7 @@
 {% import 'Resources/Autoscale-Fleet.json' as fleet  with context %} 
 {% import 'Outputs/Host.json'            as host_out with context %}
 {% import 'Outputs/S3-Bucket.json'       as s3_out with context %}
-
+{% import 'Outputs/ELB-URL.json'         as elb_out with context %}
 {
 
   "AWSTemplateFormatVersion" : "2010-09-09",
@@ -30,6 +30,7 @@
     
   },
 
+
   "Resources" : {
 
 {# **** Define VPC network structures **** #}
@@ -38,7 +39,7 @@
 
     {{ networks.public_network(  name='Public',  subnet_space='PublicA') }},
     {{ networks.private_network( name='Private', subnet_space='PrivateTier1A', nat_device='NATDevice') }},
- 
+
 {# **** Bastion Host & NAT **** #}
 
     {% include 'Resources/NAT.json' %}, 
@@ -57,8 +58,9 @@
                          bucket='SharedS3Bucket',
                          ports=[80] ) }},  
 #}
+
    {{ host.host( name='SingleServer', subnet='PrivateSubnet', bucket='SharedS3Bucket', ports=[80, 443]) }}
- 
+   
 {# **** Private Tier Application instances **** #}
 {#
     {{ elb.load_balancer( name='Private', subnet='PrivateSubnet',  port=80) }},
@@ -68,11 +70,13 @@
   },
  
   "Outputs" : {
-  
-    {{ s3_out.bucket(name='SharedS3Bucket') }},
+
+{#    {{ elb_out.elb(name='PublicElasticLoadBalancer') }}, #}
+{#    {{ s3_out.bucket(name='SharedS3Bucket') }}, #}
+
     {% include 'Outputs/BastionHost.json' %},
-    {% include 'Outputs/NAT.json' %},  
-    {% include 'Outputs/PublicELB-URL.json' %}           
+    {% include 'Outputs/NAT.json' %}
 
   }
+
 }
