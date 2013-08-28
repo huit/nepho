@@ -1,16 +1,14 @@
     {%- macro bucket(name) -%}
-
     "{{ name }}SecureURL" : {
       "Value" : { "Fn::Join" : [
-         "", [ "https://", { "Fn::GetAtt" : [ "{{ name }}", "DomainName" ] } ] 
-         ] 
+                                 "", [ "https://", { "Fn::GetAtt" : [ "{{ name }}", "DomainName" ]}]
+                               ] 
       },
       "Description" : "URL of S3 bucket."
     },
-     "{{ name }}Name" : {
+    
+    "{{ name }}Name" : {
       "Value" : {"Ref" : "{{ name }}"}
       },
       "Description" : "Name of S3 bucket."
-    }
-    
-    {% endmacro %}
+    }{% endmacro %}

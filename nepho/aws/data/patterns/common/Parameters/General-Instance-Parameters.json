@@ -8,7 +8,9 @@
     - InstanceType: EC2 instance type (default: m1.small).
     - InstanceCount: # of these instances (default: 1)
     - SSHAccessRange: network range in CIDR form for access to the system via SSH (default: entire internet)
-    
+    - ConfigMgmtGitRepo: URL of git repo for code to be used with config mgmt system, such as puppet.
+    - ConfigMgmtGitRepoBranch: branch, etc. for config mgmt repo
+       
 #} 
    
 "KeyName" : {
@@ -37,4 +39,17 @@
       "Default": "0.0.0.0/0",
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+},
+
+"ConfigMgmtGitRepo": {
+  	  "Default" : "http://(none)/",
+      "Description" : "The url of the git repo to pull and apply, if desired",
+      "Type": "String"
+},
+
+"ConfigMgmtGitRepoBranch": {
+      "Default": "master",
+      "Description" : "The url of the git repo to pull and apply",
+      "Type": "String"
 }
+

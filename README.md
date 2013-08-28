@@ -1,97 +1,40 @@
-Nepho: Harvard Cloud Deploy Tool
-=========================
+# Nepho: Harvard Cloud Deploy Tool
+### Simplified cloud orchestration tool for constructing virtual data centers
 
-This tool is intended to be used to deploy an 
-applications to a CloudFormation-compatible IaaS environment such as 
-Amazon AWS, and in the future to any orchestratable 
-IaaS environment, including OpenStack, Vagrant, VMware,
-etc. The goal is to package CloudFormation and 
-similar template resources, configuration management code,
-and application code into a plugin-like format. 
+This tool is meant to be a generic wrapper/CLI interface for spinning up complete working environments in an IaaS.  We are initially targeting CloudFormation for orchestration, but hope to expand to OpenStack Heat and other services as they become relevant.  The goal is to package CloudFormation and  similar template resources, configuration management code, and application code into a plugin-like format sothat developers and operations folks can quickly spin up complete environments from their desktops.
 
-Status
-------
+## Status
 
 This project is very new, but we have some working code, and are building the framework.
 
-Installation
-------------
+## Installation
 
-Requirements:
+Follow the instructions in the wiki for [manual setup](https://github.com/huit/nepho/wiki/Manual-Setup) (until the package is on pypi) and/or [developer setup](https://github.com/huit/nepho/wiki/Development-environment-with-virtualenv) (with virtualenv).
 
-- git
-- python 2.6 or newer
-- setuptools
-- boto
-- awscli
-- jinja2
+## Configuration
 
-To install, clone this repository:
+Deployments are configured by using YAML files located in the `./nepho/data/deployments` directory. A sample deployment file that creates a standalone Wordpress site is below:
 
-    $> git clone https://github.com/huit/nepho
+```yaml
+---
+development:
+  pattern: single-host
+  management: puppet
+  packages: [php, openssl, telnet, netstat] 
 
-Next make sure that you can install the needed python libraries for the tool using 
-a python tool like `easy_install` or `pip`. Install pip using easy_install:
+  KeyName: parrott-ec2
+  ConfigMgmtGitRepo: https://github.com/huit/wordpress-puppet-build.git
+  ConfigMgmtGitRepoBranch: master
+```
 
-    $> easy_install pip
-
-From here on out,  we'll assume that `pip` is available for this; on some systems you may need 
-to install globally as root, so precede each command with `sudo`.
-
-    $> pip install aswcli boto jinja2 PyYAML virtualenv
-
-Once these libraries are available we can also setup our nepho code.
-
-#### Local Development Installation
-
-To run nepho from the locally checked out source code, we can simply setup some environment variables to
-tell our shell and python where to look:
-
-    $> export PATH=$PATH:./bin
-    $> export PYTHONPATH=./nepho:$PYHTHONPATH
-   
-The patterns are now located at `./` and deployment files are located under `nepho/data/deployments/`
-
-#### System-wide Development Installation
-
-If you want a system-wide installation, you can use setuptool.
-From the root of the cloned `nepho` directory, (i.e. `cd ./nepho`) install the tool into your local tree
-
-    $> python setup.py develop
-
-This will install nepho into the system tree in such a way that it points back to the locally checked out copy.
-
-NOTE: the following sections will need to be adjusted based on the new install process.
-
-
-Configuration
--------------
-
-Deployments are configured by using YAML files located in the `./deployments` directory. A sample 
-deployment file that creates a standalone Wordpress site is below:
-
-    ---
-    
-    development:
-
-      pattern: single-host
-      management: puppet
-      packages: [php, openssl, telnet, netstat] 
-  
-      KeyName: parrott-ec2
-      GitRepo: https://github.com/huit/wordpress-puppet-build.git
-      GitRepoBranch: master
-
-This deplyoment file specifies a single `environment` named "development" for deploying this app;
-you can imagine also creating a "testing" and "production" environment with different 
-config values and design patterns involved.
+This deplyoment file specifies a single `environment` named "development" for deploying this app; you can imagine also creating a "staging" and "production" environment with different config values and design patterns involved.
 
 Under the environment, we specify the `pattern` which indicates a design pattern to use
 for deploying the application. In this case, we get a single host that's not in an autoscaling group
 and that has an elastic IP for connectivity. By default this design pattern opens web-related ports, but
 this can be manged via a parameter.
 
-The configuration management methodology to use on the isntance is specified via
+The configuration management methodology to use on the instance is specified via
 the `management` parameter, which in this case is "puppet." For now this assumes that this
 is via a standalone puppet manifest, which is sourced from a git repository somewhere,
 specified in the `GitRepo` and `GitRepoBranch` parameters. This parameter will have more 
@@ -100,9 +43,7 @@ options in the future.
 In addition, we specify a set of yum `packages` as a YAML list, and a `KeyName` which indicates
 which SSH public key, registered with AWS, to use.
 
-
-Usage
------
+## Usage
 
 We are working toward a plugin-oriented architecture for orchestration tools, but for now
 the driver is specific to Amazon Web Services. (Note: in the following, we assume that the
@@ -133,17 +74,13 @@ Delete the deployment from the provider:
 
 TBD: more detailed options, etc.
 
-    
-Examples
---------
+# Resources
 
-Resources
----------
 ## Functional Spec
 
 Let's define how we expect this to work.
 
-### Invocation
+## Invocation
 
     $ nepho deploy -E devel drupal
     $ nepho show-template drupal
@@ -153,7 +90,7 @@ Let's define how we expect this to work.
     $ nepho describe [stack ID]
     $ nepho delete [stack ID]
     
-### Module syntax and layout
+## Module syntax and layout
 
 When you invoke a module by name and by "environment" (i.e. development, testing, production, etc.) as follows:
 
@@ -189,8 +126,3 @@ overrides for parameters).
     $ ./bin/nepho destroy -E development vpc-three-tier-bare
     
 There is also a "populated" application VPC module in progress.    
-
-
-
-
-

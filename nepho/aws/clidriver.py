@@ -106,7 +106,7 @@ def get_management_settings(map):
     if map.has_key('management'):
         management = map.pop('management')
 
-    mgmt_script_dir   = resource_filename('nepho', 'data/deployments')
+    mgmt_script_dir   = resource_filename('nepho', 'aws/data/drivers')
     mgmt_script_file  = None
     mgmt_script_array = []
     pkgs = []

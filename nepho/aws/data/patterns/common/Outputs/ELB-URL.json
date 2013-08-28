@@ -1,0 +1,13 @@
+{#
+
+   Reports on the contact address of the main Public-facing ELB.
+
+#}
+
+    {%- macro elb(name) -%}
+    
+    "{{ name }}URL" : {
+      "Description" : "URL of the website",
+      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "{{ name }}", "DNSName" ]}]]}
+    }
+    {% endmacro %}

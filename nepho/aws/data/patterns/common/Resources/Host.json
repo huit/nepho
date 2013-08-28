@@ -258,13 +258,16 @@
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
 		  {% endif %}		  		 
-		  {% if bucket is not none %}NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",{% endif %}
-		  {% if bucket is not none %}NEPHO_S3_BUCKET_URL='", { "Fn::GetAtt" : [ "{{ bucket }}", "DNSName" ]}, "'\n",{% endif %}
+		  {% if bucket is not none %}"NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",{% endif %}
+		  {% if bucket is not none %}"NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [
+                                 "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]
+                               ] 
+      }, "'\n",{% endif %}
 
 		 
           {% if management !='script' and management != 'none' %}
-          "NEPHO_GIT_REPO_URL='", { "Ref" : "GitRepo" }, "'\n",
-          "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "GitRepoBranch" }, "'\n",
+          "NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
+          "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
 
           {#  **** Include script snippets here ...  **** #}

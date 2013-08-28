@@ -7,7 +7,7 @@ development:
   packages: [php, openssl, telnet, netstat] 
   
   KeyName: parrott-ec2
-  GitRepo: https://github.com/huit/wordpress-puppet-build.git
-  GitRepoBranch: master
+  ConfigMgmtGitRepo: https://github.com/huit/wordpress-puppet-build.git
+  ConfigMgmtGitRepoBranch: master
 
   
