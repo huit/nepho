@@ -79,8 +79,8 @@ deployment file that creates a standalone Wordpress site is below:
       packages: [php, openssl, telnet, netstat] 
   
       KeyName: parrott-ec2
-      GitRepo: https://github.com/huit/wordpress-puppet-build.git
-      GitRepoBranch: master
+      ConfigMgmtGitRepo: https://github.com/huit/wordpress-puppet-build.git
+      ConfigMgmtGitRepoBranch: master
 
 This deplyoment file specifies a single `environment` named "development" for deploying this app;
 you can imagine also creating a "testing" and "production" environment with different 
