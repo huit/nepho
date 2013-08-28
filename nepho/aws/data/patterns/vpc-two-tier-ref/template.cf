@@ -17,9 +17,9 @@
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %}, 
-    {% include 'Parameters/Puppet-Parameters.json' %},
     {{ inst_params.inst_params(name="Tier1") }},  
     {{ inst_params.inst_params(name="Tier2") }}
+
     
   },
 
@@ -62,7 +62,7 @@
                    ) }},
 
     {{ host.host( name='SingleServer', subnet='PrivateSubnet', bucket='SharedS3Bucket', ports=[80, 443]) }},
-
+u
  
 {# **** Private Tier Application instances **** #}
 
