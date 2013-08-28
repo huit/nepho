@@ -7,7 +7,7 @@ development:
   packages: [php, openssl, emacs, telnet, netstat] 
   
   KeyName: parrott-ec2
-  GitRepo: https://github.com/huit/mediawiki-puppet-build.git
-  GitRepoBranch: master
+  ConfigMgmtGitRepo: https://github.com/huit/mediawiki-puppet-build.git
+  ConfigMgmtGitRepoBranch: master
   
   
