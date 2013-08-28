@@ -45,8 +45,14 @@ from nepho.command import command
 #from nepho.aws import Deployment
 #from nepho.aws import Template
 
+__MODULE_NAME__     = "nepho"
+__DEPLOYMENTS_DIR__ = 'data/deployments'
+__PATTERNS_DIR__    = 'data/patterns'
+__DRIVERS_DIR__     = 'data/drivers'
 
-LOG = logging.getLogger('nepho-dummy')
+LOG = logging.getLogger(__MODULE_NAME__)
+
+
 
 def setup_awscli_driver():
     emitter = HierarchicalEmitter()
@@ -56,7 +62,7 @@ def setup_awscli_driver():
     load_plugins(session.full_config.get('plugins', {}), event_hooks=emitter)
     return awscli.clidriver.CLIDriver(session=session)
 
-def scan_deployments(deployment_dir=resource_filename('nepho', 'data/deployments')):
+def scan_deployments(deployment_dir=resource_filename(__MODULE_NAME__, __DEPLOYMENTS_DIR__)):
     from os import listdir
     from os.path import isfile, join
     files = [ f for f in listdir(deployment_dir) if isfile(join(deployment_dir,f)) ]
@@ -77,7 +83,7 @@ def load_deployment_file(deployment, environment):
             returns a dict of values
     """
     paramsMap = dict()
-    yaml_file = resource_filename('nepho', 'data/deployments/%s.yaml') % (deployment)
+    yaml_file = resource_filename(__MODULE_NAME__, '%s/%s.yaml') % (__DEPLOYMENTS_DIR__, deployment)
     try:
         f = open(yaml_file)
         yamlMap = yaml.safe_load(f)
@@ -106,7 +112,7 @@ def get_management_settings(map):
     if map.has_key('management'):
         management = map.pop('management')
 
-    mgmt_script_dir   = resource_filename('nepho', 'aws/data/drivers')
+    mgmt_script_dir   = resource_filename(__MODULE_NAME__, __DRIVERS_DIR__)
     mgmt_script_file  = None
     mgmt_script_array = []
     pkgs = []
@@ -145,13 +151,14 @@ def get_management_settings(map):
 
 def get_cf_template(pattern, context):
 
-    cf_dir = resource_filename('nepho.aws', 'data/patterns/%s') % (pattern)
+    cf_dir = resource_filename(__MODULE_NAME__, '%s/%s' % (__PATTERNS_DIR__, pattern) )
     cf_filename='template.cf'
     cf_file = '%s/%s' % (cf_dir, cf_filename)
+    print cf_file
     #paramsMap['template_file'] = cf_file
 
     # Use Jinja2
-    template_dirs = [cf_dir, resource_filename('nepho.aws', 'data/patterns/common')]
+    template_dirs = [cf_dir, resource_filename(__MODULE_NAME__, '%s/common' % (__PATTERNS_DIR__))]
     jinjaFSloader = FileSystemLoader(template_dirs)
     env = Environment(loader=jinjaFSloader)
     jinja_template = env.get_template(cf_filename)
