@@ -2,7 +2,7 @@
 #
 # Required packages for bootstrapped system	
 #
-REQUIRED_PKGS="puppet git curl wget s3cmd aws-cli ruby-devel rubygems gcc"
+REQUIRED_PKGS="puppet augeas redhat-lsb git curl wget s3cmd aws-cli ruby-devel rubygems gcc"
 
 #
 # Prepare a RHEL-ish v6 instance for puppetization
