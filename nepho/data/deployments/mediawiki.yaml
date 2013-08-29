@@ -1,7 +1,7 @@
 --- 
 development: 
-  GitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
-  GitRepoBranch: master
+  ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
+  ConfigMgmtGitRepoBranch: master
   KeyName: steveH
   management: puppet
   packages: 
