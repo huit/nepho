@@ -121,8 +121,9 @@ def get_management_settings(map):
         pkgs = [ "httpd" ]
 
     if management == 'script':
-       mgmt_script_file = '%s/%s' % (mgmt_script_dir, map.pop('script'))
-       pkgs= ['bash']
+        mgmt_script_dir   = resource_filename(__MODULE_NAME__, __DEPLOYMENTS_DIR__)
+        mgmt_script_file = '%s/%s' % (mgmt_script_dir, map.pop('script'))
+        pkgs= ['bash']
 
     if management == 'puppet':
         mgmt_script_file = '%s/%s' % (mgmt_script_dir, 'puppet-snippet.sh')
@@ -154,7 +155,7 @@ def get_cf_template(pattern, context):
     cf_dir = resource_filename(__MODULE_NAME__, '%s/%s' % (__PATTERNS_DIR__, pattern) )
     cf_filename='template.cf'
     cf_file = '%s/%s' % (cf_dir, cf_filename)
-    print cf_file
+
     #paramsMap['template_file'] = cf_file
 
     # Use Jinja2
