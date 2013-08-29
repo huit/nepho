@@ -3,7 +3,7 @@
 #}   
 
     {%- macro mysql(name) -%}
-    
+   
     "{{ name }}DBConnectionString": {
       "Description" : "Connection string for database",
       "Value" : { "Fn::Join": [ "", [ "mysql://",
@@ -29,13 +29,24 @@
     },
 
     "{{ name }}DBCommandLine": {
-      "Description" : "Connection string for database",
-      "Value" : { "Fn::Join": [ "", [ 
-          "mysql -u ",{ "Ref" : "DBUsername" },
-          " -p",{ "Ref" : "DBPassword" },       
-          " -h "{ "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Address" ] },
-          " -P ",{ "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
-          " ", { "Ref": "DBName" }]]}
+      "Description" : "Shell access commandline",
+      "Value" : { 
+                  "Fn::Join": [                    	
+                                "", 
+                                [ 
+                                  "mysql -u ",
+                                  { "Ref" : "DBUsername" },
+                                  " -p",
+                                  { "Ref" : "DBPassword" },       
+                                  " -h ",
+                                  { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Address" ] },
+                                  " -P ",
+                                  { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
+                                  " ",  
+                                  { "Ref": "DBName" }
+                                ]
+                              ]
+                   }
     }
-
+    
     {% endmacro %}

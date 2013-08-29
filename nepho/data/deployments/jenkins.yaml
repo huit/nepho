@@ -4,7 +4,7 @@ development:
 
   pattern: single-host
   management: puppet
-  packages: [emacs, telnet, netstat] 
+  packages: [emacs, telnet] 
   
   KeyName: parrott-ec2
   ConfigMgmtGitRepo: https://github.com/huit/jenkins-puppet-build.git

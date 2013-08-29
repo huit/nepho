@@ -11,10 +11,17 @@ development:
     - telnet
     - netstat
   pattern: single-host
-production: 
-  pattern: vpc-two-tier-ref
+production:
+  ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
+  ConfigMgmtGitRepoBranch: rds_support
   KeyName: steveH
   management: puppet
-  packages: [augeas, redhat-lsb, php, openssl, emacs, telnet, netstat] 
-  ConfigMgmtGitRepo: https://github.com/huit/mediawiki-puppet-build.git
-  ConfigMgmtGitRepoBranch: rds_support
+  packages:
+    - augeas
+    - redhat-lsb
+    - php
+    - openssl
+    - emacs
+    - telnet
+    - netstat
+  pattern: full-monty

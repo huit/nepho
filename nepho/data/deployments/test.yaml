@@ -2,8 +2,10 @@
 
 development:
 
-  pattern: vpc-two-tier-ref
-  management: none
+  pattern: single-host
+  management: script
+  script: scripts/debug.sh
+  packages: [httpd]
   
   KeyName: parrott-ec2
 
