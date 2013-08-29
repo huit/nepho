@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name         = 'nepho',
-    version      = '0.1.0',
+    version      = '0.2.0',
     url          = 'http://github.com/huit/nepho',
     description  = 'Simplified cloud orchestration tool for constructing virtual data centers',
     packages     = ['nepho', 'nepho.aws'],
@@ -14,8 +14,7 @@ setup(
     scripts      = ['bin/nepho'],
     package_data = {
       'nepho': [
-        'data/deployments/*.yaml',
-        'data/deployments/scripts/*.sh'
+        'data/scenarios/*',
         ],
       'nepho.aws': [
         'data/patterns/*/*.cf',

@@ -16,9 +16,7 @@ def display_scenario_list(provider=None):
     return
 
 # Print a nicely formatted overview of a given scenario, optionally limited to
-# a single environment.  If called in debug mode, also load in the scenario's
-# pattern from the provider and display user parameters and the complete
-# provider debug output.
+# a single environment.
 def display_scenario_description(name, environment=None):
     s = scenario.find_scenario(name)
     wrapper = TextWrapper(width=80, subsequent_indent="              ")

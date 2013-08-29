@@ -5,6 +5,7 @@ from os import listdir, environ, getenv
 from os.path import isfile, isdir, join, expanduser, basename
 from sys import exit
 
+# Merge two dicts, user and system, recursively, with user taking precedence
 def merge(user, system):
     if isinstance(user,dict) and isinstance(system,dict):
         for k,v in system.iteritems():
@@ -30,7 +31,7 @@ def all_scenarios():
     return scenario_dirs
 
 # Take multiple directory paths for the same scenario, find and read/validate
-# each YAML file, and merge values, with later paths taking precedence. Return
+# each YAML file, and merge them, with later paths taking precedence. Return
 # result as a dict.
 def load_and_merge_scenario(paths):
     scenario = None
@@ -52,7 +53,7 @@ def load_and_merge_scenario(paths):
                 scenario = scenario_yaml
     return scenario
 
-# Find a scenario YAML file(s) and load into a hash
+# Find a scenario YAML file(s) and load into a dict
 def find_scenario(name):
     scenario_dirs = all_scenarios()
     search = "%s" % join("scenarios", name)
@@ -65,7 +66,7 @@ def find_scenario(name):
         return load_and_merge_scenario(paths)
 
 # Load in all available scenarios, de-duplicate, merge, and return result as a
-# dict
+# dict (inefficent but useful for list/query functions).
 def load_and_merge_all_scenarios():
     scenario_dirs = all_scenarios()
 
@@ -78,8 +79,7 @@ def load_and_merge_all_scenarios():
             sall[skey] = []
         sall[skey].append(sdir)
 
-    # Iterate through the list and merge each scenario for display (costly but
-    # what's a better option?)
+    # Iterate through the list and merge each scenario for display
     merged_scenarios = dict()
     for name, paths in sall.iteritems():
         merged_scenarios[name] = load_and_merge_scenario(paths)

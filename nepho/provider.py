@@ -1,5 +1,4 @@
 from nepho import scenario
-#from nepho.aws import clidriver
 
 # Valid actions are:
 # - create - create a stack
@@ -14,6 +13,11 @@ def call_provider(provider, action, name):
 		print "Invalid provider for scenario %s, valid providers are: %s" % (name, ', '.join(s['providers']))
 		return
 
-	print "Call provider with: %s %s %s" % (provider, action, name)
-
-	#nepho.aws.clidriver.main(stuff)
+	print "Calling provider with: %s %s %s" % (provider, action, name)
+	if provider == 'aws':
+		from nepho.aws import clidriver
+		return
+		#clidriver.main(action, name, s)
+	else:
+		print "Provider %s is not yet implemented." % (provider)
+		return
