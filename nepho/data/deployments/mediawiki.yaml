@@ -5,17 +5,20 @@ development:
   KeyName: steveH
   management: puppet
   packages: 
+    - augeas
+    - redhat-lsb
     - php
     - openssl
     - emacs
     - telnet
-    - netstat
   pattern: single-host
 production:
+  management: puppet
   ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
   ConfigMgmtGitRepoBranch: rds_support
   KeyName: steveH
-  management: puppet
+  Tier1InstanceRole: varnish
+  Tier2InstanceRole: mediawiki
   packages:
     - augeas
     - redhat-lsb
@@ -23,5 +26,4 @@ production:
     - openssl
     - emacs
     - telnet
-    - netstat
   pattern: full-monty

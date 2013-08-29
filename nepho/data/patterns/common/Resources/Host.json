@@ -237,6 +237,7 @@
           {# **** Inject environment variasbles about the deployment **** #}
           
 		  "# Inject some platform variables\n",
+		  "NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
           {% if elb is not none  %}"NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
           {% if elb2 is not none %}"NEPHO_BACKEND_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
 		  {% if rds is not none  %}
@@ -258,11 +259,12 @@
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
 		  {% endif %}		  		 
-		  {% if bucket is not none %}"NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",{% endif %}
-		  {% if bucket is not none %}"NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [
-                                 "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]
-                               ] 
-      }, "'\n",{% endif %}
+		  {% if bucket is not none %}
+		  "NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+		  "NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" },  "'\n",
+          "NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
+          {% endif %}
 
 		 
           {% if management !='script' and management != 'none' %}

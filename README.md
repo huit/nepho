@@ -111,6 +111,31 @@ This is a real help in creating easy-to-read modules, since the CloudFormation s
 
 As an example ..... (TBD)
 
+## Bridging to Configuration Mgmt
+
+List of usual suspects for environment variables you may see in the bootstrap build environment.
+
+    NEPHO_INSTANCE_ROLE='varnish'   
+    
+    NEPHO_EXTERNAL_HOSTNAME='my-big-te-Tier1Ela-1LC2575.us-east-1.elb.amazonaws.com'
+    NEPHO_BACKEND_HOSTNAME='my-big-te-Tier2Ela-VMAHLSMR6FUJ-897826568.us-east-1.elb.amazonaws.com'
+
+    NEPHO_S3_BUCKET='test-shareds3bucket-1xafnew4ickzu'
+    NEPHO_S3_BUCKET_URL='https://test.s3.amazonaws.com'
+    NEPHO_S3_BUCKET_ACCESS='A...A'
+    NEPHO_S3_BUCKET_KEY='A...Z'
+
+    NEPHO_DATABASE_HOST='mtj6faodmuhlg7.ckdiglttgt5g.us-east-1.rds.amazonaws.com'
+    NEPHO_DATABASE_PORT='3306'
+    NEPHO_DATABASE_NAME='mydatabase'
+    NEPHO_DATABASE_USER='admin' 
+    NEPHO_DATABASE_PASSWORD='admin'
+    NEPHO_DATABASE_CONNECT_STRING='mysql://admin:admin@mtj6g7.ckdiglttgt5g.us-east-1.rds.amazonaws.com:3306/mydatabase'
+
+    NEPHO_GIT_REPO_URL='https://github.com/huit/mediawiki-puppet-build.git'
+    NEPHO_GIT_REPO_BRANCH='master'
+    
+
 ## Useful examples:
 
 ### Three-tier VPC
