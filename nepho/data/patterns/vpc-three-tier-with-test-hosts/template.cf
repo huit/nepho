@@ -2,6 +2,7 @@
     Deploys a basic three tier VPC virtual datacenter, with test hosts on each tier.
 #}
 
+{% import 'Parameters/Instance-Parameters.json' as inst_params %}
 {% import 'Resources/Network-Tier.json' as networks with context %}
 {% import 'Resources/Host.json'         as host     with context %}
 {% import 'Outputs/Host.json'           as host_out with context %}
@@ -14,7 +15,9 @@
   "Parameters" : { 
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
-    {% include 'Parameters/NAT-Instance-Parameters.json' %}   
+    {% include 'Parameters/NAT-Instance-Parameters.json' %},
+    {{ inst_params.inst_params(name="PrivateTierHost") }}
+    {{ inst_params.inst_params(name="DataTierHost") }}   
   },
 
   "Mappings" : {  

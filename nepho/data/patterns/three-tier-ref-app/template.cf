@@ -6,7 +6,7 @@
 {% import 'Resources/Autoscale-Fleet.json' as fleet  with context %} 
 {% import 'Outputs/Host.json'            as host_out with context %}
 
-{# TODO: fully transition to macro and refectoring #}
+{# TODO: fully transition to macro and refactoring #}
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 

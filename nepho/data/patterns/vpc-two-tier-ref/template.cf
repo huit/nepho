@@ -17,8 +17,8 @@
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %}, 
-    {{ inst_params.inst_params(name="Public") }},  
-    {{ inst_params.inst_params(name="Private") }}
+    {{ inst_params.inst_params(name="Tier1") }},  
+    {{ inst_params.inst_params(name="Tier2") }}
     
   },
 
@@ -29,7 +29,6 @@
     {% include 'Mappings/Subnet-Mappings.json' %}    
     
   },
-
 
   "Resources" : {
 
@@ -50,30 +49,32 @@
     {{ s3.bucket(name='Shared') }},
     
 {# **** Public Tier Application instances **** #}
-{#
-    {{ elb.load_balancer(name='Public', subnet='PublicSubnet',  port=80) }},
+
+    {{ elb.load_balancer( name='Public', 
+                          subnet='PublicSubnet',  
+                          port=80                                      ) }},
     {{ fleet.fleet(      name='Tier1', 
                          subnet='PrivateSubnet', 
                          elb='PublicElasticLoadBalancer', 
                          bucket='SharedS3Bucket',
-                         ports=[80] ) }},  
-#}
+                         ports=[80]                                    ) }},  
 
-   {{ host.host( name='SingleServer', subnet='PrivateSubnet', bucket='SharedS3Bucket', ports=[80, 443]) }}
-   
 {# **** Private Tier Application instances **** #}
-{#
-    {{ elb.load_balancer( name='Private', subnet='PrivateSubnet',  port=80) }},
-    {{ fleet.fleet(       name='Private', subnet='PrivateSubnet', elb='PrivateElasticLoadBalancer', ports=[80]) }}
-#}
-    
+
+    {{ elb.load_balancer( name='Private', 
+                          subnet='PrivateSubnet',  
+                          port=80                                      ) }},
+    {{ fleet.fleet(       name='Tier2', 
+                          subnet='PrivateSubnet', 
+                          elb='PrivateElasticLoadBalancer', 
+                          ports=[80]                                   ) }}
+   
   },
  
   "Outputs" : {
 
-{#    {{ elb_out.elb(name='PublicElasticLoadBalancer') }}, #}
-{#    {{ s3_out.bucket(name='SharedS3Bucket') }}, #}
-
+    {{ elb_out.elb(name='PublicElasticLoadBalancer') }}, 
+    {{ s3_out.bucket(name='SharedS3Bucket') }},
     {% include 'Outputs/BastionHost.json' %},
     {% include 'Outputs/NAT.json' %}
 
