@@ -6,7 +6,7 @@ from nepho.provider import call_provider
 def parse_args():
     script = basename(__file__)
     providers = ['aws', 'heat', 'vagrant']
-    actions = ['list', 'describe', 'create', 'delete', 'show']
+    actions = ['list', 'describe', 'show', 'clone', 'create', 'destroy']
 
     parser = argparse.ArgumentParser()
     parser.description = 'Simplified cloud orchestration tool for constructing virtual data centers'
@@ -47,10 +47,13 @@ def command():
         display_scenario_list(args['provider'])
     elif action == 'describe':
         display_scenario_description(args['scenario'], args['environment'])
-    elif action in ['create', 'delete']:
-        call_provider(args['provider'], action, args['scenario'])
     elif action == 'show':
         display_scenario_description(args['scenario'], args['environment'])
+        call_provider(args['provider'], action, args['scenario'])
+    elif action == 'clone':
+        # Clone the scenario into .nepho/scenarios -- but what about the pattern?  do we need to know provider?
+        print "need to clone"
+    elif action in ['create', 'delete']:
         call_provider(args['provider'], action, args['scenario'])
     else:
         print "Invalid action!"
