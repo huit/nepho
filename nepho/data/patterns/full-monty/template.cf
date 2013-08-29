@@ -39,8 +39,11 @@
 
     {% include 'Resources/VPC.json' %},
 
-    {{ networks.public_network(  name='Public',  subnet_space='PublicA') }},
-    {{ networks.private_network( name='Private', subnet_space='PrivateTier1A', nat_device='NATDevice') }},
+    {{ networks.public_network(  name='Public',  
+                                 subnet_space='PublicA'        ) }},
+    {{ networks.private_network( name='Private', 
+                                 subnet_space='PrivateTier1A', 
+                                 nat_device='NATDevice'        ) }},
     {{ networks.private_network( name='Data',    
                                  subnet_space='DataA',         
                                  avail_zone='us-east-1a', 

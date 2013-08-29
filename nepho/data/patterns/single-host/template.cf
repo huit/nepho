@@ -1,3 +1,4 @@
+{% import 'Parameters/instance-Parameters.json' as inst_params %}
 {% import 'Resources/Host.json'   as host     with context %}
 {% import 'Outputs/Host-URL.json' as host_url with context %}
 
@@ -8,7 +9,8 @@
   
   "Parameters" : { 
   
-    {% include 'Parameters/General-Instance-Parameters.json' %}
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {{ inst_params.inst_params(name="SingleServer") }}
     
   },
   
