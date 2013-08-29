@@ -43,7 +43,7 @@
     {{ networks.private_network( name='Private', subnet_space='PrivateTier1A', nat_device='NATDevice') }},
     {{ networks.private_network( name='Data',    
                                  subnet_space='DataA',         
-                                 avail_zone='us-east-1a', 
+                                 avail_zone='us-east-1b', 
                                  nat_device='NATDevice'        ) }},      
     {{ networks.private_network( name='DataB',   
                                  subnet_space='DataB',         

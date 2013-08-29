@@ -10,7 +10,7 @@
 
 {# ****  General public network tier **** #}
 
-    {%- macro public_network(name, subnet_space, avail_zone="us-east-1a", type='Public') -%}
+    {%- macro public_network(name, subnet_space, avail_zone="us-east-1b", type='Public') -%}
     
     "{{ name }}Subnet" : {
       "Type" : "AWS::EC2::Subnet",
@@ -59,7 +59,7 @@
 
 {# ****  General private network tier **** #}
 
-    {%- macro private_network(name, subnet_space, nat_device, avail_zone="us-east-1a", type='Private') -%}
+    {%- macro private_network(name, subnet_space, nat_device, avail_zone="us-east-1b", type='Private') -%}
     
     "{{ name }}Subnet" : {
       "Type" : "AWS::EC2::Subnet",
