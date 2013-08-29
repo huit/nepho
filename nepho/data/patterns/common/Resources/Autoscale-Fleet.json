@@ -230,6 +230,7 @@
           {# **** Inject environment variasbles about the deployment **** #}
           
 		  "# Inject some platform variables\n",
+          "NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
           {% if elb is not none  %}"NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
           {% if elb2 is not none  %}"NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
 		  {% if rds is not none  %}
