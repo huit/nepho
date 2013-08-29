@@ -55,8 +55,12 @@ function do_puppet {
 	if [ -r Puppetfile ]; then
 			HOME=/root PUPPETFILE_DIR=/etc/puppet/modules r10k puppetfile install
 	fi
-	puppet apply ${site_file}
 
+    if [[ -x ./scripts/bootstrap.sh ]]; then
+        ./scripts/bootstrap.sh
+    fi
+
+	puppet apply ${site_file}
 }
 
 #
@@ -119,8 +123,4 @@ prepare_rhel6_for_puppet
 #
 cd /tmp
 git_pull ${NEPHO_GIT_REPO_URL} ${NEPHO_GIT_REPO_BRANCH}
-echo "PWD: $PWD" >> /tmp/cfn-init.log
-if [[ -x ./scripts/bootstrap.sh ]]; then
-    ./scripts/bootstrap.sh >> /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)
-fi
 do_puppet ./manifests/site.pp >> /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)
