@@ -4,10 +4,11 @@ development:
   ConfigMgmtGitRepoBranch: steveH
   KeyName: steveH
   management: puppet
-  packages: 
+  packages: &packages
     - augeas
     - redhat-lsb
     - php
+    - php-xml
     - openssl
     - emacs
     - telnet
@@ -19,11 +20,5 @@ production:
   KeyName: steveH
   Tier1InstanceRole: varnish
   Tier2InstanceRole: mediawiki
-  packages:
-    - augeas
-    - redhat-lsb
-    - php
-    - openssl
-    - emacs
-    - telnet
+  packages: *packages
   pattern: full-monty
