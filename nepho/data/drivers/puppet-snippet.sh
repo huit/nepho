@@ -119,4 +119,7 @@ prepare_rhel6_for_puppet
 #
 cd /tmp
 git_pull ${NEPHO_GIT_REPO_URL} ${NEPHO_GIT_REPO_BRANCH}
-do_puppet ./manifests/site.pp > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)  
+if [[ -x ./scripts/bootstrap.sh ]]; then
+    ./scripts/bootstrap.sh > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)
+fi
+do_puppet ./manifests/site.pp > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)
