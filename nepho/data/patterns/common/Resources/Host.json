@@ -259,11 +259,12 @@
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
 		  {% endif %}		  		 
-		  {% if bucket is not none %}"NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",{% endif %}
-		  {% if bucket is not none %}"NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [
-                                 "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]
-                               ] 
-      }, "'\n",{% endif %}
+		  {% if bucket is not none %}
+		  "NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+		  "NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" },  "'\n",
+          "NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
+          {% endif %}
 
 		 
           {% if management !='script' and management != 'none' %}

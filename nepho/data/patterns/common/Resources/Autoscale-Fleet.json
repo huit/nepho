@@ -259,6 +259,13 @@
           "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
 
+		  {% if bucket is not none %}
+		  "NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+		  "NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" }, "'\n",
+          "NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
+          {% endif %}
+          
           {#  **** Include script snippets here ...  **** #}
           
           {% for line in script_array %}
