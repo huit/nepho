@@ -7,8 +7,6 @@ development:
   packages: &packages
     - augeas
     - redhat-lsb
-    - php
-    - php-xml
     - openssl
     - emacs
     - telnet
@@ -17,6 +15,9 @@ production:
   management: puppet
   ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
   ConfigMgmtGitRepoBranch: rds_support
+  DBName: mediawiki-poc
+  DBUsername: mediawiki
+  DBPassword: mediawiki
   KeyName: steveH
   Tier1InstanceRole: varnish
   Tier2InstanceRole: mediawiki
