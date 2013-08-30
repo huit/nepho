@@ -123,4 +123,4 @@ prepare_rhel6_for_puppet
 #
 cd /tmp
 git_pull ${NEPHO_GIT_REPO_URL} ${NEPHO_GIT_REPO_BRANCH}
-do_puppet ./manifests/site.pp >> /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)
+do_puppet ./manifests/site.pp >> /var/log/lavender.log 2>&1 || error_exit $(</var/log/lavender.log)
