@@ -62,7 +62,7 @@ def gimme_random_password(lngth=32):
     char_set = string.ascii_uppercase + string.ascii_lowercase + string.digits
     first = random.sample(alpha_char_set,1)
     rest = ''.join(random.sample(char_set*(lngth-1),lngth-1))
-    return" %s%s" % (first[0], rest)
+    return "%s%s" % (first[0], rest)
 
 def setup_awscli_driver():
     emitter = HierarchicalEmitter()
