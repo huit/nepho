@@ -41,6 +41,11 @@ import json
 import collections
 import yaml
 import string
+import random
+
+char_set = string.ascii_uppercase + string.digits
+print ''.join(random.sample(char_set*6,6))
+
 from nepho.command import command
 #from nepho.aws import Deployment
 #from nepho.aws import Template
@@ -50,9 +55,12 @@ __DEPLOYMENTS_DIR__ = 'data/deployments'
 __PATTERNS_DIR__    = 'data/patterns'
 __DRIVERS_DIR__     = 'data/drivers'
 
+
 LOG = logging.getLogger(__MODULE_NAME__)
 
-
+def gimme_random_password(lngth=32):
+    char_set = string.ascii_uppercase + string.ascii_uppercase + string.digits
+    return ''.join(random.sample(char_set*lngth,lngth))
 
 def setup_awscli_driver():
     emitter = HierarchicalEmitter()
