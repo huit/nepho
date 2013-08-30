@@ -46,11 +46,11 @@
                                  nat_device='NATDevice'        ) }},
     {{ networks.private_network( name='Data',    
                                  subnet_space='DataA',         
-                                 avail_zone='us-east-1a', 
+                                 avail_zone='us-east-1b', 
                                  nat_device='NATDevice'        ) }},      
     {{ networks.private_network( name='DataB',   
                                  subnet_space='DataB',         
-                                 avail_zone='us-east-1b', 
+                                 avail_zone='us-east-1c', 
                                  nat_device='NATDevice'        ) }},    
 
 {# **** Bastion Host & NAT **** #}
