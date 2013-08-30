@@ -43,8 +43,6 @@ import yaml
 import string
 import random
 
-char_set = string.ascii_uppercase + string.digits
-print ''.join(random.sample(char_set*6,6))
 
 from nepho.command import command
 #from nepho.aws import Deployment

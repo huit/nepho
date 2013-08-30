@@ -17,6 +17,7 @@
 
   "Parameters" : { 
   
+    {% include 'Parameters/AZ-Parameters.json' %},
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %},
     {% include 'Parameters/RDS-Parameters.json' %}, 
@@ -40,26 +41,28 @@
     {% include 'Resources/VPC.json' %},
 
     {{ networks.public_network(  name='Public',  
-    							               avail_zone='us-east-1a', 
+    							 avail_zone='{"Ref":"AZ1"}', 
                                  subnet_space='PublicA'        ) }},
     {{ networks.public_network(  name='PublicB',  
-    							               avail_zone='us-east-1b', 
+    							 avail_zone='{"Ref":"AZ2"}', 
                                  subnet_space='PublicB'        ) }},
+                                 
     {{ networks.private_network( name='PrivateA', 
                                  subnet_space='PrivateTier1A', 
-    							               avail_zone='us-east-1a',                                  
+    							 avail_zone='{"Ref":"AZ1"}',                                  
                                  nat_device='NATDevice'        ) }},
     {{ networks.private_network( name='PrivateB', 
-                                 subnet_space='PrivateTier1A', 
-    							               avail_zone='us-east-1b',                                  
+                                 subnet_space='PrivateTier1B', 
+    							 avail_zone='{"Ref":"AZ2"}',                                  
                                  nat_device='NATDevice'        ) }},
+                                 
     {{ networks.private_network( name='DataA',    
                                  subnet_space='DataA',         
-                                 avail_zone='us-east-1a', 
+                                 avail_zone='{"Ref":"AZ1"}', 
                                  nat_device='NATDevice'        ) }},      
     {{ networks.private_network( name='DataB',   
                                  subnet_space='DataB',         
-                                 avail_zone='us-east-1b', 
+                                 avail_zone='{"Ref":"AZ2"}', 
                                  nat_device='NATDevice'        ) }},    
 
 {# **** Bastion Host & NAT **** #}
