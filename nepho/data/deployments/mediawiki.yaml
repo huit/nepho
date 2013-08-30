@@ -12,7 +12,7 @@ development:
   
 testing:
 
-  pattern: partial-monty
+  pattern: double-monty
   management: puppet
   packages: [php, openssl, emacs, telnet, mysql] 
   
