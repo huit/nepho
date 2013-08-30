@@ -8,6 +8,7 @@
     {%- macro fleet(
                      name, 
                      subnet=None, 
+                     subnet2=None,
                      elb=None, 
                      elb2=None, 
                      bucket=None, 
@@ -191,11 +192,14 @@
 
             "services" : {
               "sysvinit" : {
+                {% if management == 'none' %}
                 "httpd" : {
                   "enabled"       : "true",
                   "ensureRunning" : "true",
-                  "files"         : [ "/etc/httpd/conf.d/maptobackend.conf", "/var/www/html/index.html" ]
-                }
+                  "files"         : [ "/var/www/html/index.html" ]
+                },
+                {% endif %}                
+                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
               }
             }
           }

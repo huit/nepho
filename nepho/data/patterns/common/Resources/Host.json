@@ -205,7 +205,7 @@
 
       "Properties": {
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
-        "InstanceType" : { "Ref" : "InstanceType" },
+        "InstanceType" : { "Ref" : "{{ name }}InstanceType" },
 
         {% if subnet is not none  %}
         "SubnetId" : { "Ref" : "{{ subnet }}" },

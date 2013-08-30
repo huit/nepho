@@ -57,6 +57,7 @@ __PASSWORD_REPLACE_FLAG__ = 'NEPHO_CHANGEME_PASSWORD'
 LOG = logging.getLogger(__MODULE_NAME__)
 
 def gimme_random_password(lngth=32):
+
     alpha_char_set =  string.ascii_uppercase + string.ascii_lowercase
     char_set = string.ascii_uppercase + string.ascii_lowercase + string.digits
     first = random.sample(alpha_char_set,1)
