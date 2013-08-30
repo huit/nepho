@@ -39,7 +39,7 @@
     },
 
     "DBPassword": {
-      "Default": "admin",
+      "Default": "NEPHO_CHANGEME_PASSWORD",
       "NoEcho": "true",
       "Description" : "The Drupal database admin account password",
       "Type": "String",

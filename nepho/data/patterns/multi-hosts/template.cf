@@ -1,5 +1,6 @@
-{% import 'Resources/Host.json'   as host     with context %}
-{% import 'Outputs/Host-URL.json' as host_url with context %}
+{% import 'Parameters/Instance-Parameters.json' as inst_params %}
+{% import 'Resources/Host.json'                 as host     with context %}
+{% import 'Outputs/Host-URL.json'               as host_url with context %}
 
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
@@ -8,7 +9,12 @@
   
   "Parameters" : { 
   
-    {% include 'Parameters/General-Instance-Parameters.json' %}
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {{ inst_params.inst_params(name="Server1") }},
+    {{ inst_params.inst_params(name="Server2") }},
+    {{ inst_params.inst_params(name="Server3") }},
+    {{ inst_params.inst_params(name="Server4") }},
+    {{ inst_params.inst_params(name="Server5") }}
     
   },
   
