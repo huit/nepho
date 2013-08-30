@@ -11,6 +11,7 @@ development:
     - emacs
     - telnet
   pattern: single-host
+  SingleServerInstanceRole: standalone
 production:
   management: puppet
   ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
