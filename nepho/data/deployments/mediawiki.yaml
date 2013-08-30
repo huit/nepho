@@ -15,7 +15,7 @@ development:
 production: 
   ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
   ConfigMgmtGitRepoBranch: steveH
-  DBName: mediawiki-poc
+  DBName: mediawiki
   DBPassword: mediawiki
   DBUsername: mediawiki
   KeyName: steveH
