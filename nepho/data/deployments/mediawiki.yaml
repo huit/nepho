@@ -1,8 +1,8 @@
 --- 
 development: 
   ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
-  ConfigMgmtGitRepoBranch: steveH
-  KeyName: steveH
+  ConfigMgmtGitRepoBranch: dsillverman
+  KeyName: cto-dsillverman
   SingleServerInstanceRole: standalone
   management: puppet
   packages: 
@@ -14,11 +14,11 @@ development:
   pattern: single-host
 production: 
   ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
-  ConfigMgmtGitRepoBranch: steveH
+  ConfigMgmtGitRepoBranch: dsillverman
   DBName: mediawiki
   DBPassword: mediawiki
   DBUsername: mediawiki
-  KeyName: steveH
+  KeyName: cto-dsillverman
   Tier1InstanceRole: varnish
   Tier2InstanceRole: mediawiki
   management: puppet
@@ -31,8 +31,8 @@ production:
   pattern: full-monty
 testing: 
   ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
-  ConfigMgmtGitRepoBranch: steveH
-  KeyName: steveH
+  ConfigMgmtGitRepoBranch: dsillverman
+  KeyName: cto-dsillverman
   Tier1InstanceCount: 1
   Tier1InstanceRole: mediawiki
   management: puppet
