@@ -41,6 +41,8 @@ import json
 import collections
 import yaml
 import string
+import random
+
 from nepho.command import command
 #from nepho.aws import Deployment
 #from nepho.aws import Template
@@ -50,9 +52,17 @@ __DEPLOYMENTS_DIR__ = 'data/deployments'
 __PATTERNS_DIR__    = 'data/patterns'
 __DRIVERS_DIR__     = 'data/drivers'
 
+__PASSWORD_REPLACE_FLAG__ = 'NEPHO_CHANGEME_PASSWORD'
+
 LOG = logging.getLogger(__MODULE_NAME__)
 
+def gimme_random_password(lngth=32):
 
+    alpha_char_set =  string.ascii_uppercase + string.ascii_lowercase
+    char_set = string.ascii_uppercase + string.ascii_lowercase + string.digits
+    first = random.sample(alpha_char_set,1)
+    rest = ''.join(random.sample(char_set*(lngth-1),lngth-1))
+    return "%s%s" % (first[0], rest)
 
 def setup_awscli_driver():
     emitter = HierarchicalEmitter()
@@ -168,6 +178,7 @@ def get_cf_template(pattern, context):
     return jinja_template.render(context)
 
 def parse_cf_json(str):
+    
     cf_dict =  json.loads(str, object_pairs_hook=collections.OrderedDict)
     return cf_dict
 
@@ -177,7 +188,9 @@ def get_cf_json(orderDict, pretty=False):
         outstr = json.dumps(orderDict, indent=2, separators=(',', ': '))
     else:
         outstr = json.dumps(orderDict)
-    return outstr
+        
+    password = gimme_random_password()   
+    return string.replace(outstr, __PASSWORD_REPLACE_FLAG__, password)
 
 def main(args_json=None):
     # Create an aws-cli driver
@@ -219,14 +232,13 @@ def main(args_json=None):
     paramsMap.pop('pattern')
 
     # Determine how to manage deployed instances
-    context = get_management_settings(paramsMap)
-
-
+    context = get_management_settings(paramsMap)  
 
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
         try:
             cf_dict = parse_cf_json(raw_template)
+            
             print get_cf_json(cf_dict, pretty=True)
         except ValueError:
             print raw_template

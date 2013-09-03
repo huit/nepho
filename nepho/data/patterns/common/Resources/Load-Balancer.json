@@ -11,13 +11,23 @@
     
 #}
 
-    {%- macro load_balancer(name, subnet='', port=80) -%}
+    {%- macro load_balancer(  
+                              name,
+                              subnet=None, 
+                              subnet2=None, 
+                              port=80
+                              
+                            ) -%}
     
     "{{ name }}ElasticLoadBalancer" : {
       "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
       "Properties" : {
         "SecurityGroups" : [ { "Ref" : "{{ name }}LoadBalancerSecurityGroup" } ],
-        {% if subnet is defined  %}"Subnets" : [ { "Ref" : "{{ subnet }}" } ],{% endif %}
+        {% if subnet is not none %}
+        "Subnets" : [ { "Ref" : "{{ subnet }}" }
+        {% if subnet2 is not none %}, { "Ref" : "{{ subnet2 }}" } {% endif %}
+         ],
+        {% endif %}
         "Listeners" : [ { "LoadBalancerPort" : "{{ port }}",  "InstancePort" : "{{ port }}",  "Protocol" : "HTTP" }  ],
         "HealthCheck" : {
           "Target" : "HTTP:{{ port }}/",
@@ -34,7 +44,7 @@
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "{{ name }} ELB Security Group with HTTP access on port 80 from the internet",
-        {% if subnet is defined  %}"VpcId" : { "Ref" : "VPC" },{% endif %}
+        {% if subnet is not none %}"VpcId" : { "Ref" : "VPC" },{% endif %}
         "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "{{ port }}",  "ToPort" : "{{ port }}",  "CidrIp" : "0.0.0.0/0"} ],
         "SecurityGroupEgress"  : [ { "IpProtocol" : "tcp", "FromPort" : "{{ port }}",  "ToPort" : "{{ port }}",  "CidrIp" : "0.0.0.0/0"} ]        
       }

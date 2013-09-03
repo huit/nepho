@@ -12,11 +12,16 @@
 
     {%- macro public_network(name, subnet_space, avail_zone="us-east-1b", type='Public') -%}
     
+    {# Quote anything in avail_zone that's not a CF { Ref : ... #}
+    
+    {% if avail_zone|list|first != '{' %}
+      {% set avail_zone = "\"" ~ avail_zone ~ "\"" %}
+    {% endif %}
     "{{ name }}Subnet" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
-        "AvailabilityZone" : "{{ avail_zone }}",
+        "AvailabilityZone" : {{ avail_zone }},
         "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "{{ subnet_space }}", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
@@ -59,13 +64,19 @@
 
 {# ****  General private network tier **** #}
 
-    {%- macro private_network(name, subnet_space, nat_device, avail_zone="us-east-1b", type='Private') -%}
+    {%- macro private_network(name, subnet_space, nat_device, avail_zone="us-east-1a", type='Private') -%}
+   
+    {# Quote anything in avail_zone that's not a CF { Ref : ... #}
     
+    {% if avail_zone|list|first != '{' %}
+      {% set avail_zone = "\"" ~ avail_zone ~ "\"" %}
+    {% endif %}
+        
     "{{ name }}Subnet" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
-        "AvailabilityZone" : "{{ avail_zone }}",        
+        "AvailabilityZone" : {{ avail_zone }},        
         "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "{{ subnet_space }}", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },

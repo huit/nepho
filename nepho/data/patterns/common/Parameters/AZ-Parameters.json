@@ -1,0 +1,32 @@
+{#
+
+    A typical set of parameters relevant to firing up EC2 instances, with or without sane defaults.
+    
+    Parameters:
+    
+    - KeyName: name of your SSH key registered with AWS.
+    - InstanceType: EC2 instance type (default: m1.small).
+    - InstanceCount: # of these instances (default: 1)
+    - SSHAccessRange: network range in CIDR form for access to the system via SSH (default: entire internet)
+    - ConfigMgmtGitRepo: URL of git repo for code to be used with config mgmt system, such as puppet.
+    - ConfigMgmtGitRepoBranch: branch, etc. for config mgmt repo
+       
+#} 
+   
+"AZ1" : {
+  "Description" : "String describing the first AZ we're using",
+  "Type" : "String",
+  "Default" : "us-east-1a"
+},
+
+"AZ2" : {
+  "Description" : "String describing the second AZ we're using",
+  "Type" : "String",
+  "Default" : "us-east-1b" 
+},
+
+"AZ3" : {
+  "Description" : "String describing the third (if used) AZ we're using",
+  "Type" : "String",
+  "Default" : "us-east-1c"
+}
