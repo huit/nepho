@@ -64,7 +64,7 @@
 
 {# ****  General private network tier **** #}
 
-    {%- macro private_network(name, subnet_space, nat_device, avail_zone="us-east-1a", type='Private') -%}
+    {%- macro private_network(name, subnet_space, nat_device, avail_zone="us-east-1b", type='Private') -%}
    
     {# Quote anything in avail_zone that's not a CF { Ref : ... #}
     
