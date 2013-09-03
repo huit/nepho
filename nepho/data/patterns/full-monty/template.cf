@@ -19,10 +19,10 @@
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %},
-    {% include 'Parameters/RDS-Parameters.json' %}, 
-    {{ inst_params.inst_params(name="Tier1") }},  
+    {% include 'Parameters/RDS-Parameters.json' %},
+    {% include 'Parameters/AZ-Parameters.json' %},
+    {{ inst_params.inst_params(name="Tier1") }},
     {{ inst_params.inst_params(name="Tier2") }}
-    
   },
 
   "Mappings" : {  
