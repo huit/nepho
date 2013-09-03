@@ -22,7 +22,8 @@ function prepare_rhel6_for_puppet {
 	local extra_pkgs=$*
 
 	# Get the puppet labs repo installed
-	rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm
+	rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm ||
+        echo "Unable to install Puppet Labs repo: exit code $?"
 
 	# Get EPEL installed
 	EPEL_RPM=http://mirror.utexas.edu/epel/6/i386/epel-release-6-8.noarch.rpm
@@ -37,7 +38,8 @@ function prepare_rhel6_for_puppet {
 	yum -y --enablerepo=epel --disableplugin=priorities update ${PKGS}
 
 	# install r10k using gem
-	gem install r10k
+	gem install r10k ||
+        echo "Unable to install r10k: exit code $?"
 
 	echo $( facter operatingsystem )
 	# to convince puppet we're a RHEL derivative, and then get EPEL installed
