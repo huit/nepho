@@ -267,7 +267,7 @@
 		  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
 		  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
           "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" }, "'\n",
-         "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
+          "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
           {% endif %}
           
           {#  **** Include script snippets here ...  **** #}
