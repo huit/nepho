@@ -4,8 +4,6 @@ development:
   ConfigMgmtGitRepoBranch: master
   KeyName: mediawiki-poc
   SingleServerInstanceRole: standalone
-  AZ1: us-east-1a
-  AZ2: us-east-1b
   management: puppet
   packages: 
     - augeas
@@ -21,8 +19,6 @@ testing:
   KeyName: mediawiki-poc
   Tier1InstanceCount: 1
   Tier1InstanceRole: mediawiki
-  AZ1: us-east-1a
-  AZ2: us-east-1b  
   management: puppet
   packages: 
     - augeas
