@@ -39,12 +39,13 @@
 
     {% include 'Resources/VPC.json' %},
 
-    {{ networks.public_network(  name='Public',  
-                                 avail_zone='{"Ref":"AZ1"}', 
+
+    {{ networks.public_network(  name='Public',
+                                 avail_zone='{"Ref":"AZ1"}',   
                                  subnet_space='PublicA'        ) }},
     {{ networks.private_network( name='Private', 
-                                 subnet_space='PrivateTier1A', 
-                                 avail_zone='{"Ref":"AZ2"}', 
+                                 avail_zone='{"Ref":"AZ1"}', 
+                                 subnet_space='PrivateTier1A',
                                  nat_device='NATDevice'        ) }},
     {{ networks.private_network( name='Data',    
                                  subnet_space='DataA',         
@@ -74,6 +75,7 @@
 {# **** Public Tier Application instances **** #}
 
     {{ elb.load_balancer(name='Tier1', subnet='PublicSubnet',  port=80) }},
+
     {{ fleet.fleet(      name='Tier1', 
                          subnet='PrivateSubnet', 
                          elb='Tier1ElasticLoadBalancer', 
@@ -88,6 +90,7 @@
     {{ fleet.fleet(       name='Tier2', 
                           subnet='PrivateSubnet', 
                           elb='Tier2ElasticLoadBalancer', 
+                          bucket='SharedS3Bucket',
                           rds='Tier3DBInstance',
                           ports=[80]) }}
 
