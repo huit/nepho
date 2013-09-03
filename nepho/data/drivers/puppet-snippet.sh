@@ -2,7 +2,7 @@
 #
 # Required packages for bootstrapped system	
 #
-REQUIRED_PKGS="puppet git curl wget s3cmd aws-cli ruby-devel rubygems gcc"
+REQUIRED_PKGS="puppet augeas redhat-lsb git curl wget s3cmd aws-cli ruby-devel rubygems gcc"
 
 #
 # Prepare a RHEL-ish v6 instance for puppetization
@@ -53,10 +53,14 @@ function do_puppet {
 
 	#r10k deploy environment --puppetfile Puppetfile
 	if [ -r Puppetfile ]; then
-			HOME=/root r10k puppetfile install
+			HOME=/root PUPPETFILE_DIR=/etc/puppet/modules r10k puppetfile install
 	fi
-	puppet apply ${site_file}  --modulepath=./modules
 
+    if [[ -x ./scripts/bootstrap.sh ]]; then
+        ./scripts/bootstrap.sh
+    fi
+
+	puppet apply ${site_file}
 }
 
 #
@@ -119,4 +123,4 @@ prepare_rhel6_for_puppet
 #
 cd /tmp
 git_pull ${NEPHO_GIT_REPO_URL} ${NEPHO_GIT_REPO_BRANCH}
-do_puppet ./manifests/site.pp > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)  
+do_puppet ./manifests/site.pp >> /var/log/lavender.log 2>&1 || error_exit $(</var/log/lavender.log)
