@@ -14,7 +14,7 @@
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
-        "AvailabilityZone" : "us-east-1b",
+        "AvailabilityZone" : '{"Ref":"AZ2"}',
         "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "DataA", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
@@ -46,7 +46,7 @@
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
-        "AvailabilityZone" : "us-east-1b",        
+        "AvailabilityZone" : '{"Ref":"AZ2"}',        
         "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "DataB", "CIDR" ]},
         "Tags" : [
           {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} },
