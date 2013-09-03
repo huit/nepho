@@ -231,19 +231,19 @@
           "   --secret-key ", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},
           "   --region ", { "Ref" : "AWS::Region" }, " >> /var/log/cfn-init.log 2>&1 || error_exit $(</var/log/cfn-init.log)\n",
 
-          {# **** Inject environment variasbles about the deployment **** #}
+          {# **** Inject environment variables about the deployment **** #}
           
 		  "# Inject some platform variables\n",
-          "NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
-          {% if elb is not none  %}"NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
-          {% if elb2 is not none  %}"NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
+          "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
+          {% if elb is not none  %}"export NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
+          {% if elb2 is not none  %}"export NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
 		  {% if rds is not none  %}
-		  "NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
-		  "NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
-		  "NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
-		  "NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
-		  "NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",  
-		  "NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
+		  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+		  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+		  "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+		  "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
+		  "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",  
+		  "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
 		            "", [ "mysql://",
                           { "Ref" : "DBUsername" },
                           ":",      
@@ -259,15 +259,15 @@
 		  
           "# pull & setup puppet modules and run manifest\n",
           {% if management !='script' and management != 'none' %}
-          "NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
-          "NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
+          "export NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
+          "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
 
 		  {% if bucket is not none %}
-		  "NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
-		  "NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
-          "NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" }, "'\n",
-          "NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
+		  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+		  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" }, "'\n",
+         "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
           {% endif %}
           
           {#  **** Include script snippets here ...  **** #}

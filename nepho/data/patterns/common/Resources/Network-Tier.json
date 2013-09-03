@@ -10,7 +10,7 @@
 
 {# ****  General public network tier **** #}
 
-    {%- macro public_network(name, subnet_space, avail_zone="us-east-1a", type='Public') -%}
+    {%- macro public_network(name, subnet_space, avail_zone="us-east-1b", type='Public') -%}
     
     {# Quote anything in avail_zone that's not a CF { Ref : ... #}
     

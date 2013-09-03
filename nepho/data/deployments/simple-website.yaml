@@ -7,6 +7,6 @@ development:
   script: scripts/simple-website.sh
   packages: [httpd, php] 
   
-  KeyName: parrott-ec2
+  KeyName: steveH
 
   
