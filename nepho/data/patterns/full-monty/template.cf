@@ -90,6 +90,7 @@
     {{ fleet.fleet(       name='Tier2', 
                           subnet='PrivateSubnet', 
                           elb='Tier2ElasticLoadBalancer', 
+                          bucket='SharedS3Bucket',
                           rds='Tier3DBInstance',
                           ports=[80]) }}
 
