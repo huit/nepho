@@ -86,14 +86,13 @@
 
 {# **** Private Tier Application instances **** #}
 
-    {{ elb.load_balancer( name='Tier2', subnet='PrivateSubnet',  port=80) }},
+    {{ elb.load_balancer( name='Tier2', subnet='PrivateSubnet', internal=True, port=8080) }},
     {{ fleet.fleet(       name='Tier2', 
                           subnet='PrivateSubnet', 
                           elb='Tier2ElasticLoadBalancer', 
                           bucket='SharedS3Bucket',
                           rds='Tier3DBInstance',
-                          ports=[80]) }}
-
+                          ports=[8080]) }}
     
   },
  
