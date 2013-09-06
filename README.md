@@ -117,7 +117,9 @@ List of usual suspects for environment variables you may see in the bootstrap bu
 
     NEPHO_INSTANCE_ROLE='varnish'   
     
-    NEPHO_EXTERNAL_HOSTNAME='my-big-te-Tier1Ela-1LC2575.us-east-1.elb.amazonaws.com'
+    NEPHO_PUBLIC_HOSTNAME='my-predefined-hostname'
+    NEPHO_FORWARD_HOSTNAME='my-big-te-Tier1Ela-1LC2575.us-east-1.elb.amazonaws.com'
+    NEPHO_EXTERNAL_HOSTNAME='my-big-te-Tier1Ela-1LC2575.us-east-1.elb.amazonaws.com'  (DEPRECATED)
     NEPHO_BACKEND_HOSTNAME='my-big-te-Tier2Ela-VMAHLSMR6FUJ-897826568.us-east-1.elb.amazonaws.com'
 
     NEPHO_S3_BUCKET='test-shareds3bucket-1xafnew4ickzu'
