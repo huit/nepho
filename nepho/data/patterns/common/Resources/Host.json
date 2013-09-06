@@ -27,6 +27,7 @@
                     subnet=None, 
                     elb=None, 
                     elb2=None, 
+                    public_hostname=None,
                     rds=None, 
                     bucket=None, 
                     public='no'
@@ -237,6 +238,20 @@
           {# **** Inject environment variables about the deployment **** #}
           
 		  "# Inject some platform variables\n",
+		  
+          "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
+          {% if elb is not none  %}
+          "export NEPHO_FORWARD_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",
+          "export NEPHO_PUBLIC_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",
+          {% endif %}
+          {% if elb2 is not none  %}
+          "export NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",
+          {% endif %} 	  
+          {% if public_hostname is not none %}
+          "export NEPHO_PUBLIC_HOSTNAME='{{ public_hostname }}'\n",
+          {% endif %}
+          "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
+		  
 		  "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
           {% if elb is not none  %}"export NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
           {% if elb2 is not none %}"export NEPHO_BACKEND_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
