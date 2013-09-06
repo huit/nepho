@@ -16,11 +16,11 @@
   "Description" : "AWS CloudFormation Template for a two tier VPC with relevant components in place for an app stack.",
 
   "Parameters" : { 
-  
+
+    {% include 'Parameters/AZ-Parameters.json' %},  
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %},
     {% include 'Parameters/RDS-Parameters.json' %},
-    {% include 'Parameters/AZ-Parameters.json' %},
     {{ inst_params.inst_params(name="Tier1") }},
     {{ inst_params.inst_params(name="Tier2") }}
   },
@@ -74,26 +74,33 @@
        
 {# **** Public Tier Application instances **** #}
 
-    {{ elb.load_balancer(name='Tier1', subnet='PublicSubnet',  port=80) }},
+    {{ elb.load_balancer( name='Tier1', 
+                          subnet='PublicSubnet',  
+                          port=80) }},
 
     {{ fleet.fleet(      name='Tier1', 
                          subnet='PrivateSubnet', 
                          elb='Tier1ElasticLoadBalancer', 
                          elb2='Tier2ElasticLoadBalancer',
+                         public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}',
                          bucket='SharedS3Bucket',
                          rds='Tier3DBInstance',
                          ports=[80] ) }},  
 
 {# **** Private Tier Application instances **** #}
 
-    {{ elb.load_balancer( name='Tier2', subnet='PrivateSubnet',  port=80) }},
+    {{ elb.load_balancer( name='Tier2', 
+                          subnet='PrivateSubnet', 
+                          internal=True, 
+                          port=8080               ) }},
+    
     {{ fleet.fleet(       name='Tier2', 
                           subnet='PrivateSubnet', 
                           elb='Tier2ElasticLoadBalancer', 
+                          public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}',
                           bucket='SharedS3Bucket',
                           rds='Tier3DBInstance',
-                          ports=[80]) }}
-
+                          ports=[8080]) }}
     
   },
  

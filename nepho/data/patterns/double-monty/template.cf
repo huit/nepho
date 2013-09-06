@@ -89,19 +89,23 @@
                          subnet2='PrivateBSubnet',                          
                          elb='Tier1ElasticLoadBalancer', 
                          elb2='Tier2ElasticLoadBalancer',
+                         public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}',
                          bucket='SharedS3Bucket',
                          rds='Tier3DBInstance',
                          ports=[80] ) }},  
 
 {# **** Private Tier Application instances **** #}
 
-    {{ elb.load_balancer( name='Tier2', subnet='PrivateASubnet', subnet2='PrivateBSubnet', port=80) }},
+    {{ elb.load_balancer( name='Tier2', subnet='PrivateASubnet', subnet2='PrivateBSubnet', internal=True, port=8080) }},
+    
     {{ fleet.fleet(       name='Tier2', 
                           subnet='PrivateASubnet', 
                           subnet2='PrivateBSubnet',                           
-                          elb='Tier2ElasticLoadBalancer', 
+                          elb='Tier2ElasticLoadBalancer',
+                          public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}', 
+                          bucket='SharedS3Bucket',                          
                           rds='Tier3DBInstance',
-                          ports=[80]) }}
+                          ports=[8080]) }}
   
   },
  

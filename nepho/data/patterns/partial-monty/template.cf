@@ -17,6 +17,7 @@
 
   "Parameters" : { 
   
+    {% include 'Parameters/AZ-Parameters.json' %},  
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %},
     {% include 'Parameters/RDS-Parameters.json' %}, 
@@ -38,12 +39,14 @@
 
     {% include 'Resources/VPC.json' %},
 
-    {{ networks.public_network(  name='Public',  
+    {{ networks.public_network(  name='Public',
+                                 avail_zone='{"Ref":"AZ1"}',   
                                  subnet_space='PublicA'        ) }},
     {{ networks.private_network( name='Private', 
-                                 subnet_space='PrivateTier1A', 
+                                 avail_zone='{"Ref":"AZ1"}', 
+                                 subnet_space='PrivateTier1A',
                                  nat_device='NATDevice'        ) }},
-   
+
 
 {# **** Bastion Host & NAT **** #}
 
@@ -53,15 +56,21 @@
 {# **** S3 **** #}
 
     {{ s3.bucket(name='Shared') }},
-       
+
+
 {# **** Public Tier Application instances **** #}
 
-    {{ elb.load_balancer(name='Tier1', subnet='PublicSubnet',  port=80) }},
+    {{ elb.load_balancer( name='Tier1', 
+                          subnet='PublicSubnet',  
+                          port=80) }},
+
     {{ fleet.fleet(      name='Tier1', 
                          subnet='PrivateSubnet', 
                          elb='Tier1ElasticLoadBalancer', 
+                         public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}',
                          bucket='SharedS3Bucket',
-                         ports=[80] ) }}
+                         ports=[80] ) }} 
+
   },
  
   "Outputs" : {

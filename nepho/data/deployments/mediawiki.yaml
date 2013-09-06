@@ -47,4 +47,24 @@ production:
     - emacs
     - telnet
   pattern: full-monty
-    
+
+full-production: 
+  ConfigMgmtGitRepo: "https://github.com/huit/mediawiki-puppet-build.git"
+  ConfigMgmtGitRepoBranch: master
+  DBName: mediawiki
+  DBPassword: mediawiki
+  DBUsername: mediawiki
+  KeyName: mediawiki-poc
+  Tier1InstanceRole: varnish
+  Tier2InstanceRole: mediawiki
+  AZ1: us-east-1a
+  AZ2: us-east-1b  
+  management: puppet
+  packages: 
+    - augeas
+    - redhat-lsb
+    - openssl
+    - emacs
+    - telnet
+  pattern: double-monty
+      
