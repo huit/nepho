@@ -1,0 +1,63 @@
+{# 
+    Deploys a basic three tier VPC virtual datacenter, with test hosts on each tier.
+#}
+
+{% import 'Parameters/Instance-Parameters.json' as inst_params %}
+{% import 'Resources/Network-Tier.json' as networks with context %}
+{% import 'Resources/Host.json'         as host     with context %}
+{% import 'Outputs/Host.json'           as host_out with context %}
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "AWS CloudFormation Template for a basic three-tier VPC environment with test hosts",
+
+  "Parameters" : { 
+  
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/NAT-Instance-Parameters.json' %},
+    {{ inst_params.inst_params(name="PrivateTierHost") }}
+    {{ inst_params.inst_params(name="DataTierHost") }}   
+  },
+
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
+
+  "Resources" : { 
+
+{# **** Define VPC network structures **** #}
+
+    {% include 'Resources/VPC.json' %},
+
+    {{ networks.public_network( 'Public',  'PublicA') }},
+    {{ networks.private_network('Private', 'PrivateTier1A', 'NATDevice') }},   
+    {{ networks.private_network('Data',  'DataA', 'NATDevice') }},      
+    {{ networks.private_network('DataB', 'DataB', 'NATDevice') }},
+  
+{# **** Bastion Host & NAT **** #}
+
+    {% include 'Resources/NAT.json' %}, 
+    {% include 'Resources/BastionHost.json' %},
+
+    {{ host.host( name='PrivateTierHost', ports=[22], subnet='PrivateSubnet') }},
+    {{ host.host( name='DataTierHost',    ports=[22], subnet='DataSubnet') }}
+        
+  }, 
+  
+  "Outputs" : {
+  
+    {% include 'Outputs/BastionHost.json' %},
+    {% include 'Outputs/NAT.json' %},
+    {{ host_out.host( name='PrivateTierHost' ) }},
+    {{ host_out.host( name='DataTierHost' ) }}   
+    
+  }
+}
+
+
+ 

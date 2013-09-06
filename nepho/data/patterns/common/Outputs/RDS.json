@@ -1,0 +1,52 @@
+{# 
+   Output strings specific to contacting the RDS database.
+#}   
+
+    {%- macro mysql(name) -%}
+   
+    "{{ name }}DBConnectionString": {
+      "Description" : "Connection string for database",
+      "Value" : { "Fn::Join": [ "", [ "mysql://",
+                                      { "Ref" : "DBUsername" },
+                                      ":",      
+                                      { "Ref" : "DBPassword" },       
+                                       "@",                               
+                                      { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
+                                      "/",
+                                      { "Ref": "DBName" }]]}
+    },
+
+    "{{ name }}JDBCConnectionString": {
+      "Description" : "JDBC connection string for database {{ name }}",
+      "Value" : { "Fn::Join": [ "", [ "jdbc:mysql://",
+                                      { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
+                                      "/",
+                                      { "Ref": "DBName" }]]}
+    },
+
+    "{{ name }}DBCommandLine": {
+      "Description" : "Shell access commandline",
+      "Value" : { 
+                  "Fn::Join": [                    	
+                                "", 
+                                [ 
+                                  "mysql -u ",
+                                  { "Ref" : "DBUsername" },
+                                  " -p",
+                                  { "Ref" : "DBPassword" },       
+                                  " -h ",
+                                  { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Address" ] },
+                                  " -P ",
+                                  { "Fn::GetAtt": [ "{{ name }}DBInstance", "Endpoint.Port" ] },
+                                  " ",  
+                                  { "Ref": "DBName" }
+                                ]
+                              ]
+                   }
+    }
+    
+    {% endmacro %}

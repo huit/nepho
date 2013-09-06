@@ -1,0 +1,41 @@
+{#
+
+    Standard AWS Linux template mappings, for general use.
+    
+    Refers to Amazon Linuz v(TDB).
+    
+#}
+    "AWSInstanceType2Arch" : {
+      "t1.micro"    : { "Arch" : "64" },
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "m3.xlarge"   : { "Arch" : "64" },
+      "m3.2xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc1.4xlarge" : { "Arch" : "64HVM" },
+      "cc2.8xlarge" : { "Arch" : "64HVM" },
+      "cg1.4xlarge" : { "Arch" : "64HVM" }
+    },
+
+{# See http://aws.amazon.com/amazon-linux-ami/ #}
+
+    "AWSRegionArch2AMI" : {
+      "us-east-1"      : { "32" : "ami-3b355a52", "64" : "ami-570f603e", "64HVM" : "ami-a73758ce" },
+      "us-west-1"      : { "32" : "ami-cf5bcdff", "64" : "ami-5359cf63", "64HVM" : "ami-d75bcde7" },      
+      "us-west-2"      : { "32" : "ami-31fed174", "64" : "ami-c5fed180", "64HVM" : "ami-47fed102" },      
+      "eu-west-1"      : { "32" : "ami-d5c0d6a1", "64" : "ami-d9c0d6ad", "64HVM" : "ami-d1c0d6a5" },
+
+{# These need to be updated to release 2013.3.1 #}
+      
+      "ap-southeast-1" : { "32" : "ami-220b4a70", "64" : "ami-3c0b4a6e", "64HVM" : "NOT_YET_SUPPORTED" },
+      "ap-southeast-2" : { "32" : "ami-8f990eb5", "64" : "ami-95990eaf", "64HVM" : "NOT_YET_SUPPORTED" },
+      "ap-northeast-1" : { "32" : "ami-2a19aa2b", "64" : "ami-2819aa29", "64HVM" : "NOT_YET_SUPPORTED" },
+      "sa-east-1"      : { "32" : "ami-f836e8e5", "64" : "ami-fe36e8e3", "64HVM" : "NOT_YET_SUPPORTED" }
+      
+    }

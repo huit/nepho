@@ -1,0 +1,54 @@
+{#
+    Load Balancer for web traffic on 80 and 443.
+    
+    Assumes:
+    
+    1) that the VPC is named "VPC," 
+    2) a public network in the VPC named "PublicSubnet",
+    3) a private network tier "PrivateSubnet",
+    4) a Launch Config named "LaunchConfig"
+    5) typical set of instance parameters, in partiular value "InstanceCount"
+    
+#}
+
+    {%- macro load_balancer(  
+                              name,
+                              subnet=None, 
+                              subnet2=None,
+                              internal=None, 
+                              port=80                             
+                            ) -%}
+    
+    "{{ name }}ElasticLoadBalancer" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "SecurityGroups" : [ { "Ref" : "{{ name }}LoadBalancerSecurityGroup" } ],
+        {% if subnet is not none %}
+        "Subnets" : [ { "Ref" : "{{ subnet }}" }
+        {% if subnet2 is not none %}, { "Ref" : "{{ subnet2 }}" } {% endif %}
+         ],
+        {% endif %}
+        {% if internal is not none %}"Scheme" : "internal", {% endif %}
+        "Listeners" : [ { "LoadBalancerPort" : "{{ port }}",  "InstancePort" : "{{ port }}",  "Protocol" : "HTTP" }  ],
+        "HealthCheck" : {
+          "Target" : "HTTP:{{ port }}/",
+          "HealthyThreshold" : "3",
+          "UnhealthyThreshold" : "5",
+          "Interval" : "10",
+          "Timeout" : "5"
+        }
+      },
+      "DependsOn" : "AttachGateway"
+    },
+
+    "{{ name }}LoadBalancerSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "{{ name }} ELB Security Group with HTTP access on specified port 80 from the internet",
+        {% if subnet is not none %}"VpcId" : { "Ref" : "VPC" },{% endif %}
+        "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "{{ port }}",  "ToPort" : "{{ port }}",  "CidrIp" : "0.0.0.0/0"} ],
+        "SecurityGroupEgress"  : [ { "IpProtocol" : "tcp", "FromPort" : "{{ port }}",  "ToPort" : "{{ port }}",  "CidrIp" : "0.0.0.0/0"} ]        
+      }
+    }
+
+    {%- endmacro  %}   

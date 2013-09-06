@@ -6,7 +6,7 @@ development:
   management: script
   script: ./deployments/scripts/yas3fs.sh
   packages: [python-pip, fuse, fuse-libs]
-  
   KeyName: parrott-ec2
+
 
   

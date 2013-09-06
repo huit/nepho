@@ -1,0 +1,89 @@
+{#
+
+    A typical set of parameters relevant to Amazon RDS.
+    
+    TODO: Currently it's specific to MySQL default, but we will want to generalize.
+    
+    Parameters:
+    
+    - DBName: name of the instantiated database.
+    - DBUsername: username within the DB instance of database role with admin privileges over the database.
+    - DBPassword: password for the database admin user.
+    - DBEngine: flavor of DB to create (default: "MySQL")
+    - DBEngineVersion: version of DB to use (will depend on engine type, default: "5.5" )
+    - DBClass: size of the database to instantiate (default: db.m1.small)
+    - DBAllocatedStorage: disk space in Gb set aside for runtime storage (default: 5 Gb)
+    - MultiAZDatabase: whether the database should be HA across multiple availability zones (default: "false")
+    
+#}  
+
+    "DBName": {
+      "Default": "mydatabase",
+      "Description" : "The database name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBUsername": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description" : "The Drupal database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPassword": {
+      "Default": "NEPHO_CHANGEME_PASSWORD",
+      "NoEcho": "true",
+      "Description" : "The Drupal database admin account password",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "DBEngine" : {
+      "Default" : "MySQL",
+      "Description" : "Database type",
+      "Type" : "String",
+      "AllowedValues" : [ "MySQL" ],
+      "ConstraintDescription" : "must select a valid database instance type."
+    },
+    
+    "DBEngineVersion" : {
+      "Default" : "5.5",
+      "Description" : "Database version",
+      "Type" : "String"
+    },
+    
+    "DBClass" : {
+      "Default" : "db.m1.small",
+      "Description" : "Database instance class",
+      "Type" : "String",
+      "AllowedValues" : [ "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge" ],
+      "ConstraintDescription" : "must select a valid database instance type."
+    },
+
+    "DBAllocatedStorage" : {
+      "Default": "5",
+      "Description" : "The size of the database (Gb)",
+      "Type": "Number",
+      "MinValue": "5",
+      "MaxValue": "1024",
+      "ConstraintDescription" : "must be between 5 and 1024Gb."
+    },
+
+    "MultiAZDatabase": {
+      "Default": "false",
+      "Description" : "Create a multi-AZ MySQL Amazon RDS database instance",
+      "Type": "String",
+      "AllowedValues" : [ "true", "false" ],
+      "ConstraintDescription" : "must be either true or false."
+    }

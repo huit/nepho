@@ -1,0 +1,81 @@
+
+{% import 'Parameters/instance-Parameters.json' as inst_params %}
+{% import 'Resources/Network-Tier.json'  as networks with context %}
+{% import 'Resources/S3-Bucket.json'            as s3 with context %}
+{% import 'Resources/Host.json'          as host     with context %}
+{% import 'Resources/Load-Balancer.json' as elb      with context %}  
+{% import 'Resources/Autoscale-Fleet.json' as fleet  with context %} 
+{% import 'Outputs/Host.json'            as host_out with context %}
+{% import 'Outputs/S3-Bucket.json'       as s3_out with context %}
+{% import 'Outputs/ELB-URL.json'         as elb_out with context %}
+
+
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "AWS CloudFormation Template for a two tier VPC with relevant components in place for an app stack.",
+
+  "Parameters" : { 
+  
+    {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/NAT-Instance-Parameters.json' %}, 
+    {{ inst_params.inst_params(name="Tier1") }},  
+    {{ inst_params.inst_params(name="Tier2") }}
+
+  },
+
+  "Mappings" : {  
+  
+    {% include 'Mappings/AWS-Instance-Mappings.json' %},
+    {% include 'Mappings/AWS-NAT-Instance-Mappings.json' %},
+    {% include 'Mappings/Subnet-Mappings.json' %}    
+    
+  },
+
+  "Resources" : { 
+
+{# **** Define VPC network structures **** #}
+
+    {% include 'Resources/VPC.json' %},
+
+    {{ networks.public_network(  name='Public',  subnet_space='PublicA') }},
+    {{ networks.private_network( name='Private', subnet_space='PrivateTier1A', nat_device='NATDevice') }},
+
+{# **** Bastion Host & NAT **** #}
+
+    {% include 'Resources/NAT.json' %}, 
+    {% include 'Resources/BastionHost.json' %},
+
+{# **** S3 **** #}
+
+    {{ s3.bucket(name='Shared') }},
+
+{# **** Public Tier Application instances **** #}
+
+
+    {{ elb.load_balancer(name='Tier1', subnet='PublicSubnet',  port=80) }},
+    {{ fleet.fleet(
+                         name='Tier1', 
+                         subnet='PrivateSubnet', 
+                         elb='Tier1ElasticLoadBalancer', 
+                         bucket='SharedS3Bucket',
+                         ports=[80] 
+                   ) }},
+
+    {{ host.host( name='SingleServer', subnet='PrivateSubnet', bucket='SharedS3Bucket', ports=[80, 443]) }},
+
+{# **** Private Tier Application instances **** #}
+
+    {{ elb.load_balancer( name='Tier2', subnet='PrivateSubnet',  port=80) }},
+    {{ fleet.fleet(       name='Tier2', subnet='PrivateSubnet', elb='Tier2ElasticLoadBalancer', ports=[80]) }}
+
+  },
+   
+  "Outputs" : {
+
+    {{ elb_out.elb(name='Tier1ElasticLoadBalancer') }}, 
+    {{ s3_out.bucket(name='SharedS3Bucket') }},
+    {% include 'Outputs/BastionHost.json' %},
+    {% include 'Outputs/NAT.json' %}
+
+  }
+
+}

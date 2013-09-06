@@ -1,0 +1,331 @@
+{#
+
+
+#}
+
+{# ****  General host on EC2, in or out of a VPC **** #}
+
+    {%- macro fleet(
+                     name, 
+                     subnet=None, 
+                     subnet2=None,
+                     elb=None, 
+                     elb2=None, 
+                     public_hostname=None,
+                     bucket=None, 
+                     rds=None, 
+                     ports=[80]
+                   ) -%}
+    
+    {# ************************
+    
+             IAM Objects
+       
+       ************************ #}
+         
+    "{{ name }}User" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": { "Statement":[{
+            "Effect": "Allow",
+            "Action": [
+              "cloudformation:DescribeStackResource"
+            ],
+            "Resource": "*"
+          }]}
+        }]
+      }
+    },
+
+    {% if bucket is not none  %}   
+    "{{ name }}BucketPolicy" : {
+      "Type" : "AWS::S3::BucketPolicy",
+      "Properties" : {
+        "PolicyDocument": {
+          "Id":"{{ name }}BucketPolicyDoc",
+          "Statement":[ {
+              "Sid":"ReadAccess",
+	          "Action":["s3:GetObject"],
+	          "Effect":"Allow",
+	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "/*" ]]},
+	          "Principal":{ "AWS": { "Fn::GetAtt" : [ "{{ name }}User", "Arn" ]} }
+          } ]
+        },
+        "Bucket" : {"Ref" : "{{ bucket }}"}
+      }
+    },
+    {% endif %}
+    
+    "{{ name }}Keys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "{{ name }}User"}
+      }
+    },
+      
+    {# ************************
+    
+           Autoscale & Instance 
+             Objects
+       
+       ************************ #}
+               
+    "{{ name }}Fleet" : {
+      {% if subnet is not none  %}"DependsOn" : "NATIPAddress",{% endif %}
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "AvailabilityZones" : [{ "Fn::GetAtt" : [ "{{ subnet }}", "AvailabilityZone" ] }],
+        "VPCZoneIdentifier" : [{ "Ref" : "{{ subnet }}" }],
+        "LaunchConfigurationName" : { "Ref" : "{{ name }}LaunchConfig"  },
+        "MinSize" : "1",
+        "MaxSize" : "10",
+        "DesiredCapacity" : { "Ref" : "{{ name }}InstanceCount" },
+        "LoadBalancerNames" : [ { "Ref" : "{{ elb }}" } ],
+        "Tags" : [ { "Key" : "Network", "Value" : "Public", "PropagateAtLaunch" : "true" } ]
+      }
+    },  
+    
+    "{{ name }}SecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        {% if subnet is not none  %}
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupEgress" : [
+            { "IpProtocol" : "tcp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" },
+            { "IpProtocol" : "udp", "FromPort" : "0", "ToPort" : "65535", "CidrIp" : "0.0.0.0/0" }
+         ],        
+        {% endif %} 
+        "GroupDescription" : "Security group with access for {{ ports }}",
+        "SecurityGroupIngress" : [
+          {% for p in ports %}
+          {"IpProtocol" : "tcp", "FromPort" : "{{ p }}",  "ToPort" :  "{{ p }}", "CidrIp" : "0.0.0.0/0"},
+          {% endfor %}
+          {"IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : { "Ref" : "SSHAccessRange"}}
+        ]
+      }      
+    },     
+        
+    "{{ name }}LaunchConfig"  : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata" : {
+        "Comment1" : "Configure the {{ name }}Server to forward /backend requests to the backend servers",
+
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "packages" : {
+              "yum" : {
+                {% for pkg in packages %}
+                "{{ pkg }}" : [],
+                {% endfor %}  
+                {% if management == 'puppet' %}
+                "ruby"            : [],
+                "rubygems"        : [],
+                "ruby-devel"      : [],
+                "gcc"             : [],
+                "gcc-c++"         : [],
+                "puppet"          : [],
+                {% endif %}                
+                "curl"         : [],
+                "wget"         : [],
+                "aws-cli"      : [],
+                "aws-scripts-ses" : [],
+                "aws-apitools-ec2" : [], 
+                "aws-amitools-ec2" : [],
+                "aws-apitools-mon" : [],
+                "aws-apitools-elb" : [],
+                "aws-apitools-rds" : [],
+                "git"              : []        
+              }
+            },
+
+            "files" : {
+            
+              {% if management == 'none' %} 
+              "/var/www/html/index.html" : {
+                "content" : { "Fn::Join" : ["\n", [
+                  "<img src=\"https://s3.amazonaws.com/cloudformation-examples/cloudformation_graphic.png\" alt=\"AWS CloudFormation Logo\"/>",
+                  "<h1>Congratulations, you have successfully launched an AWS CloudFormation sample.</h1>"
+                ]]},
+                "mode"    : "000644",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              {% endif %}
+
+              "/etc/aws.cfg" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[default]\n",
+                  "aws_access_key_id=", { "Ref" : "{{ name }}Keys" }, "\n",
+                  "aws_secret_access_key=", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              
+              "/etc/profile.d/aws-cfg-file.sh" : {
+                "content" : { "Fn::Join" : ["", [
+                  "export AWS_CONFIG_FILE=/etc/aws.cfg\n"
+                ]]},
+                "mode"    : "000444",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              
+              "/etc/cfn/cfn-credentials" : {
+                "content" : { "Fn::Join" : ["", [
+                  "AWSAccessKeyId=", { "Ref" : "{{ name }}Keys" }, "\n",
+                  "AWSSecretKey=", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/cfn/cfn-hup.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[main]\n",
+                  "stack=", { "Ref" : "AWS::StackName" }, "\n",
+                  "credential-file=/etc/cfn/cfn-credentials\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                "content": { "Fn::Join" : ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.{{ name }}Instance.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackName" }, " -r {{ name }}Instance ",
+                                                   " --credential-file /etc/cfn/cfn-credentials ",
+                                                   " --region     ", { "Ref" : "AWS::Region" }, "\n",
+                  "runas=root\n"
+                ]]}
+              }
+            },
+
+            "services" : {
+              "sysvinit" : {
+                {% if management == 'none' %}
+                "httpd" : {
+                  "enabled"       : "true",
+                  "ensureRunning" : "true",
+                  "files"         : [ "/var/www/html/index.html" ]
+                },
+                {% endif %}                
+                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
+              }
+            }
+          }
+        }
+      },
+      "Properties" : {
+        "ImageId"        : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "{{ name }}InstanceType" }, "Arch" ] } ] },
+        "SecurityGroups" : [ { "Ref" : "{{ name }}SecurityGroup" } ],
+        "InstanceType"   : { "Ref" : "{{ name }}InstanceType" },
+        "KeyName"        : { "Ref" : "KeyName" },
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+
+        
+          "#!/bin/bash -v\n",
+          "yum update -y aws-cfn-bootstrap\n",
+
+          "# Helper function\n",
+          "function error_exit\n",
+          "{\n",
+          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n",
+          "  exit 1\n",
+          "}\n",
+
+          "## Initialize CloudFormation bits\n",
+          "/opt/aws/bin/cfn-init -v ",
+          "   --stack ", { "Ref" : "AWS::StackName" }, 
+          "   --resource {{ name }}LaunchConfig",
+          "   --access-key ",  { "Ref" : "{{ name }}Keys" },
+          "   --secret-key ", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},
+          "   --region ", { "Ref" : "AWS::Region" }, " >> /var/log/cfn-init.log 2>&1 || error_exit $(</var/log/cfn-init.log)\n",
+
+          {# **** Inject environment variables about the deployment **** #}
+          
+		  "# Inject some platform variables\n",
+          "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
+          {% if elb is not none  %}
+          "export NEPHO_FORWARD_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",
+          "export NEPHO_PUBLIC_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",
+          {% endif %}
+          {% if elb2 is not none  %}
+          "export NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",
+          {% endif %} 	  
+          {% if public_hostname is not none %}
+          "export NEPHO_PUBLIC_HOSTNAME='", {{ public_hostname }}, "'\n",
+          {% endif %}
+          "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
+                    
+		  {% if rds is not none  %}
+		  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+		  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+		  "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+		  "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
+		  "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",  
+		  "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
+		            "", [ "mysql://",
+                          { "Ref" : "DBUsername" },
+                          ":",      
+                          { "Ref" : "DBPassword" },       
+                          "@",                               
+                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                          ":",
+                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                          "/",
+                          { "Ref": "DBName" }
+                       ]]}, "'\n", 
+		  {% endif %}
+		  
+          "# pull & setup puppet modules and run manifest\n",
+          {% if management !='script' and management != 'none' %}
+          "export NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
+          "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
+          {% endif %}
+
+		  {% if bucket is not none %}
+		  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+		  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" }, "'\n",
+          "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
+          {% endif %}
+          
+          {#  **** Include script snippets here ...  **** #}
+          
+          {% for line in script_array %}
+          {{ line }},
+          {% endfor %}  
+          
+          "# Signal completion\n",
+          "/opt/aws/bin/cfn-signal -e $? -r \"Host {{ name }} setup by {{ management }}\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n" 
+ 
+        ]]}}
+      }
+    },
+  
+    "{{ name }}WaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle"
+    },
+
+    "{{ name }}WaitCondition" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "{{ name }}Fleet",
+      "Properties" : {
+        "Handle"  : { "Ref" : "{{ name }}WaitHandle" },
+        "Timeout" : "600",
+        "Count"   : { "Ref" : "InstanceCount" }
+      }
+    }
+    
+   {%- endmacro -%} 

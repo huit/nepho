@@ -1,0 +1,122 @@
+{#
+
+    Macros that Defines the public or private network on 10.0.x.y, with routes
+      for a VPC with network 10.0.x.y. Uses network space based on the SubnetMappings.
+
+    You may want to have ACL rules defined, and applied to the subnet
+      named "[Name]Subnet"
+          
+#}
+
+{# ****  General public network tier **** #}
+
+    {%- macro public_network(name, subnet_space, avail_zone="us-east-1b", type='Public') -%}
+    
+    {# Quote anything in avail_zone that's not a CF { Ref : ... #}
+    
+    {% if avail_zone|list|first != '{' %}
+      {% set avail_zone = "\"" ~ avail_zone ~ "\"" %}
+    {% endif %}
+    "{{ name }}Subnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "AvailabilityZone" : {{ avail_zone }},
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "{{ subnet_space }}", "CIDR" ]},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
+          {"Key" : "Network", "Value" : "{{ type }}" }
+        ]
+      }
+    },
+
+    "{{ name }}RouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "VPC"},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
+          {"Key" : "Network", "Value" : "{{ type }}" }
+        ]
+      }
+    },
+
+    "{{ name }}Route" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "{{ name }}RouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" } 
+      },
+      "DependsOn": "AttachGateway"
+    },
+
+    "{{ name }}SubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "{{ name }}Subnet" },
+        "RouteTableId" : { "Ref" : "{{ name }}RouteTable" }
+      }
+    }  
+    
+    {%- endmacro %}   
+
+
+{# ****  General private network tier **** #}
+
+    {%- macro private_network(name, subnet_space, nat_device, avail_zone="us-east-1b", type='Private') -%}
+   
+    {# Quote anything in avail_zone that's not a CF { Ref : ... #}
+    
+    {% if avail_zone|list|first != '{' %}
+      {% set avail_zone = "\"" ~ avail_zone ~ "\"" %}
+    {% endif %}
+        
+    "{{ name }}Subnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "AvailabilityZone" : {{ avail_zone }},        
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetMappings", "{{ subnet_space }}", "CIDR" ]},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
+          {"Key" : "Network", "Value" : "{{ type }}" }
+        ]
+      }
+    },
+
+    "{{ name }}RouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "VPC"},
+        "Tags" : [
+          {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId" } },
+          {"Key" : "Network", "Value" : "{{ type }}" }
+        ]
+      }
+    },
+
+    "{{ name }}Route" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        {% if nat_device is defined %}
+        "InstanceId" : { "Ref" : "{{ nat_device }}" },
+        {% else %}
+        "GatewayId" : { "Ref" : "InternetGateway" },
+        {% endif %}      
+        "RouteTableId" : { "Ref" : "{{ name }}RouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0"
+      },
+      "DependsOn": "AttachGateway"
+    },
+
+    "{{ name }}SubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "{{ name }}Subnet" },
+        "RouteTableId" : { "Ref" : "{{ name }}RouteTable" }
+      }
+    }  
+
+    {%- endmacro %} 
+        
