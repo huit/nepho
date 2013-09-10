@@ -21,7 +21,7 @@
     {% include 'Parameters/General-Instance-Parameters.json' %},
     {% include 'Parameters/NAT-Instance-Parameters.json' %},
     {% include 'Parameters/RDS-Parameters.json' %},
-    {{ inst_params.inst_params(name="Tier1") }},
+    {{ inst_params.inst_params(name="Tier1") }}, 
     {{ inst_params.inst_params(name="Tier2") }}
   },
 
@@ -64,7 +64,7 @@
 {# **** S3 **** #}
 
     {{ s3.bucket(name='Shared') }},
-    
+  
 {# **** RDS Database **** #}
 
     {{ rds.rds(   name="Tier3", 
@@ -101,7 +101,7 @@
                           bucket='SharedS3Bucket',
                           rds='Tier3DBInstance',
                           ports=[8080]) }}
-    
+
   },
  
   "Outputs" : {
@@ -109,7 +109,7 @@
     {{ elb_out.elb(name='Tier1ElasticLoadBalancer') }}, 
     {{ s3_out.bucket(name='SharedS3Bucket') }}, 
     {{ rds_out.mysql( name="Tier3" ) }},  
-    {% include 'Outputs/BastionHost.json' %},
+    {% include 'Outputs/BastionHost.json' %}, 
     {% include 'Outputs/NAT.json' %}      
     
   } 
