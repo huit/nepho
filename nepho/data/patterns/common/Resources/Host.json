@@ -50,19 +50,28 @@
       }
     },
 
-    {% if bucket is not none  %}   
+ {% if bucket is not none  %}   
     "{{ name }}BucketPolicy" : {
       "Type" : "AWS::S3::BucketPolicy",
       "Properties" : {
         "PolicyDocument": {
           "Id":"PrivateBucketPolicy",
-          "Statement":[ {
-              "Sid":"ReadWriteAccess",
-	          "Action":["s3:GetObject"],
+          "Statement":[  
+            {
+              "Sid":"ReadBucketAccess",
+	          "Action":["s3:ListBucket*", "s3:GetBucket*"],
+	          "Effect":"Allow",
+	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "" ]]},
+	          "Principal":{ "AWS": { "Fn::GetAtt" : [ "{{ name }}User", "Arn" ]} }
+            },
+            {
+              "Sid":"ReadWriteObjectAccess",
+	          "Action":["s3:*"],
 	          "Effect":"Allow",
 	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "/*" ]]},
 	          "Principal":{ "AWS": { "Fn::GetAtt" : [ "{{ name }}User", "Arn" ]} }
-          } ]
+            }
+          ]
         },
         "Bucket" : {"Ref" : "{{ bucket }}"}
       }
