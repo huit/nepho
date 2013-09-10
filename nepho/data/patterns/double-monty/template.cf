@@ -69,10 +69,6 @@
 
     {% include 'Resources/NAT.json' %}, 
     {% include 'Resources/BastionHost.json' %},
-
-{# **** S3 **** #}
-
-    {{ s3.bucket(name='Shared') }},
     
 {# **** RDS Database **** #}
 
@@ -90,10 +86,13 @@
                          elb='Tier1ElasticLoadBalancer', 
                          elb2='Tier2ElasticLoadBalancer',
                          public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}',
-                         bucket='SharedS3Bucket',
                          rds='Tier3DBInstance',
                          ports=[80] ) }},  
 
+{# **** S3 **** #}
+
+    {{ s3.bucket(name='Tier2Shared') }},
+    
 {# **** Private Tier Application instances **** #}
 
     {{ elb.load_balancer( name='Tier2', subnet='PrivateASubnet', subnet2='PrivateBSubnet', internal=True, port=8080) }},
@@ -103,7 +102,7 @@
                           subnet2='PrivateBSubnet',                           
                           elb='Tier2ElasticLoadBalancer',
                           public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}', 
-                          bucket='SharedS3Bucket',                          
+                          bucket='Tier2SharedS3Bucket',                          
                           rds='Tier3DBInstance',
                           ports=[8080]) }}
   
@@ -112,7 +111,7 @@
   "Outputs" : {
 
     {{ elb_out.elb(name='Tier1ElasticLoadBalancer') }}, 
-    {{ s3_out.bucket(name='SharedS3Bucket') }}, 
+    {{ s3_out.bucket(name='Tier2SharedS3Bucket') }}, 
     {{ rds_out.mysql( name="Tier3" ) }},  
     {% include 'Outputs/BastionHost.json' %},
     {% include 'Outputs/NAT.json' %}      
