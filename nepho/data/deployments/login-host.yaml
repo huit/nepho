@@ -1,0 +1,12 @@
+---
+
+development:
+
+  pattern: single-host
+  management: script
+  script: scripts/login-host.sh
+  packages: [screen, emacs, vim-enhanced, telnet]
+  
+  KeyName: parrott-ec2
+
+  
