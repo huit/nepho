@@ -187,7 +187,6 @@
                 "group"   : "root"
               },
                             	
-              }
               "/etc/cfn/cfn-credentials" : {
                 "content" : { "Fn::Join" : ["", [
                   "AWSAccessKeyId=", { "Ref" : "{{ name }}Keys" }, "\n",

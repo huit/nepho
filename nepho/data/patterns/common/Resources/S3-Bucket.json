@@ -16,7 +16,7 @@
       "Type" : "AWS::S3::Bucket",
       "Properties": {"AccessControl": "Private"},
       "DeletionPolicy" : "Retain"
-    },
+    }
 
 {#
     "{{ name }}BucketPolicy" : {
