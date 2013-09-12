@@ -317,6 +317,11 @@
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
 		  {% endif %}
+		  "export NEPHO_SES_SMTP='",          { "Ref" : "SESSMTP" }, "'\n",
+		  "export NEPHO_SES_SMTP_ENDPOINT='", { "Ref" : "SESEndpoint" }, "'\n",
+		  "export NEPHO_SES_SMTP_PORT='",     { "Ref" : "SESPort" }, "'\n",
+		  "export NEPHO_SES_SMTP_USER='",     { "Ref" : "SESUsername" }, "'\n",
+		  "export NEPHO_SES_SMTP_PASSWORD='", { "Ref" : "SESPassword" }, "'\n",
 		  
           "# pull & setup puppet modules and run manifest\n",
           {% if management !='script' and management != 'none' %}
