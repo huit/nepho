@@ -20,12 +20,12 @@
     },
 
     "SESEndpoint": {
-      "Default": "email-smtp-us-east-1.amazonaws.com",
+      "Default": "email-smtp.us-east-1.amazonaws.com",
       "Description" : "The SES SMTP endpoint",
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "64",
-      "AllowedPattern" : "email-smtp.[-a-zA-Z0-9].amazonaws.com",
+      "AllowedPattern" : "email-smtp.[-a-z0-9]*.amazonaws.com",
       "ConstraintDescription" : "must look like a SES SMTP endpoint."
     },
 
@@ -43,9 +43,9 @@
       "Description" : "The SES SMTP account username",
       "Type": "String",
       "MinLength": "1",
-      "MaxLength": "16",
-      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+      "MaxLength": "24",
+      "AllowedPattern" : "[_A-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
     },
 
     "SESPassword": {
@@ -55,6 +55,6 @@
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "41",
-      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "AllowedPattern" : "[_a-zA-Z0-9]*",
       "ConstraintDescription" : "must contain only alphanumeric characters."
     }
