@@ -10,6 +10,7 @@
   "Parameters" : { 
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
+    {% include 'Parameters/SES-Parameters.json' %},
     {{ inst_params.inst_params(name="SingleServer") }}
     
   },
