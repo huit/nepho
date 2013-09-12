@@ -54,7 +54,7 @@
       "Description" : "The SES SMTP account password",
       "Type": "String",
       "MinLength": "1",
-      "MaxLength": "41",
-      "AllowedPattern" : "[_a-zA-Z0-9]*",
-      "ConstraintDescription" : "must contain only alphanumeric characters."
+      "MaxLength": "48",
+      "AllowedPattern" : ".*",
+      "ConstraintDescription" : "any characters."
     }
