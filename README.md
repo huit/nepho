@@ -1,4 +1,4 @@
-# Nepho: Harvard Cloud Deploy Tool
+# Nepho: Harvard Cloud Deployment Tool
 ### Simplified cloud orchestration tool for constructing virtual data centers
 
 This tool is meant to be a generic wrapper/CLI interface for spinning up complete working environments in an IaaS.  We are initially targeting CloudFormation for orchestration, but hope to expand to OpenStack Heat and other services as they become relevant.  The goal is to package CloudFormation and  similar template resources, configuration management code, and application code into a plugin-like format sothat developers and operations folks can quickly spin up complete environments from their desktops.
