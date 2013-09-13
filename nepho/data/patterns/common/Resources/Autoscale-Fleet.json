@@ -23,6 +23,10 @@
              IAM Objects
        
        ************************ #}
+
+    {% if public_hostname|list|first != '{' %}
+      {% set public_hostname = "\"" ~ public_hostname ~ "\"" %}
+    {% endif %}
          
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
@@ -288,7 +292,7 @@
           "export NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",
           {% endif %} 	  
           {% if public_hostname is not none %}
-          "export NEPHO_PUBLIC_HOSTNAME='{{ public_hostname }}'\n",
+          "export NEPHO_PUBLIC_HOSTNAME='", {{ public_hostname }}, "'\n",
           {% endif %}
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
 		  
