@@ -1,0 +1,13 @@
+---
+
+development:
+
+  pattern: single-host
+  management: script
+  script: scripts/havana.sh
+#  ports: [80, 443]
+  packages: [httpd, emacs, telnet, httpd, mysql, mysql-server, mysql-devel, gcc-c++, ruby, ruby-devel, rubygems] 
+  
+  KeyName: parrott-ec2
+
+  
