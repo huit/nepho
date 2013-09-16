@@ -268,14 +268,14 @@
 
           "export CF_STACK_NAME='",   { "Ref" : "AWS::StackName" }, "'\n",
           "export CF_REGION='",       { "Ref" : "AWS::Region" }, "'\n",
-          "export CF_RESOURCE='{{ name }}Instance'\n",
+          "export CF_RESOURCE='{{ name }}LaunchConfig'\n",
           "export CF_ACCESS_KEY='",   { "Ref" : "{{ name }}Keys" }, "'\n",
           "export CF_SECRET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
           "export CF_WAIT_HANDLE='",  { "Ref" : "{{ name }}WaitHandle" }, "'\n",
                     
           {# **** Inject environment variables about the deployment **** #}
           
-		  "# Inject some NEPHO_* platform variables\n",
+	  "# Inject some NEPHO_* platform variables\n",
 		  
           "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
           {% if elb is not none  %}
