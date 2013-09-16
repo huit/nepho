@@ -1,7 +1,7 @@
 --- 
 development: 
 
-  TargetURL: http://test-pub-Tier1Ela-H0P9K1H8QMDD-1825762309.us-east-1.elb.amazonaws.com
+  TargetURL: http://myhost/
   
   pattern: bees-with-machine-guns
   KeyName: mediawiki-poc

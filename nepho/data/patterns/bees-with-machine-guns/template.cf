@@ -61,7 +61,38 @@
     },
     
     "Mappings": {
-        {% include 'Mappings/AWS-Instance-Mappings.json' %}
+        {% include 'Mappings/AWS-Instance-Mappings.json' %},
+        
+        "AWSRegionPlatform2AMI": {
+            "us-east-1": {
+                "amzn": "ami-e565ba8c",
+                "bee" : "ami-e661c18f"
+            },
+            "us-west-1": {
+                "amzn": "ami-e78cd4a2",
+                "bee" : "ami-93b5efd6"
+            },
+            "eu-west-1": {
+                "amzn": "ami-f9231b8d",
+                "bee" : "ami-67212413"
+            },
+            "ap-southeast-1": {
+                "amzn": "ami-be3374ec",
+                "bee" : "ami-38bef86a"
+            },
+            "ap-northeast-1": {
+                "amzn": "ami-e47acbe5",
+                "bee" : "ami-16ac1f17"
+            },
+            "us-west-2": {
+                "amzn": "ami-3ac64a0a",
+                "bee" : "ami-bc05898c"
+            },
+            "sa-east-1": {
+                "amzn": "ami-a6855bbb",
+                "bee" : "ami-5a12cc47"
+            }
+        }
     },
     
     "Resources": {
@@ -197,12 +228,7 @@
                                                        "/usr/bin/bees up -k `cat /home/ec2-user/bees_keypair.txt` -s ", { "Ref": "BeeCount" },
                                                        " -z ", { "Fn::Select" : [ "1", { "Fn::GetAZs" : "" }] },
                                                        " -g ", { "Ref" : "BeeSecurityGroup" },
-                                                       " --instance ",  
-                                                       { "Fn::FindInMap" : [ 
-                                                         "AWSRegionArch2AMI", 
-                                                         { "Ref" : "AWS::Region" }, 
-                                                         { "Fn::FindInMap" : [ 
-                                                             "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+                                                       " --instance ",  { "Fn::FindInMap": [ "AWSRegionPlatform2AMI", { "Ref": "AWS::Region" }, "bee"]},
                                                        " --login ec2-user\n"]]
                                 },
                                 "mode": "000755",
@@ -247,23 +273,18 @@
                             "/home/ec2-user/run-bees": {
                                 "content": {
                                     "Fn::Join": ["", [ "#!/bin/bash\n\n",
-                                                       "/home/ec2-user/wait-for-elb\n",
-                                                       "if [ $? -eq 0 ]\n",
-                                                       "then\n",
                                                        "  mkdir /home/ec2-user/swarm-results\n",
                                                        "  /home/ec2-user/create-keypair > /home/ec2-user/swarm-results/create-keypair.log 2>&1\n",
                                                        "  bash /home/ec2-user/create-swarm > /home/ec2-user/swarm-results/create-swarm.log 2>&1\n",
-                                                       "  sleep 45 # Allow EC2 instances to fully come up\n",
+                                                       "  sleep 90 # Allow EC2 instances to fully come up\n",
                                                        "  bash /home/ec2-user/start-swarm > /home/ec2-user/swarm-results/start-swarm.log 2>&1\n",
                                                        "  bash /home/ec2-user/kill-swarm > /home/ec2-user/swarm-results/kill-swarm.log 2>&1\n",
                                                        "  /home/ec2-user/delete-keypair > /home/ec2-user/swarm-results/delete-keypair.log 2>&1\n",
                                                        "  tar cvf /home/ec2-user/swarm-results.tar.gz /home/ec2-user/swarm-results/*\n",
                                                        "  chown ec2-user:ec2-user -R /home/ec2-user/swarm-results\n",
                                                        "  chown ec2-user:ec2-user /home/ec2-user/swarm-results.tar.gz\n",
-                                                       "  aws put ",  { "Ref": "ResultBucket" }, "/swarm-results.tar.gz /home/ec2-user/swarm-results.tar.gz\n",
-                                                       "else\n",
-                                                       "  exit 1\n",
-                                                       "fi\n"]]
+                                                       "  aws put ",  { "Ref": "ResultBucket" }, "/swarm-results.tar.gz /home/ec2-user/swarm-results.tar.gz\n"
+                                                ]]
                                 },
                                 "mode": "000755",
                                 "owner": "ec2-user",
