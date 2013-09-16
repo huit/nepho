@@ -290,16 +290,15 @@
           {% endif %}
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
 		  
-		  "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
-          {% if elb is not none  %}"export NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
-          {% if elb2 is not none %}"export NEPHO_BACKEND_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
-		  {% if rds is not none  %}
-		  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
-		  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
-		  "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
-		  "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
-		  "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",	  
-		  "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
+	  "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
+
+          {% if rds is not none  %}
+	  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+	  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+	  "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+	  "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
+	  "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",	  
+	  "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
 		            "", [ "mysql://",
                           { "Ref" : "DBUsername" },
                           ":",      
@@ -311,10 +310,12 @@
                           "/",
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
-		  {% endif %}		  		 
-		  {% if bucket is not none %}
-		  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
-		  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+	  {% endif %}		  		 
+
+
+          {% if bucket is not none %}
+	  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+	  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
           "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" },  "'\n",
           "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
           {% endif %}
