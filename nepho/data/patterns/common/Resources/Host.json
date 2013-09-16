@@ -34,10 +34,12 @@
                     public='no'
                   ) -%}
 
-    {% if public_hostname|list|first != '{' %}
-      {% set public_hostname = "\"" ~ public_hostname ~ "\"" %}
+    {% if public_hostname is not none %}
+      {% if public_hostname|list|first != '{' %}
+        {% set public_hostname = "\"" ~ public_hostname ~ "\"" %}
+      {% endif %}
     {% endif %}
-    
+
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
       "Properties" : {
