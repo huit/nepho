@@ -17,16 +17,18 @@
                      rds=None, 
                      ports=[80]
                    ) -%}
+
+    {% if public_hostname is not none %}
+      {% if public_hostname|list|first != '{' %}
+        {% set public_hostname = "\"" ~ public_hostname ~ "\"" %}
+      {% endif %}
+    {% endif %}
     
     {# ************************
     
              IAM Objects
        
        ************************ #}
-
-    {% if public_hostname|list|first != '{' %}
-      {% set public_hostname = "\"" ~ public_hostname ~ "\"" %}
-    {% endif %}
          
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
