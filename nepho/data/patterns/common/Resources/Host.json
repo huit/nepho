@@ -284,13 +284,11 @@
           {% endif %} 	  
           {% if public_hostname is not none %}
           "export NEPHO_PUBLIC_HOSTNAME='", {{ public_hostname }}, "'\n", 
-
           {% endif %}
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
 		  
 		  "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
-          {% if elb is not none  %}"export NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
-          {% if elb2 is not none %}"export NEPHO_BACKEND_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
+
 		  {% if rds is not none  %}
 		  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
 		  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
