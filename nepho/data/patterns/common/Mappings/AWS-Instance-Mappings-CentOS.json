@@ -1,0 +1,43 @@
+{#
+
+    Standard AWS Linux template mappings, for general use.
+    
+    Refers to CentOS 6.4 from Bashton Consulting:
+    
+      http://www.bashton.com/blog/2013/centos-6-4-ami-available/
+    
+#}
+    "AWSInstanceType2Arch" : {
+      "t1.micro"    : { "Arch" : "64" },
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "m3.xlarge"   : { "Arch" : "64" },
+      "m3.2xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc1.4xlarge" : { "Arch" : "64HVM" },
+      "cc2.8xlarge" : { "Arch" : "64HVM" },
+      "cg1.4xlarge" : { "Arch" : "64HVM" }
+    },
+
+{# See http://aws.amazon.com/amazon-linux-ami/ #}
+
+    "AWSRegionArch2AMI" : {
+      "us-east-1"      : { "64" : "ami-56009e3f", "64HVM" : "ami-eec75e87" },
+      "us-west-1"      : { "64" : "ami-d62f0293", "64HVM" : "NOT_YET_SUPPORTED" },      
+      "us-west-2"      : { "64" : "ami-ec30a5dc", "64HVM" : "ami-503bae60" },      
+      "eu-west-1"      : { "64" : "ami-029f9476", "64HVM" : "ami-e4b5be90" },
+
+{# These need to be updated to release 2013.3.1 #}
+      
+      "ap-southeast-1" : { "64" : "ami-3c034f6e", "64HVM" : "NOT_YET_SUPPORTED" },
+      "ap-southeast-2" : { "64" : "ami-ea61f0d0", "64HVM" : "NOT_YET_SUPPORTED" },
+      "ap-northeast-1" : { "64" : "ami-811a9b80", "64HVM" : "NOT_YET_SUPPORTED" },
+      "sa-east-1"      : { "64" : "ami-ab2cf7b6", "64HVM" : "NOT_YET_SUPPORTED" }
+      
+    }

@@ -98,7 +98,7 @@
                           elb='Tier2ElasticLoadBalancer', 
                           public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}',
                           bucket='Tier2SharedS3Bucket',
-                          public_bucket=true,
+                          public_bucket=false,
                           rds='Tier3DBInstance',
                           ports=[8080]) }}
 

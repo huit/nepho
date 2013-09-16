@@ -115,6 +115,16 @@ def load_deployment_file(deployment, environment):
 
     return paramsMap
 
+def load_user_data_script(script_filename):
+    "loads a scripts and returns it in a JSON-encoded format suitable for injection"
+    script_array = []
+    f = open(script_filename)
+    for line in f:
+        lstr = json.dumps(line.strip() + "\n")
+        script_array.append(lstr)
+    f.close()
+    return script_array
+
 def get_management_settings(map):
     " Returns dict as a context for the template for how to handle system management"
     management = None
@@ -122,9 +132,11 @@ def get_management_settings(map):
     if map.has_key('management'):
         management = map.pop('management')
 
+    user_data_scripts = dict()
     mgmt_script_dir   = resource_filename(__MODULE_NAME__, __DRIVERS_DIR__)
+    drivers_dir = resource_filename(__MODULE_NAME__, __DRIVERS_DIR__)
     mgmt_script_file  = None
-    mgmt_script_array = []
+
     pkgs = []
 
     if management == 'none':
@@ -139,22 +151,31 @@ def get_management_settings(map):
         mgmt_script_file = '%s/%s' % (mgmt_script_dir, 'puppet-snippet.sh')
         pkgs = ["gcc", "ruby","ruby-devel", "rubygems", "puppet" ]
 
-    # Load script into a array of lines
-    if mgmt_script_file is not None:
-        f = open(mgmt_script_file)
-        for line in f:
-            lstr = json.dumps(line.strip() + "\n")
-            mgmt_script_array.append(lstr)
-        f.close()
-
     if map.has_key('packages'):
         for pkg in map['packages']:
             pkgs.append(pkg)
         map.pop('packages')
 
+    # Load script into a array of lines
+    if mgmt_script_file is not None:
+        user_data_scripts['management'] = load_user_data_script(mgmt_script_file)
+    else:
+        user_data_scripts['management'] = []
+
+    # Load other helper scripts
+    cf_pre_script  = '%s/%s' % (drivers_dir, 'cf-pre-script.sh')
+    user_data_scripts['cf_pre_script'] = load_user_data_script(cf_pre_script)
+
+    cf_init_script = '%s/%s' % (drivers_dir, 'cf-init-script.sh')
+    user_data_scripts['cf_init_script'] = load_user_data_script(cf_init_script)
+        
+    cf_post_script = '%s/%s' % (drivers_dir, 'cf-post-script.sh')
+    user_data_scripts['cf_post_script'] = load_user_data_script(cf_post_script)
+        
+    
     mgmtMap = dict(
                      management = management,
-                     script_array = mgmt_script_array,
+                     scripts = user_data_scripts,
                      packages = pkgs
                    )
 
