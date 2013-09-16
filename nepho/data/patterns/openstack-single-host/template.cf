@@ -10,20 +10,20 @@
   "Parameters" : { 
   
     {% include 'Parameters/General-Instance-Parameters.json' %},
-    {{ inst_params.inst_params(name="SingleServer") }}
+    {{ inst_params.inst_params(name="Openstack") }}
     
   },
   
   "Mappings" : {
-    {% include 'Mappings/AWS-Instance-Mappings.json' %}
+    {% include 'Mappings/AWS-Instance-Mappings-CentOS.json' %}
   },
     
   "Resources" : {   
-    {{ host.host( name='SingleServer', ports=[80, 443, 8080, 8443, 9292, 9696]) }}
+    {{ host.host( name='Openstack', ports=[80, 443, 8080, 8443, 9292, 9696, 35357]) }}
 
   },
   
   "Outputs" : {
-    {{ host_url.url("SingleServer") }}  
+    {{ host_url.url("Openstack") }}  
   }
 }

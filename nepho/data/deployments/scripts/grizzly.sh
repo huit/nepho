@@ -21,7 +21,7 @@ cat /etc/aws/credentials | sed 's/aws_access_key_id/access_key/g' | sed 's/aws_s
 
 cd /root
 
-# get Havana installed by impersonating CentOS 6.x and enabling EPEL
+# get Grizzly installed by impersonating CentOS 6.x and enabling EPEL
 
 [ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
 yum-config-manager --enable epel
@@ -30,8 +30,8 @@ perl -i -p -e 's/^PermitRootLogin .*/PermitRootLogin yes/g' /etc/ssh/sshd_config
 service sshd restart
 cd /root/.ssh && rm -f id_rsa* && ssh-keygen -f id_rsa -t rsa -N '' && cat id_rsa.pub >> authorized_keys
 
-
-yum install -y http://rdo.fedorapeople.org/openstack-havana/rdo-release-havana.rpm
+RELEASE_RPM=http://rdo.fedorapeople.org/openstack-grizzly/rdo-release-grizzly.rpm
+yum install -y $RELEASE_RPM
 yum install -y openstack-packstack
 yum -y install policycoreutils
 
@@ -42,7 +42,7 @@ yum -y install policycoreutils
 #done
 cd /root
 export HOME=/root
-nohup packstack --allinone --os-neutron-install=n
+nohup packstack --allinone
 		
 cd /tmp
 git clone https://github.com/robparrott/openstack-post-config.git 
