@@ -14,9 +14,11 @@
       
     "{{ name }}S3Bucket" : {
       "Type" : "AWS::S3::Bucket",
+      "Properties": {"AccessControl": "Private"},
       "DeletionPolicy" : "Retain"
-    },
+    }
 
+{#
     "{{ name }}BucketPolicy" : {
       "Type" : "AWS::S3::BucketPolicy",
       "Properties" : {
@@ -56,5 +58,5 @@
         "UserName" : {"Ref": "{{ name }}S3User"}
       }
     }
-    
+#}    
     {%- endmacro -%}

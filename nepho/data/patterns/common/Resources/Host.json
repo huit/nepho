@@ -30,9 +30,16 @@
                     public_hostname=None,
                     rds=None, 
                     bucket=None, 
+                    public_bucket=None,
                     public='no'
                   ) -%}
-    
+
+    {% if public_hostname is not none %}
+      {% if public_hostname|list|first != '{' %}
+        {% set public_hostname = "\"" ~ public_hostname ~ "\"" %}
+      {% endif %}
+    {% endif %}
+
     "{{ name }}User" : {
       "Type" : "AWS::IAM::User",
       "Properties" : {
@@ -50,19 +57,38 @@
       }
     },
 
-    {% if bucket is not none  %}   
+ {% if bucket is not none  %}   
     "{{ name }}BucketPolicy" : {
       "Type" : "AWS::S3::BucketPolicy",
       "Properties" : {
         "PolicyDocument": {
-          "Id":"{{ name }}BucketPolicyDoc",
-          "Statement":[ {
-              "Sid":"ReadWriteAccess",
-	          "Action":["s3:GetObject"],
+          "Id":"PrivateBucketPolicy",
+          "Statement":[  
+          	
+            {% if public_bucket is not none and public_bucket == true %} 
+            {
+	          "Sid":"AddPerm",
+              "Effect":"AnonymousRead",
+	          "Principal": { "AWS": "*"},
+              "Action":["s3:GetObject"],
+              "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "/*" ]]}
+            },
+            {% endif %}
+            {
+              "Sid":"ReadBucketAccess",
+	          "Action":["s3:ListBucket*", "s3:GetBucket*"],
+	          "Effect":"Allow",
+	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "" ]]},
+	          "Principal":{ "AWS": { "Fn::GetAtt" : [ "{{ name }}User", "Arn" ]} }
+            },
+            {
+              "Sid":"ReadWriteObjectAccess",
+	          "Action":["s3:*"],
 	          "Effect":"Allow",
 	          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "{{ bucket }}" } , "/*" ]]},
 	          "Principal":{ "AWS": { "Fn::GetAtt" : [ "{{ name }}User", "Arn" ]} }
-          } ]
+            }
+          ]
         },
         "Bucket" : {"Ref" : "{{ bucket }}"}
       }
@@ -129,13 +155,6 @@
                 {% endif %}                       
                 "curl"         : [],
                 "wget"         : [],
-                "aws-cli"      : [],
-                "aws-scripts-ses" : [],
-                "aws-apitools-ec2" : [], 
-                "aws-amitools-ec2" : [],
-                "aws-apitools-mon" : [],
-                "aws-apitools-elb" : [],
-                "aws-apitools-rds" : [],
                 "git"              : []        
               }
             },
@@ -152,8 +171,8 @@
                 "group"   : "root"
               },
               {% endif %}
-                       
-              "/etc/aws.cfg" : {
+
+              "/etc/aws/credentials" : {
                 "content" : { "Fn::Join" : ["", [
                   "[default]\n",
                   "aws_access_key_id=", { "Ref" : "{{ name }}Keys" }, "\n",
@@ -165,15 +184,16 @@
                 "group"   : "root"
               },
               
-              "/etc/profile.d/aws-cfg-file.sh" : {
+              "/etc/profile.d/aws.sh" : {
                 "content" : { "Fn::Join" : ["", [
-                  "export AWS_CONFIG_FILE=/etc/aws.cfg\n"
+                  "AWS_CONFIG_FILE=/etc/aws/credentials\n",
+                  "export AWS_CONFIG_FILE\n"
                 ]]},
-                "mode"    : "000444",
+                "mode"    : "000664",
                 "owner"   : "root",
                 "group"   : "root"
               },
-                                      
+                                            
               "/etc/cfn/cfn-credentials" : {
                 "content" : { "Fn::Join" : ["", [
                   "AWSAccessKeyId=", { "Ref" : "{{ name }}Keys" }, "\n",
@@ -229,6 +249,7 @@
       "Properties": {
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
         "InstanceType" : { "Ref" : "{{ name }}InstanceType" },
+        "Tags": [ { "Key": "Name", "Value": "{{ name }}" } ],
 
         {% if subnet is not none  %}
         "SubnetId" : { "Ref" : "{{ subnet }}" },
@@ -240,26 +261,22 @@
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
         
           "#!/bin/bash -v\n",
-          "yum update -y aws-cfn-bootstrap\n",
 
-          "# Helper function\n",
-          "function error_exit\n",
-          "{\n",
-          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n",
-          "  exit 1\n",
-          "}\n",
+          {# **** Inject CF values into the environment **** #}
+                    
+          "# Establish CF values and objects into script variables.\n",         
 
-          "## Initialize CloudFormation bits\n",
-          "/opt/aws/bin/cfn-init -v ",
-          "   --stack ", { "Ref" : "AWS::StackName" }, 
-          "   --resource {{ name }}Instance",
-          "   --access-key ",  { "Ref" : "{{ name }}Keys" },
-          "   --secret-key ", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},
-          "   --region ", { "Ref" : "AWS::Region" }, " >> /var/log/cfn-init.log 2>&1 || error_exit $(</var/log/cfn-init.log)\n",
-
+          "export CF_STACK_NAME='",   { "Ref" : "AWS::StackName" }, "'\n",
+          "export CF_REGION='",       { "Ref" : "AWS::Region" }, "'\n",
+          "export CF_RESOURCE='{{ name }}Instance'\n",
+          "export CF_ACCESS_KEY='",   { "Ref" : "{{ name }}Keys" }, "'\n",
+          "export CF_SECRET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
+          "export CF_WAIT_HANDLE='",  { "Ref" : "{{ name }}WaitHandle" }, "'\n",
+                    
           {# **** Inject environment variables about the deployment **** #}
-          
-          "# Inject some platform variables\n",
+
+	  "# Inject some NEPHO_* platform variables\n",
+
 		  
           "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
           {% if elb is not none  %}
@@ -270,13 +287,10 @@
           "export NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",
           {% endif %} 	  
           {% if public_hostname is not none %}
-          "export NEPHO_PUBLIC_HOSTNAME='{{ public_hostname }}'\n",
+          "export NEPHO_PUBLIC_HOSTNAME='", {{ public_hostname }}, "'\n", 
           {% endif %}
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
 		  
-		  "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
-          {% if elb is not none  %}"export NEPHO_EXTERNAL_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",{% endif %}
-          {% if elb2 is not none %}"export NEPHO_BACKEND_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",{% endif %} 	  
 		  {% if rds is not none  %}
 		  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
 		  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
@@ -303,22 +317,34 @@
           "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" },  "'\n",
           "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
           {% endif %}
-
 		 
           {% if management !='script' and management != 'none' %}
           "export NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
           "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
 
+          "export NEPHO_BASE64_CONFIGS='{{ configs }}'\n",
+          "export NEPHO_CONFIGS=$( echo ${NEPHO_BASE64_CONFIGS} | base64 --decode )\n",
+
+                          
+          {#  **** Include script snippets here ...  **** #}
+      
+          {% for line in scripts.cf_pre_script  %}
+          {{ line }}, {% endfor %}  
+          
+          {% for line in scripts.cf_init_script %}
+          {{ line }}, {% endfor %}  
+
+ 
           {#  **** Include script snippets here ...  **** #}
           
-          {% for line in script_array %}
-          {{ line }},
+          {% for line in scripts.management %} {{ line }},
           {% endfor %}  
 
-          "# Signal completion\n",
-          "/opt/aws/bin/cfn-signal -e $? -r \"Host setup by {{ management }}\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n" 
+          {% for line in scripts.cf_post_script %} {{ line }},
+          {% endfor %}  
 
+          ""
         ]]}}
 
       }       
@@ -336,7 +362,7 @@
       "DependsOn" : "{{ name }}Instance",
       "Properties" : {
         "Handle" : {"Ref" : "{{ name }}WaitHandle"},
-        "Timeout" : "600"
+        "Timeout" : "900"
       }
     }
 
