@@ -355,7 +355,7 @@
       "DependsOn" : "{{ name }}Instance",
       "Properties" : {
         "Handle" : {"Ref" : "{{ name }}WaitHandle"},
-        "Timeout" : "600"
+        "Timeout" : "900"
       }
     }
 
