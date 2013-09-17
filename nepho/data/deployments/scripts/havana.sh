@@ -19,9 +19,16 @@ cat /etc/aws/credentials | sed 's/aws_access_key_id/access_key/g' | sed 's/aws_s
 
 #*******************************
 
+# get the public info about this instance
+yum -y install puppet facter
+PUBLIC_HOSTNAME=$( facter ec2_public_hostname )
+PUBLIC_IP=$( facter ec2_public_ipv4 )
+
 cd /root
 
-# get Havana installed by impersonating CentOS 6.x and enabling EPEL
+# get Grizzly installed by impersonating CentOS 6.x and enabling EPEL
+
+RELEASE=havana
 
 [ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
 yum-config-manager --enable epel
@@ -30,19 +37,52 @@ perl -i -p -e 's/^PermitRootLogin .*/PermitRootLogin yes/g' /etc/ssh/sshd_config
 service sshd restart
 cd /root/.ssh && rm -f id_rsa* && ssh-keygen -f id_rsa -t rsa -N '' && cat id_rsa.pub >> authorized_keys
 
-
-yum install -y http://rdo.fedorapeople.org/openstack-havana/rdo-release-havana.rpm
-yum install -y openstack-packstack
+RELEASE_RPM=http://rdo.fedorapeople.org/openstack-${RELEASE}/rdo-release-${RELEASE}.rpm
+yum install -y $RELEASE_RPM
+yum install -y openstack-packstack openstack-utils
 yum -y install policycoreutils
 
-#URL_ROOT=http://mirror.seas.harvard.edu/centos/6/os/x86_64/Packages
-#RPMS="qpid-cpp-client-0.14-22.el6_3.x86_64.rpm qpid-cpp-server-0.14-22.el6_3.x86_64.rpm python-lxml-2.2.3-1.1.el6.x86_64.rpm"
-#for R in ${RPMS}; do
-	#	rpm -ihv ${URL_RO#OT}/${R}
-#done
 cd /root
 export HOME=/root
-nohup packstack --allinone --os-neutron-install=n
+
+# ********* PACKSTACK *************
+
+# Do packstack
+ANS_FILE=/root/answers.txt
+
+# generate an answers file if not present
+[ -f ${ANS_FILE} ] || packstack --gen-answer-file=${ANS_FILE}
+
+# Use openstack-config tool to modify these files
+CONFIG="openstack-config --set ${ANS_FILE} "
+
+KEYS=" CONFIG_KEYSTONE_HOST \
+       CONFIG_GLANCE_HOST \
+       CONFIG_NOVA_API_HOST \
+       CONFIG_NOVA_CERT_HOST \
+       CONFIG_NOVA_VNCPROXY_HOST \
+       CONFIG_SWIFT_PROXY_HOSTS \
+       CONFIG_CINDER_HOST \
+       CONFIG_HORIZON_HOST"
+
+for KEY in $KEYS; do 
+
+   ${CONFIG} general ${KEY} ${PUBLIC_IP}
+   
+done
+
+# Fix the interface for a single-node installation (use loopback)
+${CONFIG} general CONFIG_NOVA_COMPUTE_PRIVIF lo
+${CONFIG} general CONFIG_NOVA_NETWORK_PRIVIF lo
+
+# Use Swift
+${CONFIG} general CONFIG_SWIFT_INSTALL y
+
+# Use HTTPS for horizon
+${CONFIG} general CONFIG_HORIZON_SSL y
+
+# Run packstack 
+nohup packstack --answer-file=${ANS_FILE} 
 		
 cd /tmp
 git clone https://github.com/robparrott/openstack-post-config.git 
