@@ -40,6 +40,7 @@ from jinja2 import Environment, FileSystemLoader
 import json
 import collections
 import yaml
+import base64
 import string
 import random
 
@@ -254,8 +255,7 @@ def main(args_json=None):
 
     # Determine how to manage deployed instances
     context = get_management_settings(paramsMap)  
-    context['configs'] = json.dumps(configMap)
-
+    context['configs'] = base64.b64encode(json.dumps(configMap))
 
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
