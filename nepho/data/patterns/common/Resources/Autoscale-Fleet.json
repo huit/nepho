@@ -324,8 +324,9 @@
           "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
 
-          "export NEPHO_CONFIGS='{{ configs }}'\n",
-                          
+          "export NEPHO_BASE64_CONFIGS='{{ configs }}'\n",
+          "export NEPHO_CONFIGS=$( echo ${NEPHO_BASE64_CONFIGS} | base64 --decode )\n",
+               
           {#  **** Include script snippets here ...  **** #}
       
           {% for line in scripts.cf_pre_script  %}
