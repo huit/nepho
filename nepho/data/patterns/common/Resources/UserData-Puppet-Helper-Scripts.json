@@ -43,6 +43,10 @@
 "    if [ -r Puppetfile ]; then\n",
 "            HOME=/root r10k puppetfile install\n",
 "    fi\n",
+"    echo "Beginning first Puppet run"
+"    puppet apply ${site_file}  --modulepath=./modules\n",
+"    # and once more to make sure
+"    echo "Beginning second Puppet run"
 "    puppet apply ${site_file}  --modulepath=./modules\n",
 "\n",
 "}\n",
