@@ -355,7 +355,7 @@
       "DependsOn" : "{{ name }}Fleet",
       "Properties" : {
         "Handle"  : { "Ref" : "{{ name }}WaitHandle" },
-        "Timeout" : "600",
+        "Timeout" : "900",
         "Count"   : { "Ref" : "InstanceCount" }
       }
     }
