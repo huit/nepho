@@ -246,14 +246,16 @@ def main(args_json=None):
 
 
     # Load settings from YAML deployment file
+    configMap = load_deployment_file(deployment_name, env_name)
     paramsMap = load_deployment_file(deployment_name, env_name)
-
 
     pattern =  paramsMap['pattern']
     paramsMap.pop('pattern')
 
     # Determine how to manage deployed instances
     context = get_management_settings(paramsMap)  
+    context['configs'] = json.dumps(configMap)
+
 
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
