@@ -289,8 +289,6 @@
           {% endif %}
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
 		  
-		  "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
-
 		  {% if rds is not none  %}
 		  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
 		  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
@@ -321,6 +319,8 @@
           "export NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
           "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
+
+          "export NEPHO_CONFIGS='{{ configs }}'\n",
                           
           {#  **** Include script snippets here ...  **** #}
       
