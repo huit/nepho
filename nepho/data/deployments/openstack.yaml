@@ -23,5 +23,5 @@ development:
   packages: [httpd, emacs, telnet, httpd, mysql, mysql-server, mysql-devel, gcc-c++, ruby, ruby-devel, rubygems, puppet] 
   
   KeyName: mediawiki-poc
-
+  RandomParams: blah
   
