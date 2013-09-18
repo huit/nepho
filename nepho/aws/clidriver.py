@@ -214,6 +214,15 @@ def get_cf_json(orderDict, pretty=False):
     password = gimme_random_password()   
     return string.replace(outstr, __PASSWORD_REPLACE_FLAG__, password)
 
+def get_cf_params(pattern, context):
+    try:
+        cf_dict = parse_cf_json( get_cf_template(pattern, context) )
+    except ValueError as e:
+        print "Invalid JSON: run the \"validate-template\" subcommand to debug."
+        sys.exit(1)
+
+    return cf_dict['Parameters']    
+
 def main(args_json=None):
     # Create an aws-cli driver
     aws_driver = setup_awscli_driver()
@@ -248,14 +257,21 @@ def main(args_json=None):
 
     # Load settings from YAML deployment file
     configMap = load_deployment_file(deployment_name, env_name)
-    paramsMap = load_deployment_file(deployment_name, env_name)
-
-    pattern =  paramsMap['pattern']
-    paramsMap.pop('pattern')
+    configString = json.dumps(configMap)
+    configStringBase64 = base64.b64encode(configString)
+    
+    pattern =  configMap['pattern'] 
 
     # Determine how to manage deployed instances
-    context = get_management_settings(paramsMap)  
-    context['configs'] = base64.b64encode(json.dumps(configMap))
+    context = get_management_settings(configMap)      
+    context['configs'] = configStringBase64
+    
+    # Setup a paramsMaps
+    params = get_cf_params(pattern, context).keys()
+    paramsMap = dict()
+    for k in configMap.keys():
+        if k in params: 
+            paramsMap[k] = configMap[k]
 
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
@@ -290,13 +306,7 @@ def main(args_json=None):
 
         #print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
     if args['subcmd'] == 'show-params':
-        try:
-             cf_dict = parse_cf_json( get_cf_template(pattern, context) )
-        except ValueError as e:
-            print "Invalid JSON: run the \"validate-template\" subcommand to debug."
-            sys.exit(1)
-
-        paramsJSON= cf_dict['Parameters']
+        paramsJSON = get_cf_params(pattern, context)
         print "Template parameters:"
         print "---------------------------"
         print get_cf_json(paramsJSON, pretty=True)
