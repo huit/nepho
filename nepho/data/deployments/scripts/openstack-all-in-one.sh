@@ -28,7 +28,7 @@ cd /root
 
 # get Grizzly installed by impersonating CentOS 6.x and enabling EPEL
 
-RELEASE=grizzly
+RELEASE=$( echo $NEPHO_CONFIGS )
 
 [ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
 yum-config-manager --enable epel
