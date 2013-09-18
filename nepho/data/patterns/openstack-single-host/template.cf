@@ -18,8 +18,10 @@
     {% include 'Mappings/AWS-Instance-Mappings-CentOS.json' %}
   },
     
-  "Resources" : {   
+  "Resources" : {
+
     {{ host.host( name='Openstack', ports=[80, 443, 5000, 6080, 8000, 8003, 8080, 8443, 8773, 8774, 8775, 9292, 9696, 35357]) }}
+
   },
   
   "Outputs" : {

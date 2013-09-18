@@ -19,17 +19,15 @@ cat /etc/aws/credentials | sed 's/aws_access_key_id/access_key/g' | sed 's/aws_s
 
 #*******************************
 
-<<<<<<< HEAD
-=======
 # get the public info about this instance
 yum -y install puppet facter
 PUBLIC_HOSTNAME=$( facter ec2_public_hostname )
 PUBLIC_IP=$( facter ec2_public_ipv4 )
 
->>>>>>> 1d121753ef65c7fa3503476cde438f195fca6fa8
 cd /root
 
 # get Grizzly installed by impersonating CentOS 6.x and enabling EPEL
+
 RELEASE=grizzly
 
 [ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
@@ -85,9 +83,9 @@ ${CONFIG} general CONFIG_HORIZON_SSL y
 
 # Run packstack 
 nohup packstack --answer-file=${ANS_FILE} 
-
 		
 cd /tmp
 git clone https://github.com/robparrott/openstack-post-config.git 
 cd ./openstack-post-config
 bash ./main.sh
+

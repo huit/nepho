@@ -20,6 +20,7 @@ function ensure_cfn_tools
 #
 function ensure_updated_awscli
 {
+
  #
  # Make sure we've got the latest aws-cli command line tools
  #
