@@ -27,8 +27,7 @@ PUBLIC_IP=$( facter ec2_public_ipv4 )
 cd /root
 
 # get Grizzly installed by impersonating CentOS 6.x and enabling EPEL
-
-RELEASE=$( echo $NEPHO_CONFIGS )
+RELEASE=$( echo $NEPHO_CONFIGS | python -c "import json,sys;d=json.loads(sys.stdin.read()); print d['OpenstackRelease']" )                                      
 
 [ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
 yum-config-manager --enable epel
