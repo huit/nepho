@@ -1,0 +1,32 @@
+{#
+
+    Standard RHEL template mappings, for general use.  NOT READY.
+    
+#}
+    "AWSInstanceType2Arch" : {
+      "t1.micro"    : { "Arch" : "64" },
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "m3.xlarge"   : { "Arch" : "64" },
+      "m3.2xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc1.4xlarge" : { "Arch" : "64HVM" },
+      "cc2.8xlarge" : { "Arch" : "64HVM" },
+      "cg1.4xlarge" : { "Arch" : "64HVM" }
+    },
+
+{# See http://aws.amazon.com/amazon-linux-ami/ #}
+
+    "AWSRegionArch2AMI" : {
+      "us-east-1"      : { "64" : "ami-570f603e", "64HVM" : "ami-a73758ce" },
+      "us-west-1"      : { "64" : "ami-5359cf63", "64HVM" : "ami-d75bcde7" },      
+      "us-west-2"      : { "64" : "ami-c5fed180", "64HVM" : "ami-47fed102" },      
+      "eu-west-1"      : { "64" : "ami-d9c0d6ad", "64HVM" : "ami-d1c0d6a5" }
+
+    }

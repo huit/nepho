@@ -4,7 +4,7 @@ development:
 
   pattern: openstack-single-host
   management: script
-  script: scripts/havana.sh
+  script: scripts/grizzly.sh
 #  ports: [80, 443]
   packages: 
     - git
@@ -14,4 +14,5 @@ development:
   
   KeyName: parrott-ec2
   OpenstackInstanceType: m1.large
+
   
