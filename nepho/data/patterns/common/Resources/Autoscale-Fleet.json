@@ -15,7 +15,9 @@
                      bucket=None, 
                      public_bucket=None,
                      rds=None, 
-                     ports=[80]
+                     ports=[80],
+                     latencyup=0.3,
+                     latencydown=0.05
                    ) -%}
 
     {% if public_hostname is not none %}
@@ -142,7 +144,82 @@
         ]
       }      
     },     
-        
+
+
+    "{{ name }}ScaleUpAlarm" : {
+      "Type" : "AWS::CloudWatch::Alarm",
+      "Properties" : {
+        "AlarmDescription" : "{{ name }} alarm for scaling up",
+        "MetricName" : "Latency",
+        "Namespace" : "AWS/ELB",
+        "Statistic" : "Average",
+        "Period" : "60",
+        "EvaluationPeriods" : "2",
+        "Threshold" : { "Ref" : "{{ latencyup }}" },
+        "AlarmActions" : [
+          {
+            "Ref" : "{{ name }}ScaleUpPolicy"
+          }
+        ],
+        "Dimensions" : [
+          {
+            "Name" : "LoadBalancerName",
+            "Value" :{ "Ref" : "{{ elb }}" } 
+          }
+        ],
+        "ComparisonOperator" : "GreaterThanThreshold"
+      },
+      "DependsOn" : "{{ name }}ScaleUpPolicy"
+    },
+
+    "{{ name }}ScaleDownAlarm" : {
+      "Type" : "AWS::CloudWatch::Alarm",
+      "Properties" : {
+        "AlarmDescription" : "{{ name }} alarm for scaling down",
+        "MetricName" : "Latency",
+        "Namespace" : "AWS/ELB",
+        "Statistic" : "Average",
+        "Period" : "60",
+        "EvaluationPeriods" : "5",
+        "Threshold" : { "Ref" : "{{ latencydown }}" },
+        "AlarmActions" : [
+          {
+            "Ref" : "{{ name }}ScaleDownPolicy"
+          }
+        ],
+        "Dimensions" : [
+          {
+            "Name" : "LoadBalancerName",
+            "Value" :{ "Ref" : "{{ elb }}" }
+          }
+        ],
+        "ComparisonOperator" : "LessThanThreshold"
+      },
+      "DependsOn" : "{{ name }}ScaleDownPolicy"
+    },
+
+    "{{ name }}ScaleUpPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "{{ name }}Fleet" },
+        "Cooldown" : "60",
+        "ScalingAdjustment" : "1"
+      },
+      "DependsOn" : "{{ name }}Fleet"
+    },
+
+    "{{ name }}ScaleDownPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "{{ name }}Fleet" },
+        "Cooldown" : "120",
+        "ScalingAdjustment" : "-1"
+      },
+      "DependsOn" : "{{ name }}Fleet"
+    },
+
     "{{ name }}LaunchConfig"  : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Metadata" : {
