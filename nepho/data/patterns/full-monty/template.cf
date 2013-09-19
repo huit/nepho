@@ -80,8 +80,8 @@
                          elb2='Tier2ElasticLoadBalancer',
                          public_hostname='{ "Fn::GetAtt" : [ "Tier1ElasticLoadBalancer", "DNSName" ]}',
                          rds='Tier3DBInstance',
-                         latencyup='Tier2LatencyScaleUp',
-                         latencydown='Tier2LatencyScaleDown',
+                         latencyup='Tier1LatencyScaleUp',
+                         latencydown='Tier1LatencyScaleDown',
                          ports=[80] ) }},  
 
 {# **** S3 **** #}
