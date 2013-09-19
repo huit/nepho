@@ -116,7 +116,7 @@
         "AvailabilityZones" : [{ "Fn::GetAtt" : [ "{{ subnet }}", "AvailabilityZone" ] }],
         "VPCZoneIdentifier" : [{ "Ref" : "{{ subnet }}" }],
         "LaunchConfigurationName" : { "Ref" : "{{ name }}LaunchConfig"  },
-        "MinSize" : "1",
+        "MinSize" : { "Ref" : "{{ name }}InstanceCount" },
         "MaxSize" : "10",
         "DesiredCapacity" : { "Ref" : "{{ name }}InstanceCount" },
         "LoadBalancerNames" : [ { "Ref" : "{{ elb }}" } ],
