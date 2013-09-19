@@ -19,6 +19,15 @@ cat /etc/aws/credentials | sed 's/aws_access_key_id/access_key/g' | sed 's/aws_s
 
 #*******************************
 
+function get_json_entry
+{
+	local key=$1
+	local json=$2
+	local python_code="import json,sys;d=json.loads(sys.stdin.read()); print d[\'${key}\']"
+	
+	echo ${json} | python -c "${python_code}"
+}
+
 # get the public info about this instance
 yum -y install puppet facter
 PUBLIC_HOSTNAME=$( facter ec2_public_hostname )
@@ -47,7 +56,7 @@ export HOME=/root
 # ********* PACKSTACK *************
 
 # Do packstack
-ANS_FILE=/root/answers.txt
+ANS_FILE=/root/packstack-answers.txt
 
 # generate an answers file if not present
 [ -f ${ANS_FILE} ] || packstack --gen-answer-file=${ANS_FILE}
@@ -80,6 +89,11 @@ ${CONFIG} general CONFIG_SWIFT_INSTALL y
 # Use HTTPS for horizon
 ${CONFIG} general CONFIG_HORIZON_SSL y
 
+KEYS=$( echo $NEPHO_CONFIGS | python -c "import json,sys;d=json.loads(sys.stdin.read());for e in d['OpenstackDisabledServices']: print e" )
+
+for KEY in $KEYS; do 
+ ${CONFIG} general ${KEY} n
+done
 # Run packstack 
 nohup packstack --answer-file=${ANS_FILE} 
 		

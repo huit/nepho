@@ -1,6 +1,6 @@
 ---
 
-all-in-one:
+all-in-one-keystone:
 
   pattern: openstack-single-host
   management: script
@@ -14,6 +14,13 @@ all-in-one:
   KeyName: parrott-ec2
   OpenstackInstanceType: m1.large
   OpenstackRelease: grizzly
+  OpenstackDisabledServices: 
+    - CONFIG_GLANCE_INSTALL
+    - CONFIG_CINDER_INSTALL
+    - CONFIG_NOVA_INSTALL
+    - CONFIG_SWIFT_INSTALL
+    - CONFIG_QUANTUM_INSTALL
+    - CONFIG_HORIZON_INSTALL
 
 development:
 
