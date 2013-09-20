@@ -1,5 +1,20 @@
 ---
 
+all-in-one:
+
+  pattern: openstack-single-host
+  management: script
+  script: scripts/openstack-all-in-one.sh
+  packages: 
+    - git
+    - puppet
+    - telnet
+    - emacs
+  
+  KeyName: parrott-ec2
+  OpenstackInstanceType: m1.large
+  OpenstackRelease: havana
+
 all-in-one-keystone:
 
   pattern: openstack-single-host
@@ -13,7 +28,7 @@ all-in-one-keystone:
   
   KeyName: parrott-ec2
   OpenstackInstanceType: m1.large
-  OpenstackRelease: grizzly
+  OpenstackRelease: havana
   OpenstackDisabledServices: 
     - CONFIG_GLANCE_INSTALL
     - CONFIG_CINDER_INSTALL
