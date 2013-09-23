@@ -62,6 +62,9 @@ function do_puppet {
         ./scripts/bootstrap.sh
     fi
 
+    echo "Beginning first Puppet run"
+	puppet apply ${site_file}
+    echo "Beginning second Puppet run"
 	puppet apply ${site_file}
 }
 
