@@ -25,8 +25,8 @@ function ensure_updated_awscli
  # Make sure we've got the latest aws-cli command line tools
  #
 
- yum -y upgrade python-pip
- python-pip isntall awscli
+ yum -y install python-pip || yum -y upgrade python-pip
+ python-pip install awscli
 
 }
 

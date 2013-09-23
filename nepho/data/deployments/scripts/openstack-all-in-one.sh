@@ -1,11 +1,3 @@
-OUTDIR=/home/ec2-user
-
-env | sort > ${OUTDIR}/env.txt
-cp /var/lib/cloud/data/scripts/part-000 ${OUTDIR}/cloud-init-script.txt
-cp /var/log/cloud-init.log ${OUTDIR}/cloud-init-log.txt
-cp /var/log/cfn-init.log ${OUTDIR}/cfn-init-log.txt
-
-chown ec2-user:ec2-user ${OUTDIR}/*
 
 #***************************
 
@@ -28,13 +20,6 @@ function get_json_entry
 	echo ${json} | python -c "${python_code}"
 }
 
-# get the public & private info about this EC2 instance
-yum -y install puppet facter
-PUBLIC_HOSTNAME=$( facter ec2_public_hostname )
-PUBLIC_IP=$( facter ec2_public_ipv4 )
-PRIVATE_HOSTNAME=$( facter hostname )
-PRIVATE_IP=$( facter ipaddress )
-
 cd /root
 
 # get Grizzly installed by impersonating CentOS 6.x and enabling EPEL
@@ -49,8 +34,19 @@ cd /root/.ssh && rm -f id_rsa* && ssh-keygen -f id_rsa -t rsa -N '' && cat id_rs
 
 RELEASE_RPM=http://rdo.fedorapeople.org/openstack-${RELEASE}/rdo-release-${RELEASE}.rpm
 yum install -y $RELEASE_RPM
-yum install -y openstack-packstack openstack-utils
-yum -y install policycoreutils sheepdog
+
+RDO_START_PKGS="openstack-packstack openstack-utils policycoreutils"
+RDO_MISSED_PKGS=" sheepdog \
+                  heat-cfntools \
+                  heat-jeos \
+                  openstack-heat-api \
+                  openstack-heat-api-cfn \
+                  openstack-heat-api-cloudwatch \
+                  openstack-heat-common \
+                  openstack-heat-engine \
+                  python-heatclient "
+yum install -y ${RDO_START_PKGS}
+yum -y install ${RDO_MISSED_PKGS}
 
 cd /root
 export HOME=/root
@@ -60,13 +56,28 @@ mkdir /media/ephemeral0/glance  && ln -s /media/ephemeral0/glance  /var/lib/mong
 mkdir /media/ephemeral0/swift   && ln -s /media/ephemeral0/swift   /var/lib/swift  
 mkdir /media/ephemeral0/cinder  && ln -s /media/ephemeral0/cinder  /var/lib/cinder
 
+# Apparently RDO installs latest puppet yum repo
+#  so make sure we're up to date
+PUPPET_PKGS="puppet facter"
+yum -y install ${PUPPET_PKGS} || yum -y update ${PUPPET_PKGS}
+
 # ********* PACKSTACK *************
+
+# get the public & private info about this EC2 instance
+PUBLIC_HOSTNAME=$( facter ec2_public_hostname )
+PUBLIC_IP=$( facter ec2_public_ipv4 )
+PRIVATE_HOSTNAME=$( facter hostname )
+PRIVATE_IP=$( facter ipaddress )
 
 # Do packstack
 ANS_FILE=/root/packstack-answers.txt
 
+# For now, let's use packstack from the repo
+git clone --recursive https://github.com/stackforge/packstack.git
+#export PATH=/root/packstack/bin:$PATH
+
 # generate an answers file if not present
-[ -f ${ANS_FILE} ] || packstack --gen-answer-file=${ANS_FILE}
+[ -f ${ANS_FILE} ] || packstack -d --gen-answer-file=${ANS_FILE}
 
 # Use openstack-config tool to modify these files
 CONFIG="openstack-config --set ${ANS_FILE} "
@@ -113,11 +124,11 @@ ${CONFIG} general CONFIG_PROVISION_TEMPEST y
 # Do tempest
 ${CONFIG} general CONFIG_CINDER_VOLUMES_SIZE 60G
 
-KEYS=$( echo $NEPHO_CONFIGS | python -c "import json,sys;d=json.loads(sys.stdin.read());for e in d['OpenstackDisabledServices']: print e" )
+#KEYS=$( echo $NEPHO_CONFIGS | python -c "import json,sys;d=json.loads(sys.stdin.read());for e in d['OpenstackDisabledServices']: print e" )
+#for KEY in $KEYS; do 
+# ${CONFIG} general ${KEY} n
+#done
 
-for KEY in $KEYS; do 
- ${CONFIG} general ${KEY} n
-done
 # Run packstack 
 nohup packstack --answer-file=${ANS_FILE} 
 
@@ -132,7 +143,7 @@ DEBUG_CONF_FILES=" /etc/glance/glance-api.conf \
 
 if [ ${RELEASE} = "havana" ]; then
 
-  for f in ${CONF_FILES}; do
+  for f in ${DEBUG_CONF_FILES}; do
       openstack-config --set ${f} general debug True
   done
 
@@ -155,4 +166,22 @@ cd /tmp
 git clone https://github.com/robparrott/openstack-post-config.git 
 cd ./openstack-post-config
 bash ./main.sh
+
+#
+# Savanna support?
+#
+yum -y install openstack-savanna python-django-savanna
+CONFIG="openstack-config --set ${ANS_FILE} DEFAULT"
+${CONFIG} port 8386
+${CONFIG} os_auth_host ${PUBLIC_IP}                                                                                                                      
+${CONFIG} os_auth_port 35357                                                                                                                            
+${CONFIG} auth_protocol  http
+${CONFIG} os_admin_username savanna                                                                                                                    
+${CONFIG} os_admin_password savanna                                                                                                                      
+${CONFIG} os_admin_tenant_name services
+
+chkconfig openstack-savanna-api on 
+service openstack-savanna-api start 
+
+
 
