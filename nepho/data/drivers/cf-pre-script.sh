@@ -49,6 +49,6 @@ function attempt_aws_tools_update
 }
 
 ensure_cfn_tools
-ensure_updated_awscli
+#ensure_updated_awscli
 attempt_aws_tools_update
 
