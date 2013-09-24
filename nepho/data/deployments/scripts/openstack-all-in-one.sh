@@ -74,7 +74,8 @@ ANS_FILE=/root/packstack-answers.txt
 
 # For now, let's use packstack from the repo
 git clone --recursive https://github.com/stackforge/packstack.git
-#export PATH=/root/packstack/bin:$PATH
+export PATH=/root/packstack/bin:$PATH
+yum -y remove openstack-packstack
 
 # generate an answers file if not present
 [ -f ${ANS_FILE} ] || packstack -d --gen-answer-file=${ANS_FILE}
@@ -106,6 +107,7 @@ done
 # Fix the interface for a single-node installation (use loopback)
 ${CONFIG} general CONFIG_NOVA_COMPUTE_PRIVIF lo
 ${CONFIG} general CONFIG_NOVA_NETWORK_PRIVIF lo
+
 
 # Use Swift
 ${CONFIG} general CONFIG_SWIFT_INSTALL y
@@ -150,6 +152,10 @@ if [ ${RELEASE} = "havana" ]; then
   # fix the swift proxy-server's bind IP address
   openstack-config --set /etc/swift/proxy-server.conf DEFAULT bind_ip ${PRIVATE_IP}
 
+  # Let's make sure we use qemu, not kvm if in EC2
+  openstack-config --set /etc/nova/nova.conf DEFAULT libvirt_type qemu
+
+  # turn on debugging in horizon
   perl -i -p -e 's/DEBUG = False/DEBUG = True/' /etc/openstack-dashboard/local_settings
 
   chkconfig --list | grep openstack | awk '{print $1}' | xargs -ixxx service xxx restart
