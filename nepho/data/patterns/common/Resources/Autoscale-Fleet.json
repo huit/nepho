@@ -370,33 +370,41 @@
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
 		  
           {% if rds is not none  %}
-	  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
-	  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
-	  "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
-	  "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
-	  "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",	  
-	  "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
-		            "", [ "mysql://",
-                          { "Ref" : "DBUsername" },
-                          ":",      
-                          { "Ref" : "DBPassword" },       
-                          "@",                               
-                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
-                          ":",
-                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
-                          "/",
-                          { "Ref": "DBName" }
-                       ]]}, "'\n", 
-	  {% endif %}		  		 
+          "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+          "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+          "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+          "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",
+          "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",
+          "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [
+                        "", [ "mysql://",
+                              { "Ref" : "DBUsername" },
+                              ":",
+                              { "Ref" : "DBPassword" },
+                              "@",
+                              { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                              ":",
+                              { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                              "/",
+                              { "Ref": "DBName" }
+                           ]]}, "'\n",
+	  {% endif %}
 
 
           {% if bucket is not none %}
-	  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
-	  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+          "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
           "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" },  "'\n",
           "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
-          {% endif %}
-		 
+		  {% endif %}
+
+          "# SES SMTP parameters\n",
+		  "export NEPHO_SES_SMTP='",          { "Ref" : "SESSMTP" }, "'\n",
+		  "export NEPHO_SES_SMTP_ENDPOINT='", { "Ref" : "SESEndpoint" }, "'\n",
+		  "export NEPHO_SES_SMTP_PORT='",     { "Ref" : "SESPort" }, "'\n",
+		  "export NEPHO_SES_SMTP_USER='",     { "Ref" : "SESUsername" }, "'\n",
+		  "export NEPHO_SES_SMTP_PASSWORD='", { "Ref" : "SESPassword" }, "'\n",
+		  
+          "# pull & setup puppet modules and run manifest\n",
           {% if management !='script' and management != 'none' %}
           "export NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
           "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
