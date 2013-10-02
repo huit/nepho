@@ -1,73 +1,43 @@
-
 #
-# Required packages for bootstrapped system	
+# Deploy Puppet on a newly provisioned system
 #
-REQUIRED_PKGS="puppet augeas redhat-lsb git curl wget s3cmd aws-cli ruby-devel rubygems gcc"
+function deploy_puppet {
+    ## Enable Puppet Labs repo
 
-#
-# Prepare a RHEL-ish v6 instance for puppetization
-#
-# Install basics to bootstrap this process
-# This includes:
-#          - ruby
-#          - puppetlabs yum repo
-#          - puppet
-#          - r10k
-#          - git
-#          - wget & curl
-#          - s3cmd line tools
-# 
-function prepare_rhel6_for_puppet {
+    # Fake a redhat-release
+    [ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
 
-	local extra_pkgs=$*
+    # Get the Puppet Labs repo installed
+    rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm ||
+      echo "Unable to install Puppet Labs repo: exit code $?"
 
-	# Get the puppet labs repo installed
-	rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm ||
-        echo "Unable to install Puppet Labs repo: exit code $?"
-
-	# Get EPEL installed
-	EPEL_RPM=http://mirror.utexas.edu/epel/6/i386/epel-release-6-8.noarch.rpm
-	if ! [ -f /etc/yum.repos.d/epel.repo ]; then
-		rpm -ihv ${EPEL_RPM} || /bin/true		
-	fi
-
-	# We need to disable yum priorities, because of the stupid Amazon repo priorities 
-	#  prevent getting latest puppet
-	export PATH="${PATH}:/usr/local/bin"
-	PKGS="${REQUIRED_PKGS} ${extra_pkgs}"
-	yum -y --enablerepo=epel --disableplugin=priorities update ${PKGS}
-
-	# install r10k using gem
-	gem install r10k ||
-        echo "Unable to install r10k: exit code $?"
-
-	echo $( facter operatingsystem )
-	# to convince puppet we're a RHEL derivative, and then get EPEL installed
-	[ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
-	#	[ -f /etc/system-release ] && cp -af /etc/system-release /etc/redhat-release 
-
-}
-
-# Run puppet on a suitable repo
-function do_puppet {
-
-	local site_file=${1:-manifests/site.pp}
-
-	#r10k deploy environment --puppetfile Puppetfile
-	if [ -r Puppetfile ]; then
-			HOME=/root PUPPETFILE_DIR=/etc/puppet/modules r10k puppetfile install
-	fi
-
-    if [[ -x ./scripts/bootstrap.sh ]]; then
-        ./scripts/bootstrap.sh
+    # Get EPEL installed
+    EPEL_RPM=http://mirror.utexas.edu/epel/6/i386/epel-release-6-8.noarch.rpm
+    if ! [ -f /etc/yum.repos.d/epel.repo ]; then
+      rpm -ivh ${EPEL_RPM} || /bin/true
     fi
 
-    echo "Beginning first Puppet run"
-	puppet apply ${site_file}
-    echo "Beginning second Puppet run"
-	puppet apply ${site_file}
-}
+    ## Install Puppet and dependencies
 
+    REQUIRED_PKGS="puppet augeas curl wget s3cmd aws-cli ruby-devel rubygems gcc"
+
+    export PATH="${PATH}:/usr/local/bin"
+    PKGS="${REQUIRED_PKGS} ${extra_pkgs}"
+    yum -y --enablerepo=epel --disableplugin=priorities update ${PKGS}
+
+    # Install r10k
+    puppet resource package=r10k provider=gem ensure=present ||
+      echo "Unable to install r10k gem: exit code $?"
+
+    # Deploy r10k modules
+    if [ -r './provisioners/puppet/Puppetfile' ]; then
+      pushd provisioners/puppet
+      HOME=/root PUPPETFILE_DIR=/etc/puppet/modules r10k puppetfile install
+      popd
+    else
+      echo 'No Puppetfile found, skipping r10k'
+    fi
+}
 #
 # Pull private data from S3
 #	Takes a set of urls as an argument,
@@ -102,12 +72,12 @@ function git_pull {
 	local repo=$1
 	local branch=$2
 
-	if ! [ x = "x${branch}" ]; then 
+	if ! [ x = "x${branch}" ]; then
 		branch_arg="--branch $branch"
 	fi
-	
-	
-	git clone ${branch_arg} $repo 
+
+
+	git clone ${branch_arg} $repo
 	dir=$( echo ${repo} | awk -F/ '{print $NF}' | sed 's/\.git//' )
 	cd ${dir}
 
@@ -117,15 +87,12 @@ function git_pull {
 	echo
 }
 
-#
-# After this, we should be ready to use puppet
-#  in a masterless mode ...
-#
-prepare_rhel6_for_puppet
-
-#
-# Now hand off to puppet ...
-#
+## Pull cloudlet from repo
 cd /tmp
 git_pull ${NEPHO_GIT_REPO_URL} ${NEPHO_GIT_REPO_BRANCH}
-do_puppet ./manifests/site.pp >> /var/log/lavender.log 2>&1 || error_exit $(</var/log/lavender.log)
+
+deploy_puppet
+
+if [ -x 'provisioners/bootstrap.sh' ]; then
+    ./provisioners/bootstrap.sh
+fi
