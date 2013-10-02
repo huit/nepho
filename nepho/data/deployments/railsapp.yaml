@@ -4,6 +4,8 @@ development:
   ConfigMgmtGitRepoBranch: master
   KeyName: steveH
   SingleServerInstanceRole: standalone
+  SESSMTP: "true"
+  SESSMTPDomain: "devel.huit.harvard.edu"
   management: puppet
   packages:
     - git
@@ -17,6 +19,8 @@ production:
   DBPassword: railsapp
   DBUsername: railsapp
   KeyName: steveH
+  SESSMTP: "true"
+  SESSMTPDomain: "devel.huit.harvard.edu"
   Tier1InstanceCount: 2
   Tier2InstanceCount: 2
   Tier1InstanceRole: varnish
