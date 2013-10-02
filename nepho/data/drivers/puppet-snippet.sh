@@ -26,7 +26,7 @@ function deploy_puppet {
     yum -y --enablerepo=epel --disableplugin=priorities update ${PKGS}
 
     # Install r10k
-    puppet resource package=r10k provider=gem ensure=present ||
+    puppet resource package r10k provider=gem ensure=present ||
       echo "Unable to install r10k gem: exit code $?"
 
     # Deploy r10k modules
