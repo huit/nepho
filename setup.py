@@ -26,6 +26,7 @@ setup(
       'boto>=2.0',
       'awscli>=0.13',
       'Jinja2',
-      'PyYAML'
+      'PyYAML',
+      'cement'
     ],
   )
