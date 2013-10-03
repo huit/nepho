@@ -8,8 +8,10 @@ function deploy_puppet {
     [ -r /etc/redhat-release ] || echo "CentOS release 6.4 (Final)" > /etc/redhat-release
 
     # Get the Puppet Labs repo installed
-    rpm -ivh http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm ||
-      echo "Unable to install Puppet Labs repo: exit code $?"
+    PUPPETLABS_RPM=http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm 
+    if ! [ -f /etc/yum.repos.d/puppetlabs.repo ]; then
+      rpm -ivh ${PUPPETLABS_RPM} || /bin/true
+    fi
 
     # Get EPEL installed
     EPEL_RPM=http://mirror.utexas.edu/epel/6/i386/epel-release-6-8.noarch.rpm
