@@ -30,12 +30,12 @@ function deploy_puppet {
       echo "Unable to install r10k gem: exit code $?"
 
     # Deploy r10k modules
-    if [ -r './provisioners/puppet/Puppetfile' ]; then
+    if [ -r 'provisioners/puppet/Puppetfile' ]; then
       pushd provisioners/puppet
       HOME=/root PUPPETFILE_DIR=/etc/puppet/modules r10k puppetfile install
       popd
     else
-      echo 'No Puppetfile found, skipping r10k'
+      echo "No Puppetfile found at '${PWD}/provisioners/puppet/Puppetfile', skipping r10k"
     fi
 }
 #
