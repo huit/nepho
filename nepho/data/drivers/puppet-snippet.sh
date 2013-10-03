@@ -23,7 +23,7 @@ function deploy_puppet {
 
     export PATH="${PATH}:/usr/local/bin"
     PKGS="${REQUIRED_PKGS} ${extra_pkgs}"
-    yum -y --enablerepo=epel --disableplugin=priorities update ${PKGS}
+    yum -y --enablerepo=epel --enablerepo=puppetlabs* --disableplugin=priorities update ${PKGS}
 
     # Install r10k
     puppet resource package r10k provider=gem ensure=present ||
