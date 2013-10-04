@@ -1,14 +1,9 @@
 #!/usr/bin/env python
-from cement.core import backend, foundation, controller
+from nepho.cli import base
 
-# define a second controller
-class NephoScenarioController(controller.CementBaseController):
+class NephoScenarioController(base.NephoBaseController):
     class Meta:
         label = 'scenario'
         stacked_on = None
         description = 'list and view individual cloudlet deployment scenarios'
         usage = "nepho scenario <action> [options]"
-
-    @controller.expose(hide=True)
-    def default(self):
-        print("Run nepho scenario --help for a list of actions.")
