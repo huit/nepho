@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-from cement.core import backend, foundation, controller
+from nepho.cli import base
 
-class NephoStackController(controller.CementBaseController):
+class NephoStackController(base.NephoBaseController):
     class Meta:
         label = 'stack'
         stacked_on = None
-        description = 'create, manage, and destroy stacks built from cloudlet scenarios'
+        description = 'create, manage, and destroy stacks built from scenarios'
+        usage = "nepho stack <action> [options]"

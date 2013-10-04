@@ -7,3 +7,8 @@ class NephoScenarioController(controller.CementBaseController):
         label = 'scenario'
         stacked_on = None
         description = 'list and view individual cloudlet deployment scenarios'
+        usage = "nepho scenario <action> [options]"
+
+    @controller.expose(hide=True)
+    def default(self):
+        print("Run nepho scenario --help for a list of actions.")

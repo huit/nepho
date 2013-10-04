@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-from cement.core import backend, foundation, controller, handler
+from nepho.cli import base
 
 # define a second controller
-class NephoCloudletController(controller.CementBaseController):
+class NephoCloudletController(base.NephoBaseController):
     class Meta:
         label = 'cloudlet'
         stacked_on = None
         description = 'find, download, and manage cloudlets'
+        usage = "nepho cloudlet <action> [options]"
