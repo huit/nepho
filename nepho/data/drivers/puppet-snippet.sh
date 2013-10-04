@@ -25,7 +25,8 @@ function deploy_puppet {
 
     export PATH="${PATH}:/usr/local/bin"
     PKGS="${REQUIRED_PKGS} ${extra_pkgs}"
-    yum -y --enablerepo=epel --enablerepo=puppetlabs* --disableplugin=priorities update ${PKGS}
+    yum -y --enablerepo=epel --enablerepo=puppetlabs* --disableplugin=priorities install ${PKGS}
+    yum -y --enablerepo=epel --enablerepo=puppetlabs* --disableplugin=priorities update
 
     # Install r10k
     puppet resource package r10k provider=gem ensure=present ||
@@ -88,6 +89,9 @@ function git_pull {
 
 	echo
 }
+
+## Update ourselves
+yum -y update
 
 ## Pull cloudlet from repo
 cd /tmp

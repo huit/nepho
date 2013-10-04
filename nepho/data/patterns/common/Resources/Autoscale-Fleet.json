@@ -238,7 +238,6 @@
                 "ruby-devel"      : [],
                 "gcc"             : [],
                 "gcc-c++"         : [],
-                "puppet"          : [],
                 {% endif %}                
                 "curl"         : [],
                 "wget"         : [],

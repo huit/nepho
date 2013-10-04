@@ -145,7 +145,6 @@
                 "ruby-devel"      : [],
                 "gcc"             : [],
                 "gcc-c++"         : [],
-                "puppet"          : [],
                 {% endif %}   
                 {% if bucket is not none %}
                 "fuse"         : [],
