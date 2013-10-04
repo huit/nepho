@@ -4,7 +4,7 @@ from os import path
 
 defaults = backend.defaults('nepho', 'global')
 defaults['global']['cloudlets_path'] = path.join(path.expanduser("~"), ".nepho", "cloudlets")
-defaults['global']['cloudlets_path'] = path.join(path.expanduser("~"), ".nepho", "overrides")
+defaults['global']['overrides_path'] = path.join(path.expanduser("~"), ".nepho", "overrides")
 
 class NephoBaseController(controller.CementBaseController):
     class Meta:
