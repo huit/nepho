@@ -11,12 +11,12 @@ def list(self):
 		# Print directory if it changes
 		if dir != path.dirname(cloudlet):
 			dir = path.dirname(cloudlet)
-			print dir
+			print colored(dir, "cyan")
 		name = path.basename(cloudlet)
 
 		try:
 			y = yaml.load(open(path.join(cloudlet, 'cloudlet.yaml')))
 		except IOError as e:
-			print colored("└──", "yellow"), name, "(", colored("invalid", "red"), ") - missing or malformed cloudlet.yaml!"
+			print colored("└──", "yellow"), name, "(", colored("error - missing or malformed cloudlet.yaml", "red"), ")"
 		else:
 			print colored("└──", "yellow"), name, "(", colored("v%s", "blue") % (y['version']), ")"
