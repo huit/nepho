@@ -4,9 +4,10 @@ from nepho.core import base
 from os import path
 from termcolor import colored
 
-def list(self):
+def list_all(self):
 	all_cloudlets = base.all_cloudlets(self)
 	dir = ""
+	items = list()
 	for cloudlet in sorted(all_cloudlets):
 		# Print directory if it changes
 		if dir != path.dirname(cloudlet):
@@ -14,9 +15,17 @@ def list(self):
 			print colored(dir, "cyan")
 		name = path.basename(cloudlet)
 
-		try:
-			y = yaml.load(open(path.join(cloudlet, 'cloudlet.yaml')))
-		except IOError as e:
-			print colored("└──", "yellow"), name, "(", colored("error - missing or malformed cloudlet.yaml", "red"), ")"
+		# If there are multiple versions of a cloudlet with the same name,
+		# subsequent versions will be ignored by other commands
+		if name not in items:
+			try:
+				y = yaml.load(open(path.join(cloudlet, 'cloudlet.yaml')))
+			except:
+				print colored("└──", "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
+			else:
+				print colored("└──", "yellow"), name, "(", colored("v%s", "blue") % (y['version']), ")"
+			items.append(name)
 		else:
-			print colored("└──", "yellow"), name, "(", colored("v%s", "blue") % (y['version']), ")"
+			print colored("└──", "yellow"), name, "(", colored("error", "red"), "- duplicate cloudlet will be ignored )"
+			
+	return
