@@ -27,6 +27,7 @@ setup(
       'awscli>=0.13',
       'Jinja2',
       'PyYAML',
-      'cement'
+      'cement',
+      'termcolor'
     ],
   )

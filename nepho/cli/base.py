@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 from cement.core import backend, foundation, controller, handler
+from os import path
+
+defaults = backend.defaults('nepho', 'global')
+defaults['global']['cloudlets_path'] = path.join(path.expanduser("~"), ".nepho", "cloudlets")
+defaults['global']['cloudlets_path'] = path.join(path.expanduser("~"), ".nepho", "overrides")
 
 class NephoBaseController(controller.CementBaseController):
     class Meta:
         label = 'base'
         description = "Command line cross-cloud orchestration tool for constructing virtual datacenters."
         usage = "nepho <command> <action> [options]"
+        config_defaults = defaults
 
     def _setup(self, app):
         super(NephoBaseController, self)._setup(app)
