@@ -1,13 +1,13 @@
 # coding: utf-8
 import yaml
-from nepho.core import base
+from nepho.core import common
 from os import path
 from termcolor import colored
 from textwrap import TextWrapper
 from pprint import pprint
 
 def list_scenario(self, name):
-	cloudlet = base.find_cloudlet(self, name)
+	cloudlet = common.find_cloudlet(self, name)
 
 	# Basically the same output as list_cloudlets
 	dir = path.dirname(cloudlet)
@@ -24,7 +24,7 @@ def list_scenario(self, name):
 	wrapper = TextWrapper(width=80, initial_indent="        ", subsequent_indent="        ")
 
 	# Now list the available scenarios
-	for scenario_file in base.all_scenarios(self, name):
+	for scenario_file in common.all_scenarios(self, name):
 		scenario_name = path.basename(scenario_file).rstrip(".yaml")
 		try:
 			y = yaml.load(open(scenario_file))
@@ -38,7 +38,7 @@ def list_scenario(self, name):
 	return
 
 def describe_scenario(self, cloudlet, name):
-	scenario_file = base.find_scenario(self, cloudlet, name)
+	scenario_file = common.find_scenario(self, cloudlet, name)
 
 	try:
 		y = yaml.load(open(scenario_file))

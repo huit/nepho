@@ -1,11 +1,11 @@
 # coding: utf-8
 import yaml
-from nepho.core import base
+from nepho.core import common
 from os import path
 from termcolor import colored
 
 def list_all(self):
-	all_cloudlets = base.all_cloudlets(self)
+	all_cloudlets = common.all_cloudlets(self)
 	dir = ""
 	items = list()
 	for cloudlet in sorted(all_cloudlets):
