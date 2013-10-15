@@ -2,9 +2,13 @@
 from cement.core import backend, foundation, controller, handler
 from os import path
 
-defaults = backend.defaults('nepho', 'global')
-defaults['global']['cloudlets_path'] = path.join(path.expanduser("~"), ".nepho", "cloudlets")
-defaults['global']['overrides_path'] = path.join(path.expanduser("~"), ".nepho", "overrides")
+defaults = backend.defaults('nepho')
+defaults['nepho']['archive_dir']   = path.join(path.expanduser("~"), ".nepho", "cloudlets", "archive")
+defaults['nepho']['cache_dir']     = path.join(path.expanduser("~"), ".nepho", "cache")
+defaults['nepho']['cloudlet_dirs'] = path.join(path.expanduser("~"), ".nepho", "cloudlets")
+defaults['nepho']['local_dir']     = path.join(path.expanduser("~"), ".nepho", "local")
+
+defaults['nepho']['cloudlet_registry_url'] = "https://cloudlets.github.io/registry.yaml"
 
 class NephoBaseController(controller.CementBaseController):
     class Meta:
@@ -15,6 +19,11 @@ class NephoBaseController(controller.CementBaseController):
 
     def _setup(self, app):
         super(NephoBaseController, self)._setup(app)
+
+        # Expanduser where necessary
+        for item in self.config.keys('nepho'):
+            self.config.set('nepho', item, path.expanduser(self.config.get('nepho', item)))
+
         self.my_shared_obj = dict()
 
     @controller.expose(hide=True)

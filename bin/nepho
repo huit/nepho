@@ -9,7 +9,7 @@ def main():
 
     # Subcontrollers for each functional component
     handler.register(cli.cloudlet.NephoCloudletController)
-    handler.register(cli.scenario.NephoScenarioController)
+    handler.register(cli.blueprint.NephoBlueprintController)
     handler.register(cli.stack.NephoStackController)
 
     try:

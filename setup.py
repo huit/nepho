@@ -28,6 +28,8 @@ setup(
       'Jinja2',
       'PyYAML',
       'cement',
-      'termcolor'
+      'termcolor',
+      'gitpython',
+      'requests'
     ],
   )

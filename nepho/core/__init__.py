@@ -1,3 +1,3 @@
 import cloudlet
-import scenario
+import blueprint
 import stack

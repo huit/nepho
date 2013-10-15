@@ -9,27 +9,27 @@ class NephoStackController(base.NephoBaseController):
     class Meta:
         label = 'stack'
         stacked_on = None
-        description = 'create, manage, and destroy stacks built from scenarios'
+        description = 'create, manage, and destroy stacks built from blueprints'
         usage = "nepho stack <action> [options]"
         arguments = [
             (['cloudlet'], dict(help=argparse.SUPPRESS, nargs='?')),
-            (['scenario'], dict(help=argparse.SUPPRESS, nargs='?')),
+            (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['--save', '-s'], dict(help=argparse.SUPPRESS, action='store_true')),
             (['--params', '-p'],   dict(help=argparse.SUPPRESS, nargs='*', action='append')),
         ]
 
-    @controller.expose(help='Create a stack from a scenario')
+    @controller.expose(help='Create a stack from a blueprint')
     def create(self):
-    	if self.pargs.cloudlet == None or self.pargs.scenario == None:
+    	if self.pargs.cloudlet == None or self.pargs.blueprint == None:
     		print dedent("""\
-    			Usage: nepho stack create <cloudlet> <scenario> [--save] [--params Key1=Val1]
+    			Usage: nepho stack create <cloudlet> <blueprint> [--save] [--params Key1=Val1]
 
     			-s, --save
     			  Save command-line (and/or interactive) parameters to an overrides file for
     			  use in all future invocations of this command.
 
     			-p, --params
-    			  Override any paramater from the scenario template. This option can be passed
+    			  Override any paramater from the blueprint template. This option can be passed
     			  multiple key=value pairs, and can be called multiple times. If a required
     			  parameter is not passed as a command-line option, nepho will interactively
     			  prompt for it.
