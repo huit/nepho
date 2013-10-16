@@ -5,6 +5,8 @@ from nepho.core import common
 from os import path
 from shutil import rmtree, copyfileobj
 from termcolor import colored
+from textwrap import TextWrapper
+from tempfile import mkdtemp
 from time import time
 from git import *
 
@@ -59,19 +61,75 @@ def cloudlet_registry(self):
             return yaml.load(yaml_file)
 
 def clone_cloudlet(self, url, repo_path):
-    repo = Repo.init(repo_path, bare=True)
-    repo.create_remote('origin', url)
-    repo.remotes.origin.pull()
-    repo.submodule_update(init=True)
+    try:
+        temp_repo = mkdtemp()
+        validate = Repo.init(temp_repo, bare=True)
+        validate.git.ls_remote(url, heads=True)
+    except Exception as e:
+        print "Invalid or inaccessible remote repository URL."
+        print e
+        exit(1)
+    else:
+        try:
+            repo = Repo.clone_from(url, repo_path)
+            repo.submodule_update(init=True)
+        except Exception as e:
+            print "Cloudlet install failed."
+            print e
+            exit(1)
+        else:
+            print "Cloudlet installed: %s" % (repo_path)
+    finally:
+        rmtree(temp_repo)
 
 def update_cloudlet(self, repo_path):
+    print "Updating cloudlet: %s" % (repo_path)
     repo = Repo(repo_path)
     repo.remotes.origin.pull()
     repo.submodule_update()
 
-def archive_cloudlet(self, repo_path):
+def archive_cloudlet(self, repo_name, repo_path):
     archive_dir = self.config.get('nepho', 'archive_dir')
-    repo_name = path.basename(repo_path)
     repo = Repo(repo_path)
-    repo.archive(open(path.join(archive_path, "%(repo_name).tar"),'w'))
-    rmtree(repo_path)
+
+    try:
+        print "Archiving %s to %s." % (repo_name, archive_dir)
+        archive_file = path.join(archive_dir, "%s.tar") % (repo_name)
+
+        # TODO: If a tar already exists, rotate/increment it. I tried using
+        # logging.handlers.RotatingFileHandler for this, but it didn't quite
+        # work (gave zero-length files).
+
+        # Archive and delete the repository
+        repo.archive(open(archive_file, "w"))
+    except Exception as e:
+        print "Archive failed -- aborting!"
+        print e
+        exit(1)
+    else:
+        rmtree(repo_path)
+
+def describe_cloudlet(self, name):
+    try:
+        repo_path = common.find_cloudlet(self, name)
+    except:
+        print "Invalid cloudlet name provided."
+        exit(1)
+
+    try:
+        y = yaml.load(open(path.join(repo_path, "cloudlet.yaml")))
+    except:
+        print "Error loading cloudlet YAML file!"
+        exit(1)
+
+    wrapper = TextWrapper(width=80, subsequent_indent="              ")
+
+    print "-"*80
+    print "Name:         %s" % (y['name'])
+    print "Version:      %s" % (y['version'])
+    print "Author:       %s" % (y['author'])
+    print "License:      %s" % (y['license'])
+    print wrapper.fill("Summary:      %s" % (y['summary']))
+    print wrapper.fill("Description:  %s" % (y['description']))
+    print "-"*80
+    return

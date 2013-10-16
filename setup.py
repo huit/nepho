@@ -27,9 +27,10 @@ setup(
       'awscli>=0.13',
       'Jinja2',
       'PyYAML',
-      'cement',
+      'cement>=2.0',
       'termcolor',
       'gitpython',
-      'requests'
+      'requests==1.2.3',
+      'ply==3.4'
     ],
   )

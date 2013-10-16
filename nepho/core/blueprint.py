@@ -38,7 +38,11 @@ def list_blueprint(self, name):
     return
 
 def describe_blueprint(self, cloudlet, name):
-    blueprint_file = common.find_blueprint(self, cloudlet, name)
+    try:
+        blueprint_file = common.find_blueprint(self, cloudlet, name)
+    except:
+        print "Invalid cloudlet or blueprint name provided."
+        exit(1)
 
     try:
         y = yaml.load(open(blueprint_file))
