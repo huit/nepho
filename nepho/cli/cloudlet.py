@@ -59,21 +59,10 @@ class NephoCloudletController(base.NephoBaseController):
             else:
                 url = self.pargs.location
 
-        # If there is more than one cloudlets directory specified, prompt for
-        # which one to install into.
         cloudlet_dirs = self.config.get('nepho', 'cloudlet_dirs').split(',')
-        if len(cloudlet_dirs) > 1:
-            dir_incr = 0
-            print "\nCloudlet directories:"
-            for one_dir in cloudlet_dirs:
-                dir_incr += 1
-                print "  %d) %s" % (dir_incr, one_dir.strip())
-            user_dir = input("\nWhere do you want to install this cloudlet? [1]: ")
-            if int(user_dir) <= dir_incr:
-                repo_path = path.expanduser(path.join(cloudlet_dirs[int(user_dir) - 1].strip(), name))
-            else:
-                print "Invalid location selection, please select a number from the list."
-                exit(1)
+        selected_dir = common.select_list(self, cloudlet_dirs, False, "Select an install location:")
+
+        repo_path = path.join(path.expanduser(selected_dir.strip()), name)
 
         # The clone_cloudlet method will validate the location URL
         cloudlet.clone_cloudlet(self, url, repo_path)
@@ -82,21 +71,31 @@ class NephoCloudletController(base.NephoBaseController):
     def upgrade(self):
         try:
             name = self.pargs.string[0]
-            repo_path = common.find_cloudlet(self, name)
+            possible_paths = common.find_cloudlet(self, name, True)
         except:
             print "Cloudlet is not installed."
             exit(1)
 
-        cloudlet.update_cloudlet(self, repo_path)
+        repo_paths = common.select_list(self, possible_paths, True, "Select which cloudlet to upgrade:")
+
+        if isinstance(repo_paths, list):
+            for one_path in repo_paths:
+                one_path = path.expanduser(one_path.strip())
+                cloudlet.update_cloudlet(self, one_path)
+        else:
+            one_path = path.expanduser(repo_paths.strip())
+            cloudlet.update_cloudlet(self, one_path)
 
     @controller.expose(help="Uninstall a Nepho cloudlet")
     def uninstall(self):
         try:
             name = self.pargs.string[0]
-            repo_path = common.find_cloudlet(self, name)
+            possible_paths = common.find_cloudlet(self, name, True)
         except:
             print "Invalid cloudlet name provided."
             exit(1)
+
+        repo_paths = common.select_list(self, possible_paths, True, "Select which cloudlet to uninstall:")
 
         if not self.pargs.force:
             verify = input("Are you sure you want to uninstall %s? [y/N]: " % (name))
@@ -104,4 +103,11 @@ class NephoCloudletController(base.NephoBaseController):
                 exit(1)
             else:
                 print "Note: You can hide this message by using the --force option.\n"
-        cloudlet.archive_cloudlet(self, name, repo_path)
+
+        if isinstance(repo_paths, list):
+            for one_path in repo_paths:
+                one_path = path.expanduser(one_path.strip())
+                cloudlet.archive_cloudlet(self, name, one_path)
+        else:
+            one_path = path.expanduser(repo_paths.strip())
+            cloudlet.archive_cloudlet(self, name, one_path)

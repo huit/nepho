@@ -17,10 +17,13 @@ def all_cloudlets(self):
     return cloudlet_paths
 
 
-def find_cloudlet(self, name):
+def find_cloudlet(self, name, multiple=False):
     cloudlet_paths = all_cloudlets(self)
     paths = [path for path in cloudlet_paths if name in path]
-    return paths[0]
+    if multiple is True:
+        return paths
+    else:
+        return paths[0]
 
 
 def all_blueprints(self, name):
@@ -37,3 +40,30 @@ def find_blueprint(self, cloudlet, name):
     blueprint_paths = all_blueprints(self, cloudlet)
     paths = [path for path in blueprint_paths if name in path]
     return paths[0]
+
+
+# Return the item selected by the user, or, optionally, "all".  If there is only
+# one list item, return it without prompting.
+def select_list(self, items_list=[], all=False, desc="Select an item"):
+    if items_list == []:
+        return
+    elif len(items_list) == 1:
+        return items_list[0]
+    else:
+        item_incr = 0
+        print ""
+        for one_item in items_list:
+            item_incr += 1
+            print "  %d) %s" % (item_incr, one_item.strip())
+        if all is True:
+            print "  0) All"
+        user_item = int()
+        user_item = input("\n%s [1]: " % (desc))
+
+        if user_item == 0 and all is True:
+            return items_list
+        elif user_item <= item_incr:
+            return items_list[user_item - 1]
+        else:
+            print "Invalid selection, please select a number from the list."
+            exit(1)

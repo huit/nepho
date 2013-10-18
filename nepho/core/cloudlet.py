@@ -8,7 +8,7 @@ from termcolor import colored
 from textwrap import TextWrapper
 from tempfile import mkdtemp
 from time import time
-from git import *
+from git import Repo
 
 
 def list_all_cloudlets(self):
