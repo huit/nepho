@@ -59,10 +59,10 @@ class NephoCloudletController(base.NephoBaseController):
             else:
                 url = self.pargs.location
 
-        cloudlet_dirs = self.config.get('nepho', 'cloudlet_dirs').split(',')
+        cloudlet_dirs = self.config.get('nepho', 'cloudlet_dirs')
         selected_dir = common.select_list(self, cloudlet_dirs, False, "Select an install location:")
 
-        repo_path = path.join(path.expanduser(selected_dir.strip()), name)
+        repo_path = path.join(selected_dir, name)
 
         # The clone_cloudlet method will validate the location URL
         cloudlet.clone_cloudlet(self, url, repo_path)
@@ -80,11 +80,9 @@ class NephoCloudletController(base.NephoBaseController):
 
         if isinstance(repo_paths, list):
             for one_path in repo_paths:
-                one_path = path.expanduser(one_path.strip())
                 cloudlet.update_cloudlet(self, one_path)
         else:
-            one_path = path.expanduser(repo_paths.strip())
-            cloudlet.update_cloudlet(self, one_path)
+            cloudlet.update_cloudlet(self, repo_paths)
 
     @controller.expose(help="Uninstall a Nepho cloudlet")
     def uninstall(self):
@@ -106,8 +104,6 @@ class NephoCloudletController(base.NephoBaseController):
 
         if isinstance(repo_paths, list):
             for one_path in repo_paths:
-                one_path = path.expanduser(one_path.strip())
                 cloudlet.archive_cloudlet(self, name, one_path)
         else:
-            one_path = path.expanduser(repo_paths.strip())
-            cloudlet.archive_cloudlet(self, name, one_path)
+            cloudlet.archive_cloudlet(self, name, repo_paths)
