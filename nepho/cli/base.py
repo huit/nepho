@@ -4,7 +4,7 @@ from os import path
 
 defaults = backend.defaults('nepho')
 defaults['nepho']['archive_dir'] = path.join(path.expanduser("~"), ".nepho", "archive")
-defaults['nepho']['cache_dir'] = path.join(path.expanduser("~"), ".nepho", "cache")
+defaults['nepho']['tmp_dir'] = path.join(path.expanduser("~"), ".nepho", "tmp")
 defaults['nepho']['cloudlet_dirs'] = path.join(path.expanduser("~"), ".nepho", "cloudlets")
 defaults['nepho']['local_dir'] = path.join(path.expanduser("~"), ".nepho", "local")
 

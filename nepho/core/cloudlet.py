@@ -39,8 +39,8 @@ def list_all_cloudlets(self):
 
 def cloudlet_registry(self):
     registry = self.config.get('nepho', 'cloudlet_registry_url')
-    cache_dir = self.config.get('nepho', 'cache_dir')
-    registry_cache = path.join(cache_dir, "registry.yaml")
+    tmp_dir = self.config.get('nepho', 'tmp_dir')
+    registry_cache = path.join(tmp_dir, "registry.yaml")
 
     # If the local registry is missing, empty, or stale (over 1 hour old)
     # update it from the configured URL. In either case, return the YAML object
