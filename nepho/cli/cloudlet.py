@@ -43,29 +43,40 @@ class NephoCloudletController(base.NephoBaseController):
 
     @controller.expose(help="Install a Nepho cloudlet from the Nepho Cloudlet Registry or from an external Git repository")
     def install(self):
-        try:
-            name = self.pargs.string[0]
-        except Exception as e:
-            print "Please provide a cloudlet name."
+        if self.pargs.string == []:
+            print "Usage: nepho cloudlet install <cloudlet> [--location <location>]"
             exit(1)
 
+        name = self.pargs.string[0]
         registry = cloudlet.cloudlet_registry(self)
-
-        # At this time, just install in the default directory
-        cloudlet_dirs = self.config.get('nepho', 'cloudlet_dirs').split(',')
-        repo_path = path.join(cloudlet_dirs[0], name)
 
         if name in registry:
             url = registry[name]['source']
-            cloudlet.clone_cloudlet(self, url, repo_path)
         else:
-            if not self.pargs.location:
-                print "Cloudlet name was not found in master registry."
-                print "To specify a custom Git repository location, use the --location/-l switch."
+            if self.pargs.location == None:
+                print "Cloudlet name was not found in master registry. To install a custom cloudlet, specify a location with the --location option."
                 exit(1)
             else:
-                # The clone_cloudlet method will validate the location URL
-                cloudlet.clone_cloudlet(self, self.pargs.location, repo_path)
+                url = self.pargs.location
+
+        # If there is more than one cloudlets directory specified, prompt for
+        # which one to install into.
+        cloudlet_dirs = self.config.get('nepho', 'cloudlet_dirs').split(',')
+        if len(cloudlet_dirs) > 1:
+            dir_incr = 0
+            print "\nCloudlet directories:"
+            for one_dir in cloudlet_dirs:
+                dir_incr += 1
+                print "  %d) %s" % (dir_incr, one_dir.strip())
+            user_dir = input("\nWhere do you want to install this cloudlet? [1]: ")
+            if int(user_dir) <= dir_incr:
+                repo_path = path.expanduser(path.join(cloudlet_dirs[int(user_dir) - 1].strip(), name))
+            else:
+                print "Invalid location selection, please select a number from the list."
+                exit(1)
+
+        # The clone_cloudlet method will validate the location URL
+        cloudlet.clone_cloudlet(self, url, repo_path)
 
     @controller.expose(help="Upgrade an installed Nepho cloudlet")
     def upgrade(self):
@@ -88,7 +99,7 @@ class NephoCloudletController(base.NephoBaseController):
             exit(1)
 
         if not self.pargs.force:
-            verify = input("Are you sure you want to uninstall %s? [y/N] " % (name))
+            verify = input("Are you sure you want to uninstall %s? [y/N]: " % (name))
             if verify != 'y' and verify != 'yes':
                 exit(1)
             else:

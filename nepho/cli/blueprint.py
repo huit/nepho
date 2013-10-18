@@ -17,15 +17,15 @@ class NephoBlueprintController(base.NephoBaseController):
 
     @controller.expose(help='List all blueprints in a cloudlet')
     def list(self):
-    	if self.pargs.cloudlet == None:
-    		print "Usage: nepho blueprint list <cloudlet>"
-    		exit(1)
+        if self.pargs.cloudlet == None:
+            print "Usage: nepho blueprint list <cloudlet>"
+            exit(1)
 
-    	blueprint.list_blueprint(self, self.pargs.cloudlet)
+        blueprint.list_blueprint(self, self.pargs.cloudlet)
 
     @controller.expose(help='Describe a blueprint')
     def describe(self):
-    	if self.pargs.cloudlet == None or self.pargs.blueprint == None:
+        if self.pargs.cloudlet == None or self.pargs.blueprint == None:
             print "Usage: nepho blueprint describe <cloudlet> <blueprint>"
             exit(1)
 

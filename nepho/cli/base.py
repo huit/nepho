@@ -20,7 +20,7 @@ class NephoBaseController(controller.CementBaseController):
     def _setup(self, app):
         super(NephoBaseController, self)._setup(app)
 
-        # Expanduser where necessary
+        # Expand user where necessary
         for item in self.config.keys('nepho'):
             self.config.set('nepho', item, path.expanduser(self.config.get('nepho', item)))
 

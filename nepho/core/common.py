@@ -7,12 +7,11 @@ def all_cloudlets(self):
 
     # Collect the filesystem paths to every cloudlet into one list
     cloudlet_paths = list()
-    for c_dir in dirs:
-        c_dir.strip()
+    for one_dir in dirs:
         # If user-provided, expand any tildes in directory path
-        c_dir_expanded = path.expanduser(c_dir)
-        if path.isdir(c_dir_expanded):
-            cloudlet_paths.extend(glob.glob(path.join(c_dir_expanded, '*')))
+        one_dir = path.expanduser(one_dir.strip())
+        if path.isdir(one_dir):
+            cloudlet_paths.extend(glob.glob(path.join(one_dir, '*')))
 
     return cloudlet_paths
 
