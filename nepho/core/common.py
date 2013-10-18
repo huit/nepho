@@ -3,16 +3,12 @@ from os import path
 
 
 def all_cloudlets(self):
-    dirs = list()
-    dirs = self.config.get('nepho', 'cloudlet_dirs').split(',')
+    dirs = self.config.get('nepho', 'cloudlet_dirs')
 
     # Collect the filesystem paths to every cloudlet into one list
     cloudlet_paths = list()
     for one_dir in dirs:
-        # If user-provided, expand any tildes in directory path
-        one_dir = path.expanduser(one_dir.strip())
-        if path.isdir(one_dir):
-            cloudlet_paths.extend(glob.glob(path.join(one_dir, '*')))
+        cloudlet_paths.extend(glob.glob(path.join(one_dir, '*')))
 
     return cloudlet_paths
 
@@ -44,7 +40,7 @@ def find_blueprint(self, cloudlet, name):
 
 # Return the item selected by the user, or, optionally, "all".  If there is only
 # one list item, return it without prompting.
-def select_list(self, items_list=[], all=False, desc="Select an item"):
+def select_list(self, items_list=[], all=False, desc="Select an item:"):
     if items_list == []:
         return
     elif len(items_list) == 1:
@@ -58,11 +54,18 @@ def select_list(self, items_list=[], all=False, desc="Select an item"):
         if all is True:
             print "  0) All"
         user_item = int()
-        user_item = input("\n%s [1]: " % (desc))
+        try:
+            user_item = input("\n%s [1]: " % (desc))
+        except NameError:
+            # User did not input a number
+            user_item = -1
+        except SyntaxError:
+            # User accepted default
+            user_item = 1
 
         if user_item == 0 and all is True:
             return items_list
-        elif user_item <= item_incr:
+        elif user_item <= item_incr and user_item > 0:
             return items_list[user_item - 1]
         else:
             print "Invalid selection, please select a number from the list."
