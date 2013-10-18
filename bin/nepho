@@ -3,6 +3,7 @@ from cement.core import handler
 from nepho import cli
 import sys
 
+
 def main():
     # Load the base Nepho cement controller
     app = cli.base.Nepho()

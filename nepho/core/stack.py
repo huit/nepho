@@ -1,6 +1,6 @@
 # Merge two dicts, user and system, recursively, with user taking precedence
 def merge(user, system):
-    if isinstance(user,dict) and isinstance(system,dict):
+    if isinstance(user, dict) and isinstance(system, dict):
         for k,v in system.iteritems():
             if k not in user:
                 user[k] = v

@@ -5,6 +5,7 @@ from nepho.core import stack
 from textwrap import dedent
 import argparse
 
+
 class NephoStackController(base.NephoBaseController):
     class Meta:
         label = 'stack'
@@ -15,12 +16,12 @@ class NephoStackController(base.NephoBaseController):
             (['cloudlet'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['--save', '-s'], dict(help=argparse.SUPPRESS, action='store_true')),
-            (['--params', '-p'],   dict(help=argparse.SUPPRESS, nargs='*', action='append')),
+            (['--params', '-p'], dict(help=argparse.SUPPRESS, nargs='*', action='append')),
         ]
 
     @controller.expose(help='Create a stack from a blueprint')
     def create(self):
-        if self.pargs.cloudlet == None or self.pargs.blueprint == None:
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
             print dedent("""\
                 Usage: nepho stack create <cloudlet> <blueprint> [--save] [--params Key1=Val1]
 

@@ -10,6 +10,7 @@ from tempfile import mkdtemp
 from time import time
 from git import *
 
+
 def list_all_cloudlets(self):
     all_cloudlets = common.all_cloudlets(self)
     dir = ""
@@ -34,6 +35,7 @@ def list_all_cloudlets(self):
         else:
             print colored("└──", "yellow"), name, "(", colored("error", "red"), "- duplicate cloudlet will be ignored )"
     return
+
 
 def cloudlet_registry(self):
     registry = self.config.get('nepho', 'cloudlet_registry_url')
@@ -60,6 +62,7 @@ def cloudlet_registry(self):
         with open(registry_cache, 'r') as yaml_file:
             return yaml.load(yaml_file)
 
+
 def clone_cloudlet(self, url, repo_path):
     try:
         temp_repo = mkdtemp()
@@ -82,11 +85,13 @@ def clone_cloudlet(self, url, repo_path):
     finally:
         rmtree(temp_repo)
 
+
 def update_cloudlet(self, repo_path):
     print "Updating cloudlet: %s" % (repo_path)
     repo = Repo(repo_path)
     repo.remotes.origin.pull()
     repo.submodule_update()
+
 
 def archive_cloudlet(self, repo_name, repo_path):
     archive_dir = self.config.get('nepho', 'archive_dir')
@@ -109,6 +114,7 @@ def archive_cloudlet(self, repo_name, repo_path):
     else:
         rmtree(repo_path)
 
+
 def describe_cloudlet(self, name):
     try:
         repo_path = common.find_cloudlet(self, name)
@@ -124,12 +130,12 @@ def describe_cloudlet(self, name):
 
     wrapper = TextWrapper(width=80, subsequent_indent="              ")
 
-    print "-"*80
+    print "-" * 80
     print "Name:         %s" % (y['name'])
     print "Version:      %s" % (y['version'])
     print "Author:       %s" % (y['author'])
     print "License:      %s" % (y['license'])
     print wrapper.fill("Summary:      %s" % (y['summary']))
     print wrapper.fill("Description:  %s" % (y['description']))
-    print "-"*80
+    print "-" * 80
     return

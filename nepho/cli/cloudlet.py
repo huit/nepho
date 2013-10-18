@@ -3,7 +3,6 @@ from cement.core import controller
 from nepho.cli import base
 from os import path
 from nepho.core import common, cloudlet
-from pprint import pprint
 import argparse
 
 # Python 2.x vs 3.x input handling change
@@ -12,6 +11,7 @@ try:
     input = getattr(__builtin__, 'raw_input')
 except (ImportError, AttributeError):
     pass
+
 
 class NephoCloudletController(base.NephoBaseController):
     class Meta:
@@ -53,7 +53,7 @@ class NephoCloudletController(base.NephoBaseController):
         if name in registry:
             url = registry[name]['source']
         else:
-            if self.pargs.location == None:
+            if self.pargs.location is None:
                 print "Cloudlet name was not found in master registry. To install a custom cloudlet, specify a location with the --location option."
                 exit(1)
             else:

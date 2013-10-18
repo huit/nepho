@@ -6,6 +6,7 @@ from termcolor import colored
 from textwrap import TextWrapper
 from pprint import pprint
 
+
 def list_blueprint(self, name):
     cloudlet = common.find_cloudlet(self, name)
 
@@ -14,7 +15,7 @@ def list_blueprint(self, name):
     print colored(dir, "cyan")
     try:
         y = yaml.load(open(path.join(cloudlet, 'cloudlet.yaml')))
-    except IOError as e:
+    except IOError:
         print colored("└──", "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
         exit(1)
     else:
@@ -37,6 +38,7 @@ def list_blueprint(self, name):
 
     return
 
+
 def describe_blueprint(self, cloudlet, name):
     try:
         blueprint_file = common.find_blueprint(self, cloudlet, name)
@@ -52,16 +54,16 @@ def describe_blueprint(self, cloudlet, name):
 
     wrapper = TextWrapper(width=80, subsequent_indent="              ")
 
-    print "-"*80
+    print "-" * 80
     print "Name:         %s" % (y['name'])
     print "Provider:     %s" % (y['provider'])
     print wrapper.fill("Summary:      %s" % (y['summary']))
     print wrapper.fill("Description:  %s" % (y['description']))
-    print "-"*80
+    print "-" * 80
 
     p = y.pop('parameters', None)
 
     pprint(p)
 
-    print "-"*80
+    print "-" * 80
     return

@@ -1,5 +1,6 @@
 import glob
-from os import listdir, environ, getenv, path
+from os import path
+
 
 def all_cloudlets(self):
     dirs = list()
@@ -15,10 +16,12 @@ def all_cloudlets(self):
 
     return cloudlet_paths
 
+
 def find_cloudlet(self, name):
     cloudlet_paths = all_cloudlets(self)
     paths = [path for path in cloudlet_paths if name in path]
     return paths[0]
+
 
 def all_blueprints(self, name):
     cloudlet = find_cloudlet(self, name)
@@ -28,6 +31,7 @@ def all_blueprints(self, name):
         return blueprint_files
     else:
         return None
+
 
 def find_blueprint(self, cloudlet, name):
     blueprint_paths = all_blueprints(self, cloudlet)

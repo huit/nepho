@@ -13,24 +13,24 @@ setup(
     license      = 'MIT',
     scripts      = ['bin/nepho'],
     package_data = {
-      'nepho': [
-        'data/scenarios/*',
+        'nepho': [
+            'data/scenarios/*',
         ],
-      'nepho.aws': [
-        'data/patterns/*/*.cf',
-        'data/drivers/*.sh'
+        'nepho.aws': [
+            'data/patterns/*/*.cf',
+            'data/drivers/*.sh'
         ]
-      },
+    },
     install_requires = [
-      'argparse>=1.2',
-      'boto>=2.0',
-      'awscli>=0.13',
-      'Jinja2',
-      'PyYAML',
-      'cement>=2.0',
-      'termcolor',
-      'gitpython',
-      'requests==1.2.3',
-      'ply==3.4'
+        'argparse>=1.2',
+        'boto>=2.0',
+        'awscli>=0.13',
+        'Jinja2',
+        'PyYAML',
+        'cement>=2.0',
+        'termcolor',
+        'gitpython',
+        'requests==1.2.3',
+        'ply==3.4'
     ],
-  )
+)

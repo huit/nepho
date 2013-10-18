@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-from cement.core import backend, foundation, controller, handler
+from cement.core import backend, foundation, controller
 from os import path
 
 defaults = backend.defaults('nepho')
-defaults['nepho']['archive_dir']   = path.join(path.expanduser("~"), ".nepho", "archive")
-defaults['nepho']['cache_dir']     = path.join(path.expanduser("~"), ".nepho", "cache")
+defaults['nepho']['archive_dir'] = path.join(path.expanduser("~"), ".nepho", "archive")
+defaults['nepho']['cache_dir'] = path.join(path.expanduser("~"), ".nepho", "cache")
 defaults['nepho']['cloudlet_dirs'] = path.join(path.expanduser("~"), ".nepho", "cloudlets")
-defaults['nepho']['local_dir']     = path.join(path.expanduser("~"), ".nepho", "local")
+defaults['nepho']['local_dir'] = path.join(path.expanduser("~"), ".nepho", "local")
 
 defaults['nepho']['cloudlet_registry_url'] = "https://cloudlets.github.io/registry.yaml"
+
 
 class NephoBaseController(controller.CementBaseController):
     class Meta:
@@ -33,6 +34,7 @@ class NephoBaseController(controller.CementBaseController):
 
         else:
             print "Run %s %s --help for a list of actions" % (self.app.args.prog, self._meta.label)
+
 
 class Nepho(foundation.CementApp):
     class Meta:

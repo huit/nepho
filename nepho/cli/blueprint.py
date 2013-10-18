@@ -4,6 +4,7 @@ from nepho.cli import base
 from nepho.core import blueprint
 import argparse
 
+
 class NephoBlueprintController(base.NephoBaseController):
     class Meta:
         label = 'blueprint'
@@ -17,7 +18,7 @@ class NephoBlueprintController(base.NephoBaseController):
 
     @controller.expose(help='List all blueprints in a cloudlet')
     def list(self):
-        if self.pargs.cloudlet == None:
+        if self.pargs.cloudlet is None:
             print "Usage: nepho blueprint list <cloudlet>"
             exit(1)
 
@@ -25,7 +26,7 @@ class NephoBlueprintController(base.NephoBaseController):
 
     @controller.expose(help='Describe a blueprint')
     def describe(self):
-        if self.pargs.cloudlet == None or self.pargs.blueprint == None:
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
             print "Usage: nepho blueprint describe <cloudlet> <blueprint>"
             exit(1)
 
