@@ -42,14 +42,15 @@ class NephoBaseController(controller.CementBaseController):
                     value = map(lambda x: path.expanduser(x), value)
                     self.config.set('nepho', key, value)
 
-                    # If items is are directories, make sure they exist
+                    # If items are directories, make sure they exist
                     if re.search('_dirs$', key):
                         for one_dir in value:
                             if not path.exists(one_dir):
                                 makedirs(one_dir)
                 else:
                     # Expand user where necessary
-                    self.config.set('nepho', key, path.expanduser(value))
+                    value = path.expanduser(value)
+                    self.config.set('nepho', key, value)
 
                     # If item is a directory, make sure it exists
                     if re.search('_dir$', key) and not path.exists(value):
