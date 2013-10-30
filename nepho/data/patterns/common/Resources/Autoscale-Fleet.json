@@ -15,8 +15,16 @@
                      bucket=None, 
                      public_bucket=None,
                      rds=None, 
-                     ports=[80]
+                     ports=[80],
+                     latencyup=0.3,
+                     latencydown=0.05
                    ) -%}
+
+    {% if public_hostname is not none %}
+      {% if public_hostname|list|first != '{' %}
+        {% set public_hostname = "\"" ~ public_hostname ~ "\"" %}
+      {% endif %}
+    {% endif %}
     
     {# ************************
     
@@ -108,7 +116,7 @@
         "AvailabilityZones" : [{ "Fn::GetAtt" : [ "{{ subnet }}", "AvailabilityZone" ] }],
         "VPCZoneIdentifier" : [{ "Ref" : "{{ subnet }}" }],
         "LaunchConfigurationName" : { "Ref" : "{{ name }}LaunchConfig"  },
-        "MinSize" : "1",
+        "MinSize" : { "Ref" : "{{ name }}InstanceCount" },
         "MaxSize" : "10",
         "DesiredCapacity" : { "Ref" : "{{ name }}InstanceCount" },
         "LoadBalancerNames" : [ { "Ref" : "{{ elb }}" } ],
@@ -136,7 +144,82 @@
         ]
       }      
     },     
-        
+
+
+    "{{ name }}ScaleUpAlarm" : {
+      "Type" : "AWS::CloudWatch::Alarm",
+      "Properties" : {
+        "AlarmDescription" : "{{ name }} alarm for scaling up",
+        "MetricName" : "Latency",
+        "Namespace" : "AWS/ELB",
+        "Statistic" : "Average",
+        "Period" : "60",
+        "EvaluationPeriods" : "2",
+        "Threshold" : { "Ref" : "{{ latencyup }}" },
+        "AlarmActions" : [
+          {
+            "Ref" : "{{ name }}ScaleUpPolicy"
+          }
+        ],
+        "Dimensions" : [
+          {
+            "Name" : "LoadBalancerName",
+            "Value" :{ "Ref" : "{{ elb }}" } 
+          }
+        ],
+        "ComparisonOperator" : "GreaterThanThreshold"
+      },
+      "DependsOn" : "{{ name }}ScaleUpPolicy"
+    },
+
+    "{{ name }}ScaleDownAlarm" : {
+      "Type" : "AWS::CloudWatch::Alarm",
+      "Properties" : {
+        "AlarmDescription" : "{{ name }} alarm for scaling down",
+        "MetricName" : "Latency",
+        "Namespace" : "AWS/ELB",
+        "Statistic" : "Average",
+        "Period" : "60",
+        "EvaluationPeriods" : "5",
+        "Threshold" : { "Ref" : "{{ latencydown }}" },
+        "AlarmActions" : [
+          {
+            "Ref" : "{{ name }}ScaleDownPolicy"
+          }
+        ],
+        "Dimensions" : [
+          {
+            "Name" : "LoadBalancerName",
+            "Value" :{ "Ref" : "{{ elb }}" }
+          }
+        ],
+        "ComparisonOperator" : "LessThanThreshold"
+      },
+      "DependsOn" : "{{ name }}ScaleDownPolicy"
+    },
+
+    "{{ name }}ScaleUpPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "{{ name }}Fleet" },
+        "Cooldown" : "60",
+        "ScalingAdjustment" : "1"
+      },
+      "DependsOn" : "{{ name }}Fleet"
+    },
+
+    "{{ name }}ScaleDownPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "{{ name }}Fleet" },
+        "Cooldown" : "120",
+        "ScalingAdjustment" : "-1"
+      },
+      "DependsOn" : "{{ name }}Fleet"
+    },
+
     "{{ name }}LaunchConfig"  : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Metadata" : {
@@ -155,17 +238,9 @@
                 "ruby-devel"      : [],
                 "gcc"             : [],
                 "gcc-c++"         : [],
-                "puppet"          : [],
                 {% endif %}                
                 "curl"         : [],
                 "wget"         : [],
-                "aws-cli"      : [],
-                "aws-scripts-ses" : [],
-                "aws-apitools-ec2" : [], 
-                "aws-amitools-ec2" : [],
-                "aws-apitools-mon" : [],
-                "aws-apitools-elb" : [],
-                "aws-apitools-rds" : [],
                 "git"              : []        
               }
             },
@@ -239,20 +314,19 @@
                   "runas=root\n"
                 ]]}
               }
-            },
-
+            }
+            {% if management == 'none' %}
+            ,
             "services" : {
               "sysvinit" : {
-                {% if management == 'none' %}
                 "httpd" : {
                   "enabled"       : "true",
                   "ensureRunning" : "true",
                   "files"         : [ "/var/www/html/index.html" ]
-                },
-                {% endif %}                
-                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
+                }
               }
             }
+            {% endif %}
           }
         }
       },
@@ -260,35 +334,31 @@
         "ImageId"        : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "{{ name }}InstanceType" }, "Arch" ] } ] },
         "SecurityGroups" : [ { "Ref" : "{{ name }}SecurityGroup" } ],
         "InstanceType"   : { "Ref" : "{{ name }}InstanceType" },
+
         "KeyName"        : { "Ref" : "KeyName" },
+        "Tags": [ { "Key": "Name", "Value": "{{ name }}" } ],
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
-
-        
           "#!/bin/bash -v\n",
-          "yum update -y aws-cfn-bootstrap\n",
+          
+          {# **** Inject CF values into the environment **** #}
+          
+          "# Establish CF values and objects into script variables.\n",         
 
-          "# Helper function\n",
-          "function error_exit\n",
-          "{\n",
-          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n",
-          "  exit 1\n",
-          "}\n",
-
-          "## Initialize CloudFormation bits\n",
-          "/opt/aws/bin/cfn-init -v ",
-          "   --stack ", { "Ref" : "AWS::StackName" }, 
-          "   --resource {{ name }}LaunchConfig",
-          "   --access-key ",  { "Ref" : "{{ name }}Keys" },
-          "   --secret-key ", {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},
-          "   --region ", { "Ref" : "AWS::Region" }, " >> /var/log/cfn-init.log 2>&1 || error_exit $(</var/log/cfn-init.log)\n",
-
+          "export CF_STACK_NAME='",   { "Ref" : "AWS::StackName" }, "'\n",
+          "export CF_REGION='",       { "Ref" : "AWS::Region" }, "'\n",
+          "export CF_RESOURCE='{{ name }}LaunchConfig'\n",
+          "export CF_ACCESS_KEY='",   { "Ref" : "{{ name }}Keys" }, "'\n",
+          "export CF_SECRET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
+          "export CF_WAIT_HANDLE='",  { "Ref" : "{{ name }}WaitHandle" }, "'\n",
+                    
           {# **** Inject environment variables about the deployment **** #}
           
-		  "# Inject some platform variables\n",
+	  "# Inject some NEPHO_* platform variables\n",
+		  
           "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
           {% if elb is not none  %}
           "export NEPHO_FORWARD_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",
-          "export NEPHO_PUBLIC_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",
+          "export NEPHO_PUBLIC_HOSTNAME='",  { "Fn::GetAtt" : [ "{{ elb }}", "DNSName" ]}, "'\n",
           {% endif %}
           {% if elb2 is not none  %}
           "export NEPHO_BACKEND_HOSTNAME='", { "Fn::GetAtt" : [ "{{ elb2 }}", "DNSName" ]}, "'\n",
@@ -297,26 +367,36 @@
           "export NEPHO_PUBLIC_HOSTNAME='", {{ public_hostname }}, "'\n",
           {% endif %}
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
-                    
-		  {% if rds is not none  %}
-		  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
-		  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
-		  "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
-		  "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
-		  "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",  
-		  "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
-		            "", [ "mysql://",
-                          { "Ref" : "DBUsername" },
-                          ":",      
-                          { "Ref" : "DBPassword" },       
-                          "@",                               
-                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
-                          ":",
-                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
-                          "/",
-                          { "Ref": "DBName" }
-                       ]]}, "'\n", 
+		  
+          {% if rds is not none  %}
+          "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+          "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+          "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+          "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",
+          "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",
+          "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [
+                        "", [ "mysql://",
+                              { "Ref" : "DBUsername" },
+                              ":",
+                              { "Ref" : "DBPassword" },
+                              "@",
+                              { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                              ":",
+                              { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                              "/",
+                              { "Ref": "DBName" }
+                           ]]}, "'\n",
+	  {% endif %}
+
+
+          {% if bucket is not none %}
+          "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+          "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" },  "'\n",
+          "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
 		  {% endif %}
+
+      "# SES SMTP parameters\n",
 		  "export NEPHO_SES_SMTP='",          { "Ref" : "SESSMTP" }, "'\n",
 		  "export NEPHO_SES_SMTP_ENDPOINT='", { "Ref" : "SESEndpoint" }, "'\n",
 		  "export NEPHO_SES_SMTP_PORT='",     { "Ref" : "SESPort" }, "'\n",
@@ -329,22 +409,24 @@
           "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",
           {% endif %}
 
-		  {% if bucket is not none %}
-		  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
-		  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
-          "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" }, "'\n",
-          "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]}, "'\n",
-          {% endif %}
-          
+          "export NEPHO_BASE64_CONFIGS='{{ configs }}'\n",
+          "export NEPHO_CONFIGS=$( echo ${NEPHO_BASE64_CONFIGS} | base64 --decode )\n",
+               
           {#  **** Include script snippets here ...  **** #}
+      
+          {% for line in scripts.cf_pre_script  %}
+          {{ line }}, {% endfor %}  
           
-          {% for line in script_array %}
-          {{ line }},
+          {% for line in scripts.cf_init_script %}
+          {{ line }}, {% endfor %}  
+          
+          {% for line in scripts.management %} {{ line }},
           {% endfor %}  
-          
-          "# Signal completion\n",
-          "/opt/aws/bin/cfn-signal -e $? -r \"Host {{ name }} setup by {{ management }}\" '", { "Ref" : "{{ name }}WaitHandle" }, "'\n" 
- 
+
+          {% for line in scripts.cf_post_script %} {{ line }},
+          {% endfor %}  
+
+          ""
         ]]}}
       }
     },
@@ -358,7 +440,7 @@
       "DependsOn" : "{{ name }}Fleet",
       "Properties" : {
         "Handle"  : { "Ref" : "{{ name }}WaitHandle" },
-        "Timeout" : "600",
+        "Timeout" : "900",
         "Count"   : { "Ref" : "InstanceCount" }
       }
     }

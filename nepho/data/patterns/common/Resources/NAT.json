@@ -27,6 +27,9 @@
       "Properties" : {
         "InstanceType" : { "Ref" : "NATInstanceType" },
         "KeyName" : { "Ref" : "KeyName" },
+        "Tags" : [
+                   { "Key" : "Name", "Value": "NATInstance" }
+                 ],
         "SubnetId" : { "Ref" : "PublicSubnet" },
         "SourceDestCheck" : "false",
         "ImageId" : { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
