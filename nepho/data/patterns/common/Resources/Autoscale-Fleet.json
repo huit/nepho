@@ -396,7 +396,7 @@
           "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
 		  {% endif %}
 
-          "# SES SMTP parameters\n",
+      "# SES SMTP parameters\n",
 		  "export NEPHO_SES_SMTP='",          { "Ref" : "SESSMTP" }, "'\n",
 		  "export NEPHO_SES_SMTP_ENDPOINT='", { "Ref" : "SESEndpoint" }, "'\n",
 		  "export NEPHO_SES_SMTP_PORT='",     { "Ref" : "SESPort" }, "'\n",
