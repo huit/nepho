@@ -226,20 +226,20 @@
                   "runas=root\n"
                 ]]}
               }
-            },
+            }
 
+            {% if management == 'none' %}            
+            ,
             "services" : {
               "sysvinit" : {
-                {% if management == 'none' %}
                 "httpd" : {
                   "enabled"       : "true",
                   "ensureRunning" : "true",
                   "files"         : [ "/var/www/html/index.html" ]
-                },
-                {% endif %}                
-                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
+                }
               }
             }
+            {% endif %}
           }
         }
       },      
