@@ -145,7 +145,6 @@
                 "ruby-devel"      : [],
                 "gcc"             : [],
                 "gcc-c++"         : [],
-                "puppet"          : [],
                 {% endif %}   
                 {% if bucket is not none %}
                 "fuse"         : [],
@@ -362,7 +361,7 @@
       "DependsOn" : "{{ name }}Instance",
       "Properties" : {
         "Handle" : {"Ref" : "{{ name }}WaitHandle"},
-        "Timeout" : "900"
+        "Timeout" : "1200"
       }
     }
 

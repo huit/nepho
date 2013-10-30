@@ -1,0 +1,36 @@
+---
+development:
+  ConfigMgmtGitRepo: "https://github.com/huit/cloudlet-rails.git"
+  ConfigMgmtGitRepoBranch: master
+  KeyName: steveH
+  SingleServerInstanceRole: standalone
+  SESSMTP: "true"
+  SESSMTPDomain: "devel.huit.harvard.edu"
+  management: puppet
+  packages:
+    - git
+    - redhat-lsb
+  pattern: single-host
+
+production:
+  ConfigMgmtGitRepo: "https://github.com/huit/cloudlet-rails.git"
+  ConfigMgmtGitRepoBranch: master
+  DBName: railsapp
+  DBPassword: railsapp
+  DBUsername: railsapp
+  KeyName: steveH
+  SESSMTP: "true"
+  SESSMTPDomain: "devel.huit.harvard.edu"
+  Tier1InstanceCount: 2
+  Tier2InstanceCount: 2
+  Tier1InstanceRole: varnish
+  Tier2InstanceRole: railsapp
+  Tier1LatencyScaleUp: 0.3
+  Tier1LatencyScaleDown: 0.05
+  AZ1: us-east-1b
+  AZ2: us-east-1c
+  management: puppet
+  packages:
+    - git
+    - redhat-lsb
+  pattern: full-monty
