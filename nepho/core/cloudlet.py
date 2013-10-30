@@ -12,13 +12,15 @@ from termcolor import colored
 from textwrap import TextWrapper
 from git import Repo
 
-from nepho.core import common
+from nepho.core import common, blueprint
 
 class Cloudlet:
     """A class that encopmasses a cloudlet"""
     
-    def __init__(self, cloudlet_path=None, url=None):
+    def __init__(self, name, cloudlet_path=None, url=None):
         self.path = cloudlet_path
+        self.url = url   
+        self.name = name
         
         # If specified initialize this from a remote repo
         if url is not None:
@@ -33,6 +35,45 @@ class Cloudlet:
                 print "Error loading cloudlet YAML file!"
                 exit(1)
 
+    def blueprint(self, name):
+        """Return a blueprint by name."""
+        bps = self.blueprints()
+        for bp in bps:
+            if bp.name == name:
+                return bp
+        
+        
+    def blueprints(self):
+        """Returns a list of blueprints."""
+        blueprint_dir = path.join(self.path, "blueprints")
+        blueprint_files = list()
+        if path.isdir(blueprint_dir):
+            blueprint_files.extend(glob.glob(path.join(blueprint_dir, '*.yaml')))
+        else:
+            return None
+        
+        blueprints = list()
+        for f in blueprint_files:
+           blueprints.append( blueprint.Blueprint(f) )
+            
+        return blueprints    
+        
+#def all_blueprints(self, name):
+#    cloudlet = find_cloudlet(self, name)
+#    blueprint_files = list()
+#    if path.isdir(path.join(cloudlet, "blueprints")):
+#        blueprint_files.extend(glob.glob(path.join(cloudlet, "blueprints", '*.yaml')))
+#        return blueprint_files
+#    else:
+#        return None
+
+
+#def find_blueprint(self, cloudlet, name):
+#    blueprint_paths = all_blueprints(self, cloudlet)
+#    paths = [path for path in blueprint_paths if name in path]
+#    return paths[0]
+
+        
     def clone(self, url):
         """
         Creates a local cloudlet as a git repo on disk
@@ -145,7 +186,7 @@ class CloudletManager:
             target_dir = self.all_cloudlet_dirs()[0]
 
         cloudlet_path = path.join(target_dir, name)
-        return Cloudlet(cloudlet_path, url)
+        return Cloudlet(name, cloudlet_path, url)
 
         
     def find(self, name=None, multiple=False):
@@ -158,7 +199,7 @@ class CloudletManager:
         else:
             paths = [path for path in cloudlet_paths if re.match(".*/"+name+"$", path) ]
         cloudlets = []
-        for p in paths: cloudlets.append(Cloudlet(p))
+        for p in paths: cloudlets.append(Cloudlet(name,p))
         if len(cloudlets) == 0:
             return None
         if multiple is True:

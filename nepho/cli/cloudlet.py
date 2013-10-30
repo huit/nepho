@@ -39,12 +39,11 @@ class NephoCloudletController(base.NephoBaseController):
         
         cloudlets = self.cloudletManager.list()
         
-        #    all_cloudlets = common.all_cloudlets(self)
         dir = ""
         items = list()
-        for cloudlet in cloudlets: #sorted(all_cloudlets):
+        for cloudlt in cloudlets: #sorted(all_cloudlets):
             # Print directory if it changes
-            cloudlet_path = cloudlet.get_path()
+            cloudlet_path = cloudlt.get_path()
             if dir != path.dirname(cloudlet_path):
                 dir = path.dirname(cloudlet_path)
                 print colored(dir, "cyan")
@@ -54,7 +53,7 @@ class NephoCloudletController(base.NephoBaseController):
             # subsequent versions will be ignored by other commands
             if name not in items:
                 try:
-                    y = cloudlet.defn
+                    y = cloudlt.defn
                 except:
                     print colored("└──", "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
                 else:
