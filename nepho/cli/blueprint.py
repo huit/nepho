@@ -22,7 +22,10 @@ class NephoBlueprintController(base.NephoBaseController):
             print "Usage: nepho blueprint list <cloudlet>"
             exit(1)
 
-        blueprint.list_blueprint(self, self.pargs.cloudlet)
+        cloudlet = CloudletManager.retrieve(self.pargs.cloudlet) 
+        blueprints = cloudlet.getBlueprints()
+           
+#        blueprint.list_blueprint(self, self.pargs.cloudlet)
 
     @controller.expose(help='Describe a blueprint')
     def describe(self):
@@ -30,4 +33,6 @@ class NephoBlueprintController(base.NephoBaseController):
             print "Usage: nepho blueprint describe <cloudlet> <blueprint>"
             exit(1)
 
+        bprint = BlueprintManager.retrieve(self.pargs.cloudlet, self.pargs.blueprint)
+        
         blueprint.describe_blueprint(self, self.pargs.cloudlet, self.pargs.blueprint)
