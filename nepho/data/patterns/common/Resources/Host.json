@@ -122,18 +122,19 @@
       "Properties" : {
         "InstanceId" : { 
           {% if subnet is not none %}"Domain" : "vpc",{% endif %}        
-          "Ref" : "{{ name }}Instance" }
+          "Ref" : "{{ name }}Instance" 
+        }
       }
     },
-    {% endif %}
-      
-      
+    {% endif %}     
+ 
+       
     "{{ name }}Instance": {  
       "Type" : "AWS::EC2::Instance",
       "Metadata" : {
         "Comment" : "Single host.",      
         "AWS::CloudFormation::Init" : {
-          "config" : {        
+          "config" : {                  
             "packages" : {
               "yum" : {
                 {% for pkg in packages %}
@@ -156,9 +157,8 @@
                 "git"              : []        
               }
             },
-                  
+                 
             "files" : {
-
               {% if management == 'none' %} 
               "/var/www/html/index.html" : {
                 "content" : { "Fn::Join" : ["\n", [
@@ -255,7 +255,7 @@
         {% else %}
         "SecurityGroups" : [ {"Ref" : "{{ name }}SecurityGroup"} ],
         {% endif %}        
-        "KeyName"        : { "Ref" : "KeyName" },
+        "KeyName"        : { "Ref" : "KeyName" },    
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
         
           "#!/bin/bash -v\n",
@@ -272,8 +272,9 @@
           "export CF_WAIT_HANDLE='",  { "Ref" : "{{ name }}WaitHandle" }, "'\n",
                     
           {# **** Inject environment variables about the deployment **** #}
-          
-		  "# Inject some NEPHO_* platform variables\n",
+
+	  "# Inject some NEPHO_* platform variables\n",
+
 		  
           "export NEPHO_INSTANCE_ROLE='",     { "Ref" : "{{ name }}InstanceRole" }, "'\n",
           {% if elb is not none  %}
@@ -306,12 +307,17 @@
                           "/",
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
+<<<<<<< HEAD
+		  {% endif %}		  		 
+
+=======
 		  {% endif %}
 		  "export NEPHO_SES_SMTP='",          { "Ref" : "SESSMTP" }, "'\n",
 		  "export NEPHO_SES_SMTP_ENDPOINT='", { "Ref" : "SESEndpoint" }, "'\n",
 		  "export NEPHO_SES_SMTP_PORT='",     { "Ref" : "SESPort" }, "'\n",
 		  "export NEPHO_SES_SMTP_USER='",     { "Ref" : "SESUsername" }, "'\n",
 		  "export NEPHO_SES_SMTP_PASSWORD='", { "Ref" : "SESPassword" }, "'\n",
+>>>>>>> 816ee0961c71c2eae64b0c37e326908559535c4b
 		  {% if bucket is not none %}
 		  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
 		  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
@@ -349,7 +355,9 @@
         ]]}}
 
       }       
-   },
+    },
+
+
     
     "{{ name }}WaitHandle" : {
       {% if subnet is not none  %}"DependsOn" : "NATIPAddress",{% endif %}
