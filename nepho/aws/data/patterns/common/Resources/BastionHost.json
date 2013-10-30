@@ -1,0 +1,181 @@
+{#
+
+   Creates Bastion host that allows external access into a VPC and resources. Makes
+     sure via dependencies that the internet gateway is attached first, or else will fail.
+   
+   Expects objects:
+   
+   - AttachGateway: internet gateway object
+   - VPC: the VPC object
+   - SSHAccessRange: the CIDR of ips to limit ssh access to the bastion host.
+   - PublicSubnet: subnet to place the bastion host on.
+   - KeyName: SSH key to install
+   
+   Creates objects:
+   - BastionHostIPAddress: public IP (EIP) to contact the bastion host from the outside
+   - BastionHostInstance: the instance itself
+
+#}  
+
+    "BastionUser" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": { "Statement":[{
+            "Effect": "Allow",
+            "Action": [
+              "cloudformation:DescribeStackResource"
+            ],
+            "Resource": "*"
+          }]}
+        }]
+      }
+    },
+
+    "BastionKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref": "BastionUser"}
+      }
+    },    
+    
+    "BastionHostIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc",
+        "InstanceId" : { "Ref" : "BastionHostInstance" }
+      },
+      "DependsOn": "AttachGateway"
+    },
+
+    "BastionHostSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "GroupDescription" : "Enable SSH access via port 22 and HTTP access.",
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHAccessRange"}},
+          { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"}
+         ]
+      }
+    },
+
+
+    "BastionHostInstance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata" : {
+        "Comment" : "Install some basic tools and provide SSH access.",
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "packages" : {
+              "yum" : {
+                "rsync"             : [],
+                "git"               : [],
+                "mysql"             : [],
+                "nmap"              : [],
+                "telnet"            : [],
+                "emacs"             : []
+              }
+            },
+
+            "files" : {
+
+              "/etc/cfn/cfn-credentials" : {
+                "content" : { "Fn::Join" : ["", [
+                  "AWSAccessKeyId=", { "Ref" : "BastionKeys" }, "\n",
+                  "AWSSecretKey=", {"Fn::GetAtt": ["BastionKeys", "SecretAccessKey"]}, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              
+              "/etc/cfn/cfn-hup.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[main]\n",
+                  "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                "content": { "Fn::Join" : ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.BastionHostInstance.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r BastionHostInstance ",
+                                                   " --credential-file /etc/cfn/cfn-credentials ",                  
+                                                   " --region     ", { "Ref" : "AWS::Region" }, "\n",
+                  "runas=root\n"
+                ]]}
+              }
+            },
+
+            "services" : {
+              "sysvinit" : {
+                "sshd"     : { "enabled" : "true", "ensureRunning" : "true" },                
+                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
+              }
+            }
+          }
+        }
+      },
+      
+      "Properties" : {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                                          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" },
+                                          "Arch" ] } ] },
+        "SecurityGroupIds" : [{ "Ref" : "BastionHostSecurityGroup" }],
+        "SubnetId" : { "Ref" : "PublicSubnet" },
+        "InstanceType" :  "m1.small",
+        "KeyName" : { "Ref" : "KeyName" },
+        "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ],
+        "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash\n",
+          "yum update -y aws-cfn-bootstrap\n",
+
+          "# Helper function\n",
+          "function error_exit\n",
+          "{\n",
+          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "BastionHostWaitHandle" }, "'\n",
+          "  exit 1\n",
+          "}\n",
+
+          "# Setup tools on bastion host\n",
+          "/opt/aws/bin/cfn-init ",
+          "   --stack=", { "Ref" : "AWS::StackId" }, 
+          "   --resource=BastionHostInstance ",
+          "   --access-key ",  { "Ref" : "BastionKeys" },
+          "   --secret-key ", {"Fn::GetAtt": ["BastionKeys", "SecretAccessKey"]},
+          "   --region=", { "Ref" : "AWS::Region" }, 
+          " > /tmp/cfn-init.log 2>&1 || error_exit $(</tmp/cfn-init.log)\n",
+          
+          "# Start up the cfn-hup daemon to listen for changes to the instance metadata\n",
+          "/opt/aws/bin/cfn-hup || error_exit 'Failed to start cfn-hup'\n",          
+
+          "# All done so signal success\n",
+          "/opt/aws/bin/cfn-signal -e 0 -r \"Bastion host setup complete\" '", { "Ref" : "BastionHostWaitHandle" }, "'\n"
+
+        ]]}}        
+      },
+      "DependsOn": "PublicRoute"
+    },
+
+
+    "BastionHostWaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle"
+    },
+
+    "BastionHostWaitCondition" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "BastionHostInstance",
+      "Properties" : {
+        "Handle" : {"Ref" : "BastionHostWaitHandle"},
+        "Timeout" : "600"
+      }
+    }

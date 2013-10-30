@@ -1,26 +1,25 @@
 #!/usr/bin/env python
-import pdb
-import nepho
-from nepho.command import command
-from nepho.aws import clidriver 
+from cement.core import handler
+from nepho import cli
 import sys
-import json
 
- 
+
 def main():
-    
-    output = command()
-    args = json.loads(output)
+    # Load the base Nepho cement controller
+    app = cli.base.Nepho()
 
-    driver = args['opts']['driver']
+    # Subcontrollers for each functional component
+    handler.register(cli.cloudlet.NephoCloudletController)
+    handler.register(cli.blueprint.NephoBlueprintController)
+    handler.register(cli.stack.NephoStackController)
 
-    if driver == 'aws':
-      
-        return nepho.aws.clidriver.main(output)
-
+    try:
+        app.setup()
+        app.run()
+    finally:
+        app.close()
 
 if __name__ == '__main__':
     sys.exit(main())
-    
-print output
+
 # vim:ft=python

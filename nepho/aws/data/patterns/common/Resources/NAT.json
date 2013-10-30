@@ -1,0 +1,56 @@
+{#
+
+     Creates a NAT device on the public net for NAT'ing outbaound traffic from the 
+       private and data tiers. Opens incoming web (http+https) and ssh, outgoing is
+       just web.
+  
+     Expects:
+     - NATInstanceType : parameter 
+     - SSHLocation: access range for ssh'ing in.
+     - PublicSubnet
+     - KeyName
+     
+     Creates: 
+     - NATDevice: the instance itself 
+#}
+
+    "NATIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc",
+        "InstanceId" : { "Ref" : "NATDevice" }
+      }
+    },
+
+    "NATDevice" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "InstanceType" : { "Ref" : "NATInstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "SubnetId" : { "Ref" : "PublicSubnet" },
+        "SourceDestCheck" : "false",
+        "ImageId" : { "Fn::FindInMap" : [ "AWSNATAMI", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "SecurityGroupIds" : [{ "Ref" : "NATSecurityGroup" }]
+      },
+      "DependsOn" : "AttachGateway"
+    },
+
+    "NATSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable internal access to the NAT device",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [
+             { 
+               "IpProtocol" : "tcp", 
+               "FromPort" : "0",  
+               "ToPort" : "65535",  
+               "CidrIp" : { "Fn::FindInMap" : [ "SubnetMappings", "VPC", "CIDR" ]}
+             },
+             { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : { "Ref" : "SSHAccessRange" }}
+           ],
+        "SecurityGroupEgress" : [
+             { "IpProtocol" : "tcp", "FromPort" : "0",  "ToPort" : "65535",  "CidrIp" : "0.0.0.0/0"}
+           ]
+      }
+    }

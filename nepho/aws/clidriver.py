@@ -40,30 +40,13 @@ from jinja2 import Environment, FileSystemLoader
 import json
 import collections
 import yaml
-import base64
 import string
-import random
-
 from nepho.command import command
 #from nepho.aws import Deployment
 #from nepho.aws import Template
 
-__MODULE_NAME__     = "nepho"
-__DEPLOYMENTS_DIR__ = 'data/deployments'
-__PATTERNS_DIR__    = 'data/patterns'
-__DRIVERS_DIR__     = 'data/drivers'
 
-__PASSWORD_REPLACE_FLAG__ = 'NEPHO_CHANGEME_PASSWORD'
-
-LOG = logging.getLogger(__MODULE_NAME__)
-
-def gimme_random_password(lngth=32):
-
-    alpha_char_set =  string.ascii_uppercase + string.ascii_lowercase
-    char_set = string.ascii_uppercase + string.ascii_lowercase + string.digits
-    first = random.sample(alpha_char_set,1)
-    rest = ''.join(random.sample(char_set*(lngth-1),lngth-1))
-    return "%s%s" % (first[0], rest)
+LOG = logging.getLogger('nepho-dummy')
 
 def setup_awscli_driver():
     emitter = HierarchicalEmitter()
@@ -73,7 +56,7 @@ def setup_awscli_driver():
     load_plugins(session.full_config.get('plugins', {}), event_hooks=emitter)
     return awscli.clidriver.CLIDriver(session=session)
 
-def scan_deployments(deployment_dir=resource_filename(__MODULE_NAME__, __DEPLOYMENTS_DIR__)):
+def scan_deployments(deployment_dir=resource_filename('nepho', 'data/deployments')):
     from os import listdir
     from os.path import isfile, join
     files = [ f for f in listdir(deployment_dir) if isfile(join(deployment_dir,f)) ]
@@ -94,7 +77,7 @@ def load_deployment_file(deployment, environment):
             returns a dict of values
     """
     paramsMap = dict()
-    yaml_file = resource_filename(__MODULE_NAME__, '%s/%s.yaml') % (__DEPLOYMENTS_DIR__, deployment)
+    yaml_file = resource_filename('nepho', 'data/deployments/%s.yaml') % (deployment)
     try:
         f = open(yaml_file)
         yamlMap = yaml.safe_load(f)
@@ -116,16 +99,6 @@ def load_deployment_file(deployment, environment):
 
     return paramsMap
 
-def load_user_data_script(script_filename):
-    "loads a scripts and returns it in a JSON-encoded format suitable for injection"
-    script_array = []
-    f = open(script_filename)
-    for line in f:
-        lstr = json.dumps(line.strip() + "\n")
-        script_array.append(lstr)
-    f.close()
-    return script_array
-
 def get_management_settings(map):
     " Returns dict as a context for the template for how to handle system management"
     management = None
@@ -133,50 +106,38 @@ def get_management_settings(map):
     if map.has_key('management'):
         management = map.pop('management')
 
-    user_data_scripts = dict()
-    mgmt_script_dir   = resource_filename(__MODULE_NAME__, __DRIVERS_DIR__)
-    drivers_dir = resource_filename(__MODULE_NAME__, __DRIVERS_DIR__)
+    mgmt_script_dir   = resource_filename('nepho', 'aws/data/drivers')
     mgmt_script_file  = None
-
+    mgmt_script_array = []
     pkgs = []
 
     if management == 'none':
         pkgs = [ "httpd" ]
 
     if management == 'script':
-        mgmt_script_dir   = resource_filename(__MODULE_NAME__, __DEPLOYMENTS_DIR__)
-        mgmt_script_file = '%s/%s' % (mgmt_script_dir, map.pop('script'))
-        pkgs= ['bash']
+       mgmt_script_file = '%s/%s' % (mgmt_script_dir, map.pop('script'))
+       pkgs= ['bash']
 
     if management == 'puppet':
         mgmt_script_file = '%s/%s' % (mgmt_script_dir, 'puppet-snippet.sh')
         pkgs = ["gcc", "ruby","ruby-devel", "rubygems", "puppet" ]
+
+    # Load script into a array of lines
+    if mgmt_script_file is not None:
+        f = open(mgmt_script_file)
+        for line in f:
+            lstr = json.dumps(line.strip() + "\n")
+            mgmt_script_array.append(lstr)
+        f.close()
 
     if map.has_key('packages'):
         for pkg in map['packages']:
             pkgs.append(pkg)
         map.pop('packages')
 
-    # Load script into a array of lines
-    if mgmt_script_file is not None:
-        user_data_scripts['management'] = load_user_data_script(mgmt_script_file)
-    else:
-        user_data_scripts['management'] = []
-
-    # Load other helper scripts
-    cf_pre_script  = '%s/%s' % (drivers_dir, 'cf-pre-script.sh')
-    user_data_scripts['cf_pre_script'] = load_user_data_script(cf_pre_script)
-
-    cf_init_script = '%s/%s' % (drivers_dir, 'cf-init-script.sh')
-    user_data_scripts['cf_init_script'] = load_user_data_script(cf_init_script)
-        
-    cf_post_script = '%s/%s' % (drivers_dir, 'cf-post-script.sh')
-    user_data_scripts['cf_post_script'] = load_user_data_script(cf_post_script)
-        
-    
     mgmtMap = dict(
                      management = management,
-                     scripts = user_data_scripts,
+                     script_array = mgmt_script_array,
                      packages = pkgs
                    )
 
@@ -184,14 +145,13 @@ def get_management_settings(map):
 
 def get_cf_template(pattern, context):
 
-    cf_dir = resource_filename(__MODULE_NAME__, '%s/%s' % (__PATTERNS_DIR__, pattern) )
+    cf_dir = resource_filename('nepho.aws', 'data/patterns/%s') % (pattern)
     cf_filename='template.cf'
     cf_file = '%s/%s' % (cf_dir, cf_filename)
-
     #paramsMap['template_file'] = cf_file
 
     # Use Jinja2
-    template_dirs = [cf_dir, resource_filename(__MODULE_NAME__, '%s/common' % (__PATTERNS_DIR__))]
+    template_dirs = [cf_dir, resource_filename('nepho.aws', 'data/patterns/common')]
     jinjaFSloader = FileSystemLoader(template_dirs)
     env = Environment(loader=jinjaFSloader)
     jinja_template = env.get_template(cf_filename)
@@ -200,7 +160,6 @@ def get_cf_template(pattern, context):
     return jinja_template.render(context)
 
 def parse_cf_json(str):
-    
     cf_dict =  json.loads(str, object_pairs_hook=collections.OrderedDict)
     return cf_dict
 
@@ -210,18 +169,7 @@ def get_cf_json(orderDict, pretty=False):
         outstr = json.dumps(orderDict, indent=2, separators=(',', ': '))
     else:
         outstr = json.dumps(orderDict)
-        
-    password = gimme_random_password()   
-    return string.replace(outstr, __PASSWORD_REPLACE_FLAG__, password)
-
-def get_cf_params(pattern, context):
-    try:
-        cf_dict = parse_cf_json( get_cf_template(pattern, context) )
-    except ValueError as e:
-        print "Invalid JSON: run the \"validate-template\" subcommand to debug."
-        sys.exit(1)
-
-    return cf_dict['Parameters']    
+    return outstr
 
 def main(args_json=None):
     # Create an aws-cli driver
@@ -256,28 +204,21 @@ def main(args_json=None):
 
 
     # Load settings from YAML deployment file
-    configMap = load_deployment_file(deployment_name, env_name)
-    configString = json.dumps(configMap)
-    configStringBase64 = base64.b64encode(configString)
-    
-    pattern =  configMap['pattern'] 
+    paramsMap = load_deployment_file(deployment_name, env_name)
+
+
+    pattern =  paramsMap['pattern']
+    paramsMap.pop('pattern')
 
     # Determine how to manage deployed instances
-    context = get_management_settings(configMap)      
-    context['configs'] = configStringBase64
-    
-    # Setup a paramsMaps
-    params = get_cf_params(pattern, context).keys()
-    paramsMap = dict()
-    for k in configMap.keys():
-        if k in params: 
-            paramsMap[k] = configMap[k]
+    context = get_management_settings(paramsMap)
+
+
 
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
         try:
             cf_dict = parse_cf_json(raw_template)
-            
             print get_cf_json(cf_dict, pretty=True)
         except ValueError:
             print raw_template
@@ -306,7 +247,13 @@ def main(args_json=None):
 
         #print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
     if args['subcmd'] == 'show-params':
-        paramsJSON = get_cf_params(pattern, context)
+        try:
+             cf_dict = parse_cf_json( get_cf_template(pattern, context) )
+        except ValueError as e:
+            print "Invalid JSON: run the \"validate-template\" subcommand to debug."
+            sys.exit(1)
+
+        paramsJSON= cf_dict['Parameters']
         print "Template parameters:"
         print "---------------------------"
         print get_cf_json(paramsJSON, pretty=True)
