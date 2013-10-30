@@ -15,7 +15,9 @@
                      bucket=None, 
                      public_bucket=None,
                      rds=None, 
-                     ports=[80]
+                     ports=[80],
+                     latencyup=0.3,
+                     latencydown=0.05
                    ) -%}
 
     {% if public_hostname is not none %}
@@ -114,7 +116,7 @@
         "AvailabilityZones" : [{ "Fn::GetAtt" : [ "{{ subnet }}", "AvailabilityZone" ] }],
         "VPCZoneIdentifier" : [{ "Ref" : "{{ subnet }}" }],
         "LaunchConfigurationName" : { "Ref" : "{{ name }}LaunchConfig"  },
-        "MinSize" : "1",
+        "MinSize" : { "Ref" : "{{ name }}InstanceCount" },
         "MaxSize" : "10",
         "DesiredCapacity" : { "Ref" : "{{ name }}InstanceCount" },
         "LoadBalancerNames" : [ { "Ref" : "{{ elb }}" } ],
@@ -141,7 +143,82 @@
         ]
       }      
     },     
-        
+
+
+    "{{ name }}ScaleUpAlarm" : {
+      "Type" : "AWS::CloudWatch::Alarm",
+      "Properties" : {
+        "AlarmDescription" : "{{ name }} alarm for scaling up",
+        "MetricName" : "Latency",
+        "Namespace" : "AWS/ELB",
+        "Statistic" : "Average",
+        "Period" : "60",
+        "EvaluationPeriods" : "2",
+        "Threshold" : { "Ref" : "{{ latencyup }}" },
+        "AlarmActions" : [
+          {
+            "Ref" : "{{ name }}ScaleUpPolicy"
+          }
+        ],
+        "Dimensions" : [
+          {
+            "Name" : "LoadBalancerName",
+            "Value" :{ "Ref" : "{{ elb }}" } 
+          }
+        ],
+        "ComparisonOperator" : "GreaterThanThreshold"
+      },
+      "DependsOn" : "{{ name }}ScaleUpPolicy"
+    },
+
+    "{{ name }}ScaleDownAlarm" : {
+      "Type" : "AWS::CloudWatch::Alarm",
+      "Properties" : {
+        "AlarmDescription" : "{{ name }} alarm for scaling down",
+        "MetricName" : "Latency",
+        "Namespace" : "AWS/ELB",
+        "Statistic" : "Average",
+        "Period" : "60",
+        "EvaluationPeriods" : "5",
+        "Threshold" : { "Ref" : "{{ latencydown }}" },
+        "AlarmActions" : [
+          {
+            "Ref" : "{{ name }}ScaleDownPolicy"
+          }
+        ],
+        "Dimensions" : [
+          {
+            "Name" : "LoadBalancerName",
+            "Value" :{ "Ref" : "{{ elb }}" }
+          }
+        ],
+        "ComparisonOperator" : "LessThanThreshold"
+      },
+      "DependsOn" : "{{ name }}ScaleDownPolicy"
+    },
+
+    "{{ name }}ScaleUpPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "{{ name }}Fleet" },
+        "Cooldown" : "60",
+        "ScalingAdjustment" : "1"
+      },
+      "DependsOn" : "{{ name }}Fleet"
+    },
+
+    "{{ name }}ScaleDownPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "{{ name }}Fleet" },
+        "Cooldown" : "120",
+        "ScalingAdjustment" : "-1"
+      },
+      "DependsOn" : "{{ name }}Fleet"
+    },
+
     "{{ name }}LaunchConfig"  : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
       "Metadata" : {
@@ -160,7 +237,6 @@
                 "ruby-devel"      : [],
                 "gcc"             : [],
                 "gcc-c++"         : [],
-                "puppet"          : [],
                 {% endif %}                
                 "curl"         : [],
                 "wget"         : [],
@@ -237,20 +313,19 @@
                   "runas=root\n"
                 ]]}
               }
-            },
-
+            }
+            {% if management == 'none' %}
+            ,
             "services" : {
               "sysvinit" : {
-                {% if management == 'none' %}
                 "httpd" : {
                   "enabled"       : "true",
                   "ensureRunning" : "true",
                   "files"         : [ "/var/www/html/index.html" ]
-                },
-                {% endif %}                
-                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
+                }
               }
             }
+            {% endif %}
           }
         }
       },
@@ -260,6 +335,7 @@
         "InstanceType"   : { "Ref" : "{{ name }}InstanceType" },
 
         "KeyName"        : { "Ref" : "KeyName" },
+        "Tags": [ { "Key": "Name", "Value": "{{ name }}" } ],
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/bash -v\n",
           
@@ -292,33 +368,41 @@
           "export NEPHO_EXTERNAL_HOSTNAME=${NEPHO_PUBLIC_HOSTNAME}\n",
 		  
           {% if rds is not none  %}
-	  "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
-	  "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
-	  "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
-	  "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",	  
-	  "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",	  
-	  "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [ 
-		            "", [ "mysql://",
-                          { "Ref" : "DBUsername" },
-                          ":",      
-                          { "Ref" : "DBPassword" },       
-                          "@",                               
-                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
-                          ":",
-                          { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
-                          "/",
-                          { "Ref": "DBName" }
-                       ]]}, "'\n", 
-	  {% endif %}		  		 
+          "export NEPHO_DATABASE_HOST='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] }, "'\n",
+          "export NEPHO_DATABASE_PORT='",     { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] }, "'\n",
+          "export NEPHO_DATABASE_NAME='",     { "Ref" : "DBName" }, "'\n",
+          "export NEPHO_DATABASE_USER='",     { "Ref" : "DBUsername" }, "'\n",
+          "export NEPHO_DATABASE_PASSWORD='", { "Ref" : "DBPassword" }, "'\n",
+          "export NEPHO_DATABASE_CONNECT_STRING='", { "Fn::Join": [
+                        "", [ "mysql://",
+                              { "Ref" : "DBUsername" },
+                              ":",
+                              { "Ref" : "DBPassword" },
+                              "@",
+                              { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Address" ] },
+                              ":",
+                              { "Fn::GetAtt": [ "{{ rds }}", "Endpoint.Port" ] },
+                              "/",
+                              { "Ref": "DBName" }
+                           ]]}, "'\n",
+	  {% endif %}
 
 
           {% if bucket is not none %}
-	  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
-	  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
+          "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
+          "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
           "export NEPHO_S3_BUCKET_ACCESS='",  { "Ref" : "{{ name }}Keys" },  "'\n",
           "export NEPHO_S3_BUCKET_KEY='",   {"Fn::GetAtt": ["{{ name }}Keys", "SecretAccessKey"]},  "'\n",
-          {% endif %}
-		 
+		  {% endif %}
+
+      "# SES SMTP parameters\n",
+		  "export NEPHO_SES_SMTP='",          { "Ref" : "SESSMTP" }, "'\n",
+		  "export NEPHO_SES_SMTP_ENDPOINT='", { "Ref" : "SESEndpoint" }, "'\n",
+		  "export NEPHO_SES_SMTP_PORT='",     { "Ref" : "SESPort" }, "'\n",
+		  "export NEPHO_SES_SMTP_USER='",     { "Ref" : "SESUsername" }, "'\n",
+		  "export NEPHO_SES_SMTP_PASSWORD='", { "Ref" : "SESPassword" }, "'\n",
+		  
+          "# pull & setup puppet modules and run manifest\n",
           {% if management !='script' and management != 'none' %}
           "export NEPHO_GIT_REPO_URL='",    { "Ref" : "ConfigMgmtGitRepo" }, "'\n",
           "export NEPHO_GIT_REPO_BRANCH='", { "Ref" : "ConfigMgmtGitRepoBranch" }, "'\n",

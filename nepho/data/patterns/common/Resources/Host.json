@@ -146,7 +146,6 @@
                 "ruby-devel"      : [],
                 "gcc"             : [],
                 "gcc-c++"         : [],
-                "puppet"          : [],
                 {% endif %}   
                 {% if bucket is not none %}
                 "fuse"         : [],
@@ -227,21 +226,20 @@
                   "runas=root\n"
                 ]]}
               }
-              
-            },
+            }
 
+            {% if management == 'none' %}            
+            ,
             "services" : {
               "sysvinit" : {
-                {% if management == 'none' %}
                 "httpd" : {
                   "enabled"       : "true",
                   "ensureRunning" : "true",
                   "files"         : [ "/var/www/html/index.html" ]
-                },
-                {% endif %}                
-                "sendmail" : { "enabled" : "false", "ensureRunning" : "false" }
+                }
               }
             }
+            {% endif %}
           }
         }
       },      
@@ -309,8 +307,17 @@
                           "/",
                           { "Ref": "DBName" }
                        ]]}, "'\n", 
+<<<<<<< HEAD
 		  {% endif %}		  		 
 
+=======
+		  {% endif %}
+		  "export NEPHO_SES_SMTP='",          { "Ref" : "SESSMTP" }, "'\n",
+		  "export NEPHO_SES_SMTP_ENDPOINT='", { "Ref" : "SESEndpoint" }, "'\n",
+		  "export NEPHO_SES_SMTP_PORT='",     { "Ref" : "SESPort" }, "'\n",
+		  "export NEPHO_SES_SMTP_USER='",     { "Ref" : "SESUsername" }, "'\n",
+		  "export NEPHO_SES_SMTP_PASSWORD='", { "Ref" : "SESPassword" }, "'\n",
+>>>>>>> 816ee0961c71c2eae64b0c37e326908559535c4b
 		  {% if bucket is not none %}
 		  "export NEPHO_S3_BUCKET='", {"Ref" : "{{ bucket }}"}, "'\n",
 		  "export NEPHO_S3_BUCKET_URL='", { "Fn::Join" : [ "", [ "https://", { "Fn::GetAtt" : [ "{{ bucket }}", "DomainName" ]}]] }, "'\n",
@@ -362,7 +369,7 @@
       "DependsOn" : "{{ name }}Instance",
       "Properties" : {
         "Handle" : {"Ref" : "{{ name }}WaitHandle"},
-        "Timeout" : "900"
+        "Timeout" : "1200"
       }
     }
 

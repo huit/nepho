@@ -1,0 +1,60 @@
+{#
+
+    A typical set of parameters relevant to Amazon SES.
+
+    Parameters:
+
+    - SESSMTP: enable SES SMTP sending?.
+    - SESEndpoint: hostname of the SES SMTP endpoint.
+    - SESPort: TCP port to use when sending SES mail (default "25")
+    - SESUsername: username of the SES SMTP account.
+    - SESPassword: password of the SES SMTP account.
+#}
+
+    "SESSMTP": {
+      "Default": "false",
+      "Description" : "Enable SES SMTP email?",
+      "Type": "String",
+      "AllowedValues" : [ "false", "true" ],
+      "ConstraintDescription" : "must be true or false."
+    },
+
+    "SESEndpoint": {
+      "Default": "email-smtp.us-east-1.amazonaws.com",
+      "Description" : "The SES SMTP endpoint",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "email-smtp.[-a-z0-9]*.amazonaws.com",
+      "ConstraintDescription" : "must look like a SES SMTP endpoint."
+    },
+
+    "SESPort": {
+      "Default": "25",
+      "Description" : "The SES SMTP port",
+      "Type": "String",
+      "AllowedValues" : [ "25", "465", "587" ],
+      "ConstraintDescription" : "must be 25, 465, or 587."
+    },
+
+    "SESUsername": {
+      "Default": "NEPHO_CHANGEME_USERNAME",
+      "NoEcho": "true",
+      "Description" : "The SES SMTP account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "24",
+      "AllowedPattern" : "[_A-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+    },
+
+    "SESPassword": {
+      "Default": "NEPHO_CHANGEME_PASSWORD",
+      "NoEcho": "true",
+      "Description" : "The SES SMTP account password",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "48",
+      "AllowedPattern" : ".*",
+      "ConstraintDescription" : "any characters."
+    }
