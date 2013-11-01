@@ -1,7 +1,9 @@
 # coding: utf-8
+
+from os import path
 import yaml
 from nepho.core import common
-from os import path
+
 
 class Pattern:
     """An infrastructure design pattern class"""
@@ -15,12 +17,19 @@ class Pattern:
         self.context = dict()
         self.template_dirs = list()
         
+        
     def set_provider(self, p):
         self.provider = p
 
     def set_context(self,c):
         self.context = c
-        
+
+    def get_context(self):
+        return self.context
+            
+    def get_template_file(self):
+        return self.template
+    
     def render(self):
         pass
         

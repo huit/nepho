@@ -9,7 +9,7 @@ from cement.core import controller
 
 import nepho.core.config
 from nepho.cli import base
-from nepho.core import common, cloudlet, stack, provider
+from nepho.core import common, cloudlet, stack, provider, provider_factory
 
 
  
@@ -53,34 +53,38 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack create my-app development --params AwsAvailZone1=us-east-1a
                   nepho stack create my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
-        try:
-            cloudlt = self.cloudletManager.find(self.pargs.cloudlet) 
-            y = cloudlt.defn
-        except IOError:
-            print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
-            exit(1)
-        else:
-            print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
-                    
-        bprint = cloudlt.blueprint(self.pargs.blueprint)   
         
-        if bprint is None:
-            print "Cannot find blueprint %s in cloudlet %s." % (self.pargs.blueprint, self.pargs.cloudlet)
-            exit (1)
-            
-        
-        # Create an appropriate provider, and set the target pattern.
-        provider_name = bprint.provider_name()
-        providr = provider.ProviderFactory().create(provider_name, self.config)
-        providr.load_pattern(bprint)
-        
-        print providr
-        
-        # Do it.
+        (cloudlt, blueprint, providr) = self.load_blueprint()
         providr.deploy()
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
 
+    @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
+    def destroy(self):
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+            print dedent("""\
+                Usage: nepho stack destroy <cloudlet> <blueprint> [--save] [--params Key1=Val1]
+
+                -s, --save
+                  Save command-line (and/or interactive) parameters to an overrides file for
+                  use in all future invocations of this command.
+
+                -p, --params
+                  Override any parameter from the blueprint template. This option can be passed
+                  multiple key=value pairs, and can be called multiple times. If a required
+                  parameter is not passed as a command-line option, nepho will interactively
+                  prompt for it.
+
+                Examples:
+                  nepho stack create my-app development --params AwsAvailZone1=us-east-1a
+                  nepho stack create my-app development -s -p Foo=True -p Bar=False""")
+            exit(1)
+        
+        (cloudlt, blueprint, providr) = self.load_blueprint()
+        providr.destroy()
+        
+        print "Partially implemented action. (input: %s)" % self.pargs.params
+        
     @controller.expose(help='List deployed stacks')
     def list(self):
         if self.pargs.cloudlet is None or self.pargs.blueprint is None:
@@ -113,3 +117,27 @@ class NephoStackController(base.NephoBaseController):
         provider.deploy()
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
+    
+    def load_blueprint(self):
+        """Helper method to load blueprint & pattern from args."""
+        try:
+            cloudlt = self.cloudletManager.find(self.pargs.cloudlet) 
+            y = cloudlt.defn
+        except Exception:
+            print colored("Error loading cloudlet %s" % (self.pargs.cloudlet), "red")
+            exit(1)
+                   
+        bprint = cloudlt.blueprint(self.pargs.blueprint)   
+        
+        if bprint is None:
+            print "Cannot find blueprint %s in cloudlet %s." % (self.pargs.blueprint, self.pargs.cloudlet)
+            exit (1)
+                 
+        # Create an appropriate provider, and set the target pattern.
+        provider_name = bprint.provider_name()
+        providr = provider_factory.ProviderFactory().create(provider_name, self.config)
+        providr.load_pattern(bprint)
+        
+        return (cloudlt, bprint, providr)
+        
+        

@@ -9,7 +9,7 @@ from pprint import pprint
 import nepho.core.config
 from cement.core import controller
 from nepho.cli import base
-from nepho.core import common, cloudlet, blueprint
+from nepho.core import common, cloudlet, blueprint, resource, provider, provider_factory
 
 class NephoBlueprintController(base.NephoBaseController):
     class Meta:
@@ -98,4 +98,39 @@ class NephoBlueprintController(base.NephoBaseController):
     
         print "-" * 80
         return
+
+    @controller.expose(help='Describe a blueprint', aliases=["show-template"])
+    def show_template(self):
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+            print "Usage: nepho blueprint show-template <cloudlet> <blueprint>"
+            exit(1)
+        
+        try:
+            cloudlt = self.cloudletManager.find(self.pargs.cloudlet) 
+            y = cloudlt.defn
+        except Exception:
+            print colored("Error loading cloudlet %s" % (self.pargs.cloudlet), "red")
+            exit(1)
+            
+        bprint = cloudlt.blueprint(self.pargs.blueprint)    
+        
+        if bprint is None:
+            print "Cannot find blueprint %s in cloudlet %s." % (self.pargs.blueprint, self.pargs.cloudlet)
+            exit (1)
+                 
+        # Create an appropriate provider, and set the target pattern.
+        provider_name = bprint.provider_name()
+        providr = provider_factory.ProviderFactory().create(provider_name, self.nepho_config)
+        providr.load_pattern(bprint)
+        pattern = providr.get_pattern()
+      
+        resourceManager = resource.ResourceManager(self.nepho_config)
+        template_string = resourceManager.render_template(pattern)
+        print template_string
+        
+        
+        
+        
+
+        
     

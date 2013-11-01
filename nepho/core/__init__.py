@@ -1,3 +1,3 @@
 
 
-__all__ = ["config", "cloudlet", "blueprint", "pattern", "provider", "stack"]
+__all__ = ["config", "cloudlet", "blueprint", "pattern", "provider", "provider_factory", "stack"]
