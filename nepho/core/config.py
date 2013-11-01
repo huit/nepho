@@ -45,14 +45,15 @@ class ConfigManager:
         except Exception as e:
                 print "Error writing nepho local config YAML file!"
                 print e
-                exit(1)  
-        
+                exit(1)      
+                
                 
     def get(self, key, domain="nepho"):
         """Basic getter for config values."""
         if domain is None:
             domain = "nepho"
         return self.ini_config.get(domain, key)
+                        
                         
     def set(self, key, value, domain="nepho"):  
         """Basic setter for config values."""
@@ -61,8 +62,9 @@ class ConfigManager:
         self.ini_config.set(domain, key, value)
         self.save()
             
+            
     def to_dict(self):
-        """Converts the configs to a doctionary for convenience"""
+        """Converts the configs to a dictionary for convenience"""
         d = dict()
         for k in self.keys():
             d[k] = self.get(k)
