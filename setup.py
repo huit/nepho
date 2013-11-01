@@ -24,13 +24,13 @@ setup(
     install_requires = [
         'argparse>=1.2',
         'boto>=2.0',
-        'awscli>=0.13',
+        'awscli>=1.2.3',
         'Jinja2',
         'PyYAML',
         'cement>=2.0',
         'termcolor',
         'gitpython==0.3.2.RC1',
-        'requests==1.2.3',
+        'requests>=1.2.3',
         'ply==3.4'
     ],
 )
