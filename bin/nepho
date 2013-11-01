@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from cement.core import handler
 from nepho import cli
+from nepho.cli import  base, config, blueprint, stack
 import sys
 
 
@@ -12,7 +13,8 @@ def main():
     handler.register(cli.cloudlet.NephoCloudletController)
     handler.register(cli.blueprint.NephoBlueprintController)
     handler.register(cli.stack.NephoStackController)
-
+    handler.register(cli.config.NephoConfigController)
+    
     try:
         app.setup()
         app.run()

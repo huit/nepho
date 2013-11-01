@@ -117,10 +117,9 @@ class Cloudlet:
     def publish(self):
         """Update the remote cloudlet git repo from the local one."""
         
-        print "Updating cloudlet: %s" % (self.path)
+        print "Publishing cloudlet: %s" % (self.path)
         repo = Repo(self.path)
         repo.remotes.origin.push()
-        repo.submodule_update()
         
     def archive(self, repo_name, archive_dir="/tmp"): 
         """Archives the cloudlet on disk as a tar file, and removes it."""
