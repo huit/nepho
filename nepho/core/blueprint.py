@@ -18,8 +18,8 @@ class Blueprint:
                 self.defn = yaml.load(open(blueprint_file))
             except Exception as e:
                 print "Error loading blueprint YAML file at %s!" % (blueprint_file)
-                exit(1)
-        self.name =  path.basename(blueprint_file).rstrip(".yaml")
+                exit(1)     
+        self.name =  path.basename(blueprint_file).replace(".yaml", "")
         self.defn['name'] = self.name
 
     def pattern(self):
