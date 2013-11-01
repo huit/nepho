@@ -16,7 +16,7 @@ class NephoConfigController(base.NephoBaseController):
         label = 'config'
         stacked_on = None
         description = 'list, view and modify config settings'
-        usage = "nepho config <action> <cloudlet> [blueprint]"
+        usage = "nepho config <action> [key] [value]" 
         arguments = [
             (['key'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['value'], dict(help=argparse.SUPPRESS, nargs='?')),
@@ -50,7 +50,7 @@ class NephoConfigController(base.NephoBaseController):
         print self.nepho_config.get(self.pargs.key)
             
     
-    @controller.expose(help='Set a config value')
+    @controller.expose(help='Set a config value', aliases=["add"])
     def set(self):
         if self.pargs.key is None or self.pargs.value is None:
             print "Usage: nepho config get <key>"
