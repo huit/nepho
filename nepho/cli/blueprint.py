@@ -6,6 +6,7 @@ from termcolor import colored
 from textwrap import TextWrapper
 from pprint import pprint
 
+import nepho.core.config
 from cement.core import controller
 from nepho.cli import base
 from nepho.core import common, cloudlet, blueprint
@@ -23,7 +24,8 @@ class NephoBlueprintController(base.NephoBaseController):
 
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
-        self.cloudletManager = cloudlet.CloudletManager(self.config)
+        self.nepho_config = nepho.core.config.ConfigManager(self.config)
+        self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
         
     @controller.expose(help='List all blueprints in a cloudlet')
     def list(self):
@@ -95,3 +97,4 @@ class NephoBlueprintController(base.NephoBaseController):
     
         print "-" * 80
         return
+    

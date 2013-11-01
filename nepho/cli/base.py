@@ -1,7 +1,11 @@
 #!/usr/bin/env python
-from cement.core import backend, foundation, controller
+
 from os import path, makedirs
 import re
+
+from cement.core import backend, foundation, controller
+
+import nepho.core.config
 
 defaults = backend.defaults('nepho', 'base')
 defaults['nepho']['archive_dir']           = path.join("~", ".nepho", "archive")
@@ -57,6 +61,9 @@ class NephoBaseController(controller.CementBaseController):
                         makedirs(value)
 
         self.my_shared_obj = dict()
+        
+        self.nepho_config = nepho.core.config.ConfigManager(self.config)
+        
 
     @controller.expose(hide=True)
     def default(self):

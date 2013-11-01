@@ -114,6 +114,14 @@ class Cloudlet:
         repo.remotes.origin.pull()
         repo.submodule_update()
 
+    def publish(self):
+        """Update the remote cloudlet git repo from the local one."""
+        
+        print "Updating cloudlet: %s" % (self.path)
+        repo = Repo(self.path)
+        repo.remotes.origin.push()
+        repo.submodule_update()
+        
     def archive(self, repo_name, archive_dir="/tmp"): 
         """Archives the cloudlet on disk as a tar file, and removes it."""
         repo = Repo(self.path)    
@@ -151,18 +159,19 @@ class CloudletManager:
     
     def __init__(self, config = None):
         self.config = config
-        self.registry = self.config.get('nepho', 'cloudlet_registry_url')
-        self.update_registry()
+        if self.config is not None:
+            self.registry = self.config.get('cloudlet_registry_url')
+            self.update_registry()
         
 
     def all_cloudlet_dirs(self):
         """Returns a list of paths to directories that contain cloudlets on disk."""
-        dirs = self.config.get('nepho', 'cloudlet_dirs')
+        dirs = self.config.get('cloudlet_dirs')
         return dirs
     
     def all_cloudlet_paths(self):
         """Returns a list of paths to cloudlets on disk."""
-        dirs = self.config.get('nepho', 'cloudlet_dirs')
+        dirs = self.config.get('cloudlet_dirs')
     
         # Collect the filesystem paths to every cloudlet into one list
         cloudlet_paths = list()
@@ -216,7 +225,7 @@ class CloudletManager:
 
     def update_registry(self):
 
-        tmp_dir = self.config.get('nepho', 'tmp_dir')
+        tmp_dir = self.config.get( 'tmp_dir')
         registry_cache = path.join(tmp_dir, "registry.yaml")
     
         # If the local registry is missing, empty, or stale (over 1 hour old)
@@ -242,7 +251,7 @@ class CloudletManager:
     def get_registry(self):
         
         self.update_registry()
-        tmp_dir = self.config.get('nepho', 'tmp_dir')
+        tmp_dir = self.config.get('tmp_dir')
         registry_cache = path.join(tmp_dir, "registry.yaml")
         with open(registry_cache, 'r') as yaml_file:
             return yaml.load(yaml_file)        

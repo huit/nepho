@@ -7,6 +7,7 @@ import argparse
 from termcolor import colored
 from textwrap import TextWrapper
 
+import nepho.core.config
 from nepho.core import common, cloudlet
 
 
@@ -32,7 +33,8 @@ class NephoCloudletController(base.NephoBaseController):
 
     def _setup(self, app):
         super(NephoCloudletController, self)._setup(app)
-        self.cloudletManager = cloudlet.CloudletManager(self.config)
+        self.nepho_config = nepho.core.config.ConfigManager(self.config)
+        self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
         
     @controller.expose(help="List all installed cloudlets")
     def list(self):
@@ -124,8 +126,8 @@ class NephoCloudletController(base.NephoBaseController):
         # The clone_cloudlet method will validate the location URL
 #        cloudlet.clone_cloudlet(self, url, repo_path)
 
-    @controller.expose(help="Upgrade an installed Nepho cloudlet")
-    def upgrade(self):
+    @controller.expose(help="Upgrade an installed Nepho cloudlet", aliases=["upgrade"])
+    def update(self):
         
         cloudlts = self.cloudletManager.find(self.pargs.string[0])
         if cloudlts is None:
