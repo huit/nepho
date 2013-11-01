@@ -2,7 +2,7 @@
 from os import path
 import yaml
 
-from nepho.providers import *
+from nepho.providers import vagrant_provider
 
 
 class ProviderFactory:
@@ -13,11 +13,11 @@ class ProviderFactory:
         # TODO: do something clever here by parsing the "providers" module and contents.
         
         if name == "vagrant":
-            return vagrant.VagrantProvider(config)
+            return vagrant_provider.VagrantProvider(config)
         
         if name == "aws":
-            return aws.AWSProvider(config)
+            return aws_provider.AWSProvider(config)
         
-        if name == "ansible":
-            return ansible.AnsibleProvider(config)
+#        if name == "ansible":
+#            return ansible.AnsibleProvider(config)
     

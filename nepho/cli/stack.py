@@ -59,32 +59,61 @@ class NephoStackController(base.NephoBaseController):
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
 
+    @controller.expose(help='Check on the status of a stack.')
+    def status(self):
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+            print dedent("""\
+                Usage: nepho stack status <cloudlet> <blueprint> 
+
+                Examples:
+                  nepho stack status my-app development 
+                """)
+            exit(1)
+        
+        (cloudlt, blueprint, providr) = self.load_blueprint()
+        status = providr.status()
+        
+        header_string = "%s/%s" % (self.pargs.cloudlet, self.pargs.blueprint)
+        print colored(header_string, "yellow")
+        print colored( "-" * len(header_string), "yellow")
+        rep_string = "The stack is currently %s." % ( status['default'] )
+        color = "blue"
+        if  status['default'] == "running":
+            color = 'green'
+        if  status['default'] == "aborted":
+            color = 'red'
+        print colored(rep_string, color)
+        
+    @controller.expose(help='Gain access to the stack')
+    def access(self):
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+            print dedent("""\
+                Usage: nepho stack access <cloudlet> <blueprint> 
+
+                Examples:
+                  nepho stack access my-app development 
+                """)
+            exit(1)
+        
+        (cloudlt, blueprint, providr) = self.load_blueprint()
+        
+        providr.access()
+        
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
     def destroy(self):
         if self.pargs.cloudlet is None or self.pargs.blueprint is None:
             print dedent("""\
-                Usage: nepho stack destroy <cloudlet> <blueprint> [--save] [--params Key1=Val1]
-
-                -s, --save
-                  Save command-line (and/or interactive) parameters to an overrides file for
-                  use in all future invocations of this command.
-
-                -p, --params
-                  Override any parameter from the blueprint template. This option can be passed
-                  multiple key=value pairs, and can be called multiple times. If a required
-                  parameter is not passed as a command-line option, nepho will interactively
-                  prompt for it.
+                Usage: nepho stack destroy <cloudlet> <blueprint> 
 
                 Examples:
-                  nepho stack create my-app development --params AwsAvailZone1=us-east-1a
-                  nepho stack create my-app development -s -p Foo=True -p Bar=False""")
+                  nepho stack destroy my-app development 
+                """)
             exit(1)
         
         (cloudlt, blueprint, providr) = self.load_blueprint()
         providr.destroy()
         
-        print "Partially implemented action. (input: %s)" % self.pargs.params
-        
+         
     @controller.expose(help='List deployed stacks')
     def list(self):
         if self.pargs.cloudlet is None or self.pargs.blueprint is None:
@@ -135,7 +164,7 @@ class NephoStackController(base.NephoBaseController):
                  
         # Create an appropriate provider, and set the target pattern.
         provider_name = bprint.provider_name()
-        providr = provider_factory.ProviderFactory().create(provider_name, self.config)
+        providr = provider_factory.ProviderFactory().create(provider_name, self.nepho_config)
         providr.load_pattern(bprint)
         
         return (cloudlt, bprint, providr)

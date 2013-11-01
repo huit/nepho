@@ -24,5 +24,16 @@ class AbstractProvider:
     def get_pattern(self):
         return self.pattern
         
+    def deploy(self):
+        pass
+    
+    def status(self):
+        pass
+    
+    def access(self):
+        pass
+    
+    def destroy(self):
+        pass
            
           

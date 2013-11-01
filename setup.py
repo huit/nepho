@@ -31,6 +31,7 @@ setup(
         'termcolor',
         'gitpython==0.3.2.RC1',
         'requests>=1.2.3',
-        'ply==3.4'
+        'ply==3.4',
+        'vagrant==0.4.0'
     ],
 )

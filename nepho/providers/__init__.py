@@ -1,1 +1,1 @@
-__all__ = ["vagrant", "aws", "ansible"]
+__all__ = ["vagrant_provider", "aws_provider"]
