@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
 import argparse
-from textwrap import dedent
+from termcolor import colored
+from textwrap import TextWrapper
+from pprint import pprint
+
 from cement.core import controller
 
 import nepho.core.config
 from nepho.cli import base
-from nepho.core import stack
+from nepho.core import common, cloudlet, stack, provider
 
 
  
@@ -28,10 +31,6 @@ class NephoStackController(base.NephoBaseController):
         super(base.NephoBaseController, self)._setup(app)
         self.nepho_config = nepho.core.config.ConfigManager(self.config)
         self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
- 
-    @controller.expose(help='Create a stack from a blueprint')
-    def deploy(self):
-        self.create()
         
                 
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy'])
@@ -65,13 +64,20 @@ class NephoStackController(base.NephoBaseController):
                     
         bprint = cloudlt.blueprint(self.pargs.blueprint)   
         
+        if bprint is None:
+            print "Cannot find blueprint %s in cloudlet %s." % (self.pargs.blueprint, self.pargs.cloudlet)
+            exit (1)
+            
+        
         # Create an appropriate provider, and set the target pattern.
         provider_name = bprint.provider_name()
-        providr = provider.ProviderFactory(provider_name, self.config)
-        providr.pattern(bprint.pattern())
+        providr = provider.ProviderFactory().create(provider_name, self.config)
+        providr.load_pattern(bprint)
+        
+        print providr
         
         # Do it.
-        provider.deploy()
+        providr.deploy()
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
 

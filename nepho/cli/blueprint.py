@@ -85,10 +85,11 @@ class NephoBlueprintController(base.NephoBaseController):
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
 
         print "-" * 80
-        print "Name:         %s" % (y['name'])
-        print "Provider:     %s" % (y['provider'])
-        print wrapper.fill("Summary:      %s" % (y['summary']))
-        print wrapper.fill("Description:  %s" % (y['description']))
+        print "name:         %s" % (y['name'])
+        print "provider:     %s" % (y['provider'])
+        print "pattern:      %s" % (y['pattern'])
+        print wrapper.fill("summary:      %s" % (y['summary']))
+        print wrapper.fill("description:  %s" % (y['description']))
         print "-" * 80
     
         p = y.pop('parameters', None)
