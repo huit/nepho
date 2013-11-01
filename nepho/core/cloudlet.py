@@ -8,14 +8,13 @@ import yaml
 import requests
 import glob
 from shutil import rmtree, copyfileobj
-from termcolor import colored
-from textwrap import TextWrapper
+
 from git import Repo
 
 from nepho.core import common, blueprint
 
 class Cloudlet:
-    """A class that encopmasses a cloudlet"""
+    """A class that encompasses a cloudlet"""
     
     def __init__(self, name, cloudlet_path=None, url=None):
         self.path = cloudlet_path
@@ -34,7 +33,14 @@ class Cloudlet:
             except Exception as e:
                 print "Error loading cloudlet YAML file!"
                 exit(1)
-
+        
+        # include metadata into the definition dictionary        
+        self.defn['name'] = self.name
+        self.defn['url'] = self.url
+        
+    def serialize(self):
+        """Returns the cloudlets data definition as a JSON string."""
+        
     def blueprint(self, name):
         """Return a blueprint by name."""
         bps = self.blueprints()
@@ -54,7 +60,7 @@ class Cloudlet:
         
         blueprints = list()
         for f in blueprint_files:
-           blueprints.append( blueprint.Blueprint(f) )
+            blueprints.append( blueprint.Blueprint(self, f) )
             
         return blueprints    
         
@@ -139,21 +145,6 @@ class Cloudlet:
     def get_path(self): 
         """Return the  path to the cloudlet's root dir.""" 
         return self.path
-    
-    def describe(self):
-        """Prints out a CLI-friendly description of the cloudlet content."""    
-        wrapper = TextWrapper(width=80, subsequent_indent="              ")
-        y = self.defn
-        
-        print "-" * 80
-        print "Name:         %s" % (y['name'])
-        print "Version:      %s" % (y['version'])
-        print "Author:       %s" % (y['author'])
-        print "License:      %s" % (y['license'])
-        print wrapper.fill("Summary:      %s" % (y['summary']))
-        print wrapper.fill("Description:  %s" % (y['description']))
-        print "-" * 80
-        return
 
 class CloudletManager:
     """A class to manage cloudlets"""

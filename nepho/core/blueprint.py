@@ -2,14 +2,11 @@
 import yaml
 from nepho.core import common
 from os import path
-from termcolor import colored
-from textwrap import TextWrapper
-from pprint import pprint
 
 class Blueprint:
     """A simple example class"""
     
-    def __init__(self, blueprint_file):
+    def __init__(self, cloudlet, blueprint_file):
 
         self.file = blueprint_file 
 
@@ -24,7 +21,6 @@ class Blueprint:
         self.name =  path.basename(blueprint_file).rstrip(".yaml")
         self.defn['name'] = self.name
 
-    
 # 
 # class BlueprintManager:
 #     """A simple example class"""

@@ -67,8 +67,21 @@ class NephoCloudletController(base.NephoBaseController):
 
     @controller.expose(help="Describe an installed cloudlet")
     def describe(self):
-        self.cloudletManager.find(self.pargs.string[0]).describe()
-        #cloudlet.describe_cloudlet(self, self.pargs.string[0])
+        
+        cloudlt = self.cloudletManager.find(self.pargs.string[0])
+        
+        wrapper = TextWrapper(width=80, subsequent_indent="              ")
+        y = cloudlt.defn
+        
+        print "-" * 80
+        print "Name:         %s" % (y['name'])
+        print "Version:      %s" % (y['version'])
+        print "Author:       %s" % (y['author'])
+        print "License:      %s" % (y['license'])
+        print wrapper.fill("Summary:      %s" % (y['summary']))
+        print wrapper.fill("Description:  %s" % (y['description']))
+        print "-" * 80
+        return
 
     @controller.expose(help="Search the Nepho Cloudlet Registry for cloudlets whose names, summaries, or descriptions match the provided search term")
     def search(self):
