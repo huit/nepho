@@ -17,7 +17,8 @@ Follow the instructions in the wiki for [manual setup](https://github.com/huit/n
 
 ## Configuration
 
-All application (global) configuration and cloudlets are located under the `.nepho` directory in the user's home directory.
+All application (global) configuration and cloudlets are located under the `.nepho` directory in 
+the user's home directory. Values can be configured from the command line using the `config` subcommand.
 
 ## Usage
 
