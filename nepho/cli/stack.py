@@ -2,7 +2,7 @@
 # coding: utf-8
 import argparse
 from termcolor import colored
-from textwrap import TextWrapper
+from textwrap import TextWrapper, dedent
 from pprint import pprint
 
 from cement.core import controller
