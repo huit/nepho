@@ -145,7 +145,6 @@ class CloudletManager:
         self.config = config
         if self.config is not None:
             self.registry = self.config.get('cloudlet_registry_url')
-            print self.registry
             self.update_registry()
         
 

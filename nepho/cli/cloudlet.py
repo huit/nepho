@@ -91,8 +91,35 @@ class NephoCloudletController(base.NephoBaseController):
         # options, and experimented with throwing the registry into a local
         # sqlite database, but it seemed like overkill. Really this should be
         # calling a web service.
-        print "Unimplemented action. (input: %s)" % self.pargs.string
+        
+        targetString = self.pargs.string[0]
+        registry = self.cloudletManager.get_registry()
+        
+        matchList = list()
+        for cloudletRepo in registry.keys():
+            flattenedText =  "%s: %s" % (cloudletRepo, registry[cloudletRepo])
+            if targetString in flattenedText:
+                matchList.append(cloudletRepo)
+        
+        if len(matchList) == 0:
+            print "No matches found."
+        else:                
+            for cloudletRepo in matchList:
+                cloudletDict = registry[cloudletRepo]
 
+                wrapper = TextWrapper(width=80, subsequent_indent="              ")
+                print "-" * 80
+                print "Name:         %s" % (cloudletRepo)
+                print "Version:      %s" % (cloudletDict['version'])
+                print "Author:       %s" % (cloudletDict['author'])
+                print "License:      %s" % (cloudletDict['license'])
+                print wrapper.fill("Summary:      %s" % (cloudletDict['summary']))
+                print wrapper.fill("Description:  %s" % (cloudletDict['description']))
+                print "-" * 80 
+        
+        #print "Unimplemented action. (input: %s)" % self.pargs.string
+
+    
     @controller.expose(help="Install a Nepho cloudlet from the Nepho Cloudlet Registry or from an external Git repository")
     def install(self):
         if self.pargs.string == []:
