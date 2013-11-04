@@ -2,8 +2,7 @@
 from os import path
 
 import yaml
-from nepho.core import common, resource, pattern
-
+#from nepho.core import common, resource, pattern
 
 import botocore.session
 import botocore.hooks
@@ -31,33 +30,53 @@ import awscli.plugin
 
 #import awscli.clidriver
 
+import nepho
+
         
-class AWSProvider:
+class AWSProvider(nepho.core.provider.AbstractProvider):   
     """An infrastructure provider class for Vagrant"""
 
     PROVIDER_ID = "aws"
     TEMPLATE_FILENAME = "cf.json"
     
-    def __init__(self):
+    def __init__(self, config):
+        nepho.core.provider.AbstractProvider.__init__(self,config)    
         
-        self.clidriver = self.setup_aws_driver()
+        self.clidriver = self.setup_awscli_driver()
         
-    def setup_awscli_driver():
+    def setup_awscli_driver(self):
         envvars = awscli.EnvironmentVariables
         emitter = botocore.hooks.HierarchicalEmitter()
         session = botocore.session.Session(envvars, emitter)
 
         session.user_agent_name = 'aws-cli'
         session.user_agent_version = awscli.__version__
-        load_plugins(session.full_config.get('plugins', {}), event_hooks=emitter)
+        awscli.plugin.load_plugins(session.full_config.get('plugins', {}), event_hooks=emitter)
         return awscli.clidriver.CLIDriver(session=session)
             
     def deploy(self):
         """Deploy a given pattern."""
+        
+        scripts = dict( 
+                        cf_pre_script="",
+                        cf_init_script="",
+                        management="",
+                        cf_post_script=""
+                      )
+        
+        context = dict(
+                        scripts=scripts,
+                       )
+        
+        self.pattern.set_context(context)
+       
         print self.pattern.template
+        
+        
     
     def undeploy(self):
         pass
+        
         
 #
 # Methods pulled from old code, to be integrated.        
@@ -91,3 +110,20 @@ class AWSProvider:
         else:
             outstr = json.dumps(orderDict)
         return outstr
+    
+    def validate(self, template_str):
+        """Validate the tempalte as JSON and CloudFormation."""
+        
+        try:
+            cf_dict = parse_cf_json(template_str)
+            template = get_cf_json(cf_dict, pretty=True)
+            main_args=[
+               'cloudformation',
+               'validate-template',
+               '--template-body', template
+               ]
+            aws_driver.main(main_args)
+        except:
+            print "Invalid CloudFormation JSON."
+            exit(1)
+            

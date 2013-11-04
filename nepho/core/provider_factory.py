@@ -2,7 +2,7 @@
 from os import path
 import yaml
 
-from nepho.providers import vagrant_provider
+from nepho.providers import vagrant_provider, aws_provider
 
 
 class ProviderFactory:
