@@ -126,6 +126,7 @@ class NephoBlueprintController(base.NephoBaseController):
       
         resourceManager = resource.ResourceManager(self.nepho_config)
         template_string = resourceManager.render_template(pattern)
+        
         print template_string
         
         
