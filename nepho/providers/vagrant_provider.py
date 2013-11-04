@@ -42,9 +42,8 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         v = vagrant.Vagrant()
         try:
             v.up()      
-        except:
-            subprocess.CalledProcessError
-            print "Vagrant exited with non-zero code, but your VM is liekly running. Please use the status subcommand to check."
+        except subprocess.CalledProcessError:
+            print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."
             
     def status(self):
         v = vagrant.Vagrant()
