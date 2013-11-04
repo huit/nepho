@@ -209,9 +209,7 @@ class CloudletManager:
 
     def clear_registry(self):
         """Removes any cached registry info in the local nepho directory."""
-        
-        tmp_dir = self.config.get( 'tmp_dir')
-        registry_cache = path.join(tmp_dir, "registry.yaml")
+        registry_cache = self.get_registry_filename()
     
         # If the local registry is missing, empty, or stale (over 1 hour old)
         # update it from the configured URL. In either case, return the YAML object
@@ -221,12 +219,12 @@ class CloudletManager:
             pass
         
     def update_registry(self):
+        """Pulls down a fresh copy of the cloudlet registry."""
 
-        tmp_dir = self.config.get( 'tmp_dir')
-        registry_cache = path.join(tmp_dir, "registry.yaml")
     
         # If the local registry is missing, empty, or stale (over 1 hour old)
         # update it from the configured URL. In either case, return the YAML object
+        registry_cache = self.get_registry_filename()
         if not path.exists(registry_cache) or path.getsize(registry_cache) == 0 or (time() - path.getmtime(registry_cache)) > 3600:
             print "Updating cloudlet registry from: %s" % (self.registry)
             try:
@@ -246,14 +244,19 @@ class CloudletManager:
                 return yaml.load(yaml_file)
    
     def get_registry(self):
-        
+        """Returns a dictionary woth registry values."""
         self.update_registry()
-        tmp_dir = self.config.get('tmp_dir')
-        registry_cache = path.join(tmp_dir, "registry.yaml")
+        cache_dir = self.config.get('cache_dir')
+        registry_cache = path.join(cache_dir, "registry.yaml")
         with open(registry_cache, 'r') as yaml_file:
             return yaml.load(yaml_file)        
         
-
+    def get_registry_filename(self):
+        """Helper function to provide the regsitry filename and path."""
+        cache_dir = self.config.get( 'cache_dir')
+        registry_cache = path.join(cache_dir, "registry.yaml")
+        return registry_cache
+        
 
 
 
