@@ -54,7 +54,9 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack create my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
         
-        (cloudlt, blueprint, providr) = self.load_blueprint()
+        bprint = self.load_blueprint()
+        providr = self.create_provider(bprint)
+
         providr.deploy()
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
@@ -70,7 +72,9 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
-        (cloudlt, blueprint, providr) = self.load_blueprint()
+        bprint = self.load_blueprint()       # helper method knows about command line args ...
+        providr = self.create_provider(bprint)
+        
         status = providr.status()
         
         header_string = "%s/%s" % (self.pargs.cloudlet, self.pargs.blueprint)
@@ -95,7 +99,9 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
-        (cloudlt, blueprint, providr) = self.load_blueprint()  
+        bprint = self.load_blueprint() 
+        providr = self.create_provider(bprint)
+
         providr.access()
         
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
@@ -109,7 +115,9 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
-        (cloudlt, blueprint, providr) = self.load_blueprint()
+        bprint = self.load_blueprint() 
+        providr = self.create_provider(bprint)
+        
         providr.destroy()
         
          
@@ -142,7 +150,7 @@ class NephoStackController(base.NephoBaseController):
         providr.pattern(bprint.pattern())
         
         # Do it.
-        provider.deploy()
+        #provider.deploy()
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
     
@@ -160,12 +168,16 @@ class NephoStackController(base.NephoBaseController):
         if bprint is None:
             print "Cannot find blueprint %s in cloudlet %s." % (self.pargs.blueprint, self.pargs.cloudlet)
             exit (1)
-                 
+                
+        return bprint
+    
+    def create_provider(self, bprint):     
+        """Helper method to create a suitable provider given a blueprint."""
         # Create an appropriate provider, and set the target pattern.
         provider_name = bprint.provider_name()
         providr = provider_factory.ProviderFactory().create(provider_name, self.nepho_config)
         providr.load_pattern(bprint)
         
-        return (cloudlt, bprint, providr)
+        return providr
         
         

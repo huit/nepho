@@ -26,7 +26,12 @@ class Blueprint:
 
     def validate(self):
         """Validates the blueprint as defined to determine if it's sufficent and properly formed."""
-        fields = ["provider", "pattern"  ]
+        
+        # If a name isn't specified, our name is the blueprint's name
+        if not "pattern" in self.defn or self.defn['pattern'] is None:
+            self.defn['pattern'] = self.name
+            
+        fields = ["provider" ]
         for f in fields:
             if not f in self.defn.keys():
                 print "Blueprint is missing required field %s." % (f)

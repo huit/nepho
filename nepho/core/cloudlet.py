@@ -252,7 +252,7 @@ class CloudletManager:
             return yaml.load(yaml_file)        
         
     def get_registry_filename(self):
-        """Helper function to provide the regsitry filename and path."""
+        """Helper function to provide the registry filename and path."""
         cache_dir = self.config.get( 'cache_dir')
         registry_cache = path.join(cache_dir, "registry.yaml")
         return registry_cache
