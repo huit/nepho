@@ -32,6 +32,12 @@ class AbstractProvider:
     def get_pattern(self):
         return self.pattern
         
+    def validate_template(self, template):
+        pass
+    
+    def format_template(self, template):
+        return template
+    
     def deploy(self):
         pass
     
