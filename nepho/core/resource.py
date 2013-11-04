@@ -25,17 +25,38 @@ class ResourceManager:
         self.config = config  
 
     def lookup_pattern_dir(self, blueprint):
-        """Given a blueprint and pattern name/string, lookup and return that pattern directory."""  
+        """Given a blueprint and pattern name/string, lookup and return that pattern directory.
+        
+        For locally referenced patterns, assume that it's in the directories
+        
+           ./resources/patterns/[blueprint name]/
+           
+        or in the common directory at
+        
+           ./resources/patterns/common/
+           
+        If given with a cloudlet referenence (i.e. cloudlet_name > pattern_name) it
+        looks up with the referenced coudlet dir
+        
+          [cloudlet_name]/resources/patterns/pattern_name   
+
+        """  
         
         pattern_string = blueprint.pattern().name
+        print pattern_string
         main_cloudlet = blueprint.cloudlet
         cloudlt = main_cloudlet
         pattern_name = pattern_string           
         if ">" in pattern_string:
             (cloudlet_name, pattern_name) = pattern_string.split(">")
+            cloudlet_name = cloudlet_name.strip()
+            pattern_name = pattern_name.strip()
             cloudlt = cloudlet.CloudletManager(self.config).find(cloudlet_name)
 
         pattern_dir = path.join(cloudlt.path, "resources", "patterns", pattern_name)
+        if not path.isdir(pattern_dir):
+            pattern_dir = path.join(cloudlt.path, "resources", "patterns", "common")
+        
         return pattern_dir        
 
 
@@ -43,12 +64,12 @@ class ResourceManager:
         """Given a blueprint and pattern name/string, lookup and return that pattern file."""  
         pattern_dir = self.lookup_pattern_dir(blueprint)        
         pattern_file = path.join(pattern_dir, provider.PROVIDER_ID, provider.TEMPLATE_FILENAME)
+        print pattern_file
         return pattern_file
     
     def render_template(self, pattern):
         """ convert a template file into a rendered string."""
         providr = pattern.provider
-        
         
         template_file_abs = pattern.get_template_file()
         template_dir = path.dirname(template_file_abs)

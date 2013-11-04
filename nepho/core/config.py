@@ -21,10 +21,33 @@ class ConfigManager:
         self.load(local_config)      
 
         
-    def keys(self):
+    def keys(self, domain="nepho"):
         """Return a set of config names"""
-        return self.ini_config.keys("nepho")
-        
+        return self.ini_config.keys(domain)
+                
+                
+    def get(self, key, domain="nepho"):
+        """Basic getter for config values."""
+        if domain is None:
+            domain = "nepho"
+        return self.ini_config.get(domain, key)
+                        
+                        
+    def set(self, key, value, domain="nepho"):  
+        """Basic setter for config values."""
+        if domain is None:
+            domain = "nepho"
+        self.ini_config.set(domain, key, value)
+        self.save()
+            
+            
+    def to_dict(self, domain="nepho"):
+        """Converts the configs to a dictionary for convenience"""
+        d = dict()
+        for k in self.keys(domain):
+            d[k] = self.get(k)
+        return d
+
        
     def load(self, config_file):
         """Load in configs from local settings YAML file."""
@@ -47,26 +70,3 @@ class ConfigManager:
                 print e
                 exit(1)      
                 
-                
-    def get(self, key, domain="nepho"):
-        """Basic getter for config values."""
-        if domain is None:
-            domain = "nepho"
-        return self.ini_config.get(domain, key)
-                        
-                        
-    def set(self, key, value, domain="nepho"):  
-        """Basic setter for config values."""
-        if domain is None:
-            domain = "nepho"
-        self.ini_config.set(domain, key, value)
-        self.save()
-            
-            
-    def to_dict(self):
-        """Converts the configs to a dictionary for convenience"""
-        d = dict()
-        for k in self.keys():
-            d[k] = self.get(k)
-        return d
-
