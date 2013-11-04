@@ -156,7 +156,23 @@ class NephoCloudletController(base.NephoBaseController):
 
         cloudlt.archive(name, self.config.get('nepho', 'archive_dir'))
         cloudlt.uninstall()
+
+    @controller.expose(help="Update the local cloudlet registry.", aliases=["registry-update", "update-registry"])
+    def registry_update(self):      
+        self.cloudletManager.clear_registry()
+        self.cloudletManager.update_registry()
+
         
+    def update_registry(self):
+        cloudlts = self.cloudletManager.find(self.pargs.string[0])
+        if cloudlts is None:
+            print "Cloudlet is not installed."
+            exit(1)
+        
+        if not isinstance(cloudlts, list):
+            cloudlts = [cloudlts]
+        for cloudlt in cloudlts:
+            cloudlt.update()        
 #        try:
 #            name = self.pargs.string[0]
 #            possible_paths = common.find_cloudlet(self, name, True)
