@@ -1,7 +1,11 @@
 # coding: utf-8
-import yaml
-#from nepho.core import common
+
 from os import path
+import yaml
+
+from termcolor import colored
+from textwrap import TextWrapper
+from pprint import pprint
 
 import jinja2
 
@@ -43,11 +47,17 @@ class ResourceManager:
     
     def render_template(self, pattern):
         """ convert a template file into a rendered string."""
-        template_file_abs = pattern.get_template_file()
+        providr = pattern.provider
         
-        tdir = path.dirname(template_file_abs)
+        
+        template_file_abs = pattern.get_template_file()
+        template_dir = path.dirname(template_file_abs)
+        template_common_dir = path.join(template_dir, 
+                                         "..", "..", 
+                                         "common", providr.PROVIDER_ID )
+        
         template_file = path.basename(template_file_abs)
-        template_dirs = [tdir]
+        template_dirs = [template_dir, template_common_dir]
         context = pattern.get_context()
     
         # Use Jinja2
@@ -59,9 +69,9 @@ class ResourceManager:
         templ = None
         try:
             templ = jinja_template.render(context)
-        except TemplateNotFound:
+        except jinja2.TemplateNotFound:
             print colored("Error finding template file %s" % (template_file), "red")
-            print colored("Template search path %s" % (template_file), "red")
+            print colored("Template search path %s" % (template_dirs), "red")
             exit(1)
         
         return templ
