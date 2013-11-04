@@ -95,8 +95,7 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
-        (cloudlt, blueprint, providr) = self.load_blueprint()
-        
+        (cloudlt, blueprint, providr) = self.load_blueprint()  
         providr.access()
         
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
