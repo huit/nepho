@@ -207,6 +207,19 @@ class CloudletManager:
         cloudlts = self.find(None, True)
         return cloudlts
 
+    def clear_registry(self):
+        """Removes any cached registry info in the local nepho directory."""
+        
+        tmp_dir = self.config.get( 'tmp_dir')
+        registry_cache = path.join(tmp_dir, "registry.yaml")
+    
+        # If the local registry is missing, empty, or stale (over 1 hour old)
+        # update it from the configured URL. In either case, return the YAML object
+        try:
+            os.remove(registry_cache)
+        except Exception:
+            pass
+        
     def update_registry(self):
 
         tmp_dir = self.config.get( 'tmp_dir')
