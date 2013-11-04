@@ -16,7 +16,8 @@ class ResourceManager:
     """
         A resource handler class for Nepho. 
         
-        Used to do loopkups on patterns, blueprints, etc.
+        Used to do lookups on files, dirs, and templates for
+           patterns, blueprints, etc.
 
     """
     
@@ -43,7 +44,7 @@ class ResourceManager:
         """  
         
         pattern_string = blueprint.pattern().name
-        print pattern_string
+
         main_cloudlet = blueprint.cloudlet
         cloudlt = main_cloudlet
         pattern_name = pattern_string           
@@ -64,11 +65,11 @@ class ResourceManager:
         """Given a blueprint and pattern name/string, lookup and return that pattern file."""  
         pattern_dir = self.lookup_pattern_dir(blueprint)        
         pattern_file = path.join(pattern_dir, provider.PROVIDER_ID, provider.TEMPLATE_FILENAME)
-        print pattern_file
+
         return pattern_file
     
-    def render_template(self, pattern):
-        """ convert a template file into a rendered string."""
+    def render_template(self, pattern, context):
+        """Convert a template file into a rendered string."""
         providr = pattern.provider
         
         template_file_abs = pattern.get_template_file()
@@ -79,14 +80,15 @@ class ResourceManager:
         
         template_file = path.basename(template_file_abs)
         template_dirs = [template_dir, template_common_dir]
-        context = pattern.get_context()
+
+
     
         # Use Jinja2
         jinjaFSloader = jinja2.FileSystemLoader(template_dirs)
         env = jinja2.Environment(loader=jinjaFSloader)     
         jinja_template = env.get_template(template_file)
     
-        # Render it
+        # Render it with the provided context ...
         templ = None
         try:
             templ = jinja_template.render(context)
@@ -96,9 +98,3 @@ class ResourceManager:
             exit(1)
         
         return templ
-
-
-
-        
-        
-    

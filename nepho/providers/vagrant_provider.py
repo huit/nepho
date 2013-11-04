@@ -23,8 +23,10 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     TEMPLATE_FILENAME = "Vagrantfile"
     
     def initialize_vagrant(self):
-        """Creates the desired Vagrantfile in CWD."""
-        template_string = self.resourceManager.render_template(self.pattern)  
+        """Creates the desired Vagrantfile in CWD, by rendering a tempalte + context."""
+
+        context = self.contextManager.generate()
+        template_string = self.resourceManager.render_template(self.pattern, context)  
         try:
             vfile = open("Vagrantfile", "w")
             vfile.write(NEPHO_VAGRANT_BOILER_PLATE)

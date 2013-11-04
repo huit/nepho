@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 import argparse
+import json
+import collections
 from termcolor import colored
 from textwrap import TextWrapper, dedent
 from pprint import pprint
@@ -9,7 +11,7 @@ from cement.core import controller
 
 import nepho.core.config
 from nepho.cli import base
-from nepho.core import common, cloudlet, stack, provider, provider_factory
+from nepho.core import common, cloudlet, stack, provider, provider_factory, resource, context
 
 
  
@@ -32,7 +34,79 @@ class NephoStackController(base.NephoBaseController):
         self.nepho_config = nepho.core.config.ConfigManager(self.config)
         self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
         
-                
+    @controller.expose(help='Show the context for a stack from a blueprint and configs', aliases=['show-context'])
+    def show_context(self):
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+            print dedent("""\
+                Usage: nepho stack show-context <cloudlet> <blueprint> [--save] [--params Key1=Val1]
+
+                -s, --save
+                  Save command-line (and/or interactive) parameters to an overrides file for
+                  use in all future invocations of this command.
+
+                -p, --params
+                  Override any parameter from the blueprint template. This option can be passed
+                  multiple key=value pairs, and can be called multiple times. If a required
+                  parameter is not passed as a command-line option, nepho will interactively
+                  prompt for it.
+
+                Examples:
+                  nepho stack show-context my-app development --params AwsAvailZone1=us-east-1a
+                  nepho stack show-context my-app development -s -p Foo=True -p Bar=False""")
+            exit(1)
+        
+        bprint = self.load_blueprint()
+        providr = self.create_provider(bprint)
+        providr.load_pattern(bprint)
+        pattern = providr.get_pattern()
+      
+        resourceManager = resource.ResourceManager(self.nepho_config)
+        contextManager = context.ContextManager(self.nepho_config)
+        contextManager.set_blueprint(bprint)
+        
+        ctxt = contextManager.generate()
+        
+        #Use JSON lib to pretty print a sorted version of this ...
+        print json.dumps(json.loads(json.dumps(ctxt), object_pairs_hook=collections.OrderedDict), indent=2, separators=(',', ': '))
+
+        
+
+    @controller.expose(help='Show the template output for a stack from a blueprint', aliases=['show-template'])
+    def show_template(self):
+        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+            print dedent("""\
+                Usage: nepho stack show-template <cloudlet> <blueprint> [--save] [--params Key1=Val1]
+
+                -s, --save
+                  Save command-line (and/or interactive) parameters to an overrides file for
+                  use in all future invocations of this command.
+
+                -p, --params
+                  Override any parameter from the blueprint template. This option can be passed
+                  multiple key=value pairs, and can be called multiple times. If a required
+                  parameter is not passed as a command-line option, nepho will interactively
+                  prompt for it.
+
+                Examples:
+                  nepho stack show-template my-app development --params AwsAvailZone1=us-east-1a
+                  nepho stack show-template my-app development -s -p Foo=True -p Bar=False""")
+            exit(1)
+        
+        bprint = self.load_blueprint()
+        providr = self.create_provider(bprint)
+        providr.load_pattern(bprint)
+        pattern = providr.get_pattern()
+      
+        resourceManager = resource.ResourceManager(self.nepho_config)
+        contextManager = context.ContextManager(self.nepho_config)
+        contextManager.set_blueprint(bprint)
+        
+        template_string = resourceManager.render_template(pattern, contextManager.generate())
+        
+        print template_string
+        
+        
+                        
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy'])
     def create(self):
         if self.pargs.cloudlet is None or self.pargs.blueprint is None:

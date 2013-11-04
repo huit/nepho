@@ -37,6 +37,7 @@ class Cloudlet:
         # include metadata into the definition dictionary        
         self.defn['name'] = self.name
         self.defn['url'] = self.url
+        self.defn['path'] = self.path
         
     def serialize(self):
         """Returns the cloudlets data definition as a JSON string."""
