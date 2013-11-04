@@ -33,6 +33,8 @@ class ResourceManager:
         pattern_name = pattern_string           
         if ">" in pattern_string:
             (cloudlet_name, pattern_name) = pattern_string.split(">")
+            cloudlet_name = cloudlet_name.strip()
+            pattern_name = pattern_name.strip()
             cloudlt = cloudlet.CloudletManager(self.config).find(cloudlet_name)
 
         pattern_dir = path.join(cloudlt.path, "resources", "patterns", pattern_name)
@@ -48,7 +50,6 @@ class ResourceManager:
     def render_template(self, pattern):
         """ convert a template file into a rendered string."""
         providr = pattern.provider
-        
         
         template_file_abs = pattern.get_template_file()
         template_dir = path.dirname(template_file_abs)
