@@ -26,11 +26,11 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         """Creates the desired Vagrantfile in CWD, by rendering a tempalte + context."""
 
         context = self.contextManager.generate()
-        template_string = self.resourceManager.render_template(self.pattern, context)  
+        Vagrantfile_content = self.resourceManager.render_template(self.pattern, context)  
         try:
             vfile = open("Vagrantfile", "w")
             vfile.write(NEPHO_VAGRANT_BOILER_PLATE)
-            vfile.write(template_string)
+            vfile.write(Vagrantfile_content)
             vfile.close()
         except IOError:
             print "Error writing out a Vagrantfile in the current directory."
