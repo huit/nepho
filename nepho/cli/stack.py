@@ -2,6 +2,7 @@
 # coding: utf-8
 import argparse
 import json
+import yaml
 import collections
 from termcolor import colored
 from textwrap import TextWrapper, dedent
@@ -67,7 +68,10 @@ class NephoStackController(base.NephoBaseController):
         ctxt = contextManager.generate()
         
         #Use JSON lib to pretty print a sorted version of this ...
-        print json.dumps(json.loads(json.dumps(ctxt), object_pairs_hook=collections.OrderedDict), indent=2, separators=(',', ': '))
+        print colored("Context:", "yellow")
+        print colored("-" * 80, "yellow")
+        print yaml.dump(ctxt)
+#        print json.dumps(json.loads(json.dumps(ctxt), object_pairs_hook=collections.OrderedDict), indent=2, separators=(',', ': '))
 
         
 
@@ -103,7 +107,8 @@ class NephoStackController(base.NephoBaseController):
         
         template_string = resourceManager.render_template(pattern, contextManager.generate())
         
-        print template_string
+        #providr.validate_template(template_string)       
+        print providr.format_template(template_string)
         
         
                         
@@ -133,7 +138,6 @@ class NephoStackController(base.NephoBaseController):
 
         providr.deploy()
         
-        print "Partially implemented action. (input: %s)" % self.pargs.params
 
     @controller.expose(help='Check on the status of a stack.')
     def status(self):
@@ -146,11 +150,15 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
+        # Ready a provider object that knows about our request
         bprint = self.load_blueprint()       # helper method knows about command line args ...
         providr = self.create_provider(bprint)
         
         status = providr.status()
         
+        #
+        # Report system status
+        # 
         header_string = "%s/%s" % (self.pargs.cloudlet, self.pargs.blueprint)
         print colored(header_string, "yellow")
         print colored( "-" * len(header_string), "yellow")
@@ -223,8 +231,6 @@ class NephoStackController(base.NephoBaseController):
         providr = provider.ProviderFactory(provider_name, self.config)
         providr.pattern(bprint.pattern())
         
-        # Do it.
-        #provider.deploy()
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
     
