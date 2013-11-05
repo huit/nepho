@@ -43,26 +43,31 @@ class NephoCloudletController(base.NephoBaseController):
         
         dir = ""
         items = list()
-        for cloudlt in cloudlets: #sorted(all_cloudlets):
-            # Print directory if it changes
-            cloudlet_path = cloudlt.get_path()
-            if dir != path.dirname(cloudlet_path):
-                dir = path.dirname(cloudlet_path)
-                print colored(dir, "cyan")
-            name = path.basename(cloudlet_path)
 
-            # If there are multiple versions of a cloudlet with the same name,
-            # subsequent versions will be ignored by other commands
-            if name not in items:
-                try:
-                    y = cloudlt.defn
-                except:
-                    print colored("└──", "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
+        try:
+            for cloudlt in cloudlets: #sorted(all_cloudlets):
+                # Print directory if it changes
+                cloudlet_path = cloudlt.get_path()
+                if dir != path.dirname(cloudlet_path):
+                    dir = path.dirname(cloudlet_path)
+                    print colored(dir, "cyan")
+                name = path.basename(cloudlet_path)
+
+                # If there are multiple versions of a cloudlet with the same name,
+                # subsequent versions will be ignored by other commands
+                if name not in items:
+                    try:
+                        y = cloudlt.defn
+                    except:
+                        print colored("└──", "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
+                    else:
+                        print colored("└──", "yellow"), name, "(", colored("v%s", "blue") % (y['version']), ")"
+                    items.append(name)
                 else:
-                    print colored("└──", "yellow"), name, "(", colored("v%s", "blue") % (y['version']), ")"
-                items.append(name)
-            else:
-                print colored("└──", "yellow"), name, "(", colored("error", "red"), "- duplicate cloudlet will be ignored )"
+                    print colored("└──", "yellow"), name, "(", colored("error", "red"), "- duplicate cloudlet will be ignored )"
+        except TypeError:
+            print colored("└──", "yellow"), colored("No cloudlets installed.", "blue")
+
         return
     
         #cloudlet.list_all_cloudlets(self)
