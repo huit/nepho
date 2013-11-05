@@ -103,7 +103,6 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         main_args.append("--template-body")
         main_args.append( template_json )
         
-        print main_args
         self.clidriver.main(main_args)
         
  
@@ -119,7 +118,8 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                ]
         self.clidriver.main(main_args)
            
-    def undeploy(self):
+    def destroy(self):
+        
         
         context = self.contextManager.generate()
         stack_name = create_stack_name(context)
@@ -129,30 +129,13 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                'delete-stack',
                '--stack-name', stack_name
                ]
-        self.clidriver.main(main_args)
         
- 
+        try:
+            self.clidriver.main(main_args)
+        except Exception:
+            print "Failed to delete stack"  # TODO move to CLI related code
+        print "Successfully deleted stack."
         
-#
-# Methods pulled from old code, to be integrated.        
-#
-    
-#     def get_cf_template(pattern, context):
-#     
-#         cf_dir = resource_filename('nepho.aws', 'data/patterns/%s') % (pattern)
-#         cf_filename='template.cf'
-#         cf_file = '%s/%s' % (cf_dir, cf_filename)
-#         #paramsMap['template_file'] = cf_file
-#     
-#         # Use Jinja2
-#         template_dirs = [cf_dir, resource_filename('nepho.aws', 'data/patterns/common')]
-#         jinjaFSloader = FileSystemLoader(template_dirs)
-#         env = Environment(loader=jinjaFSloader)
-#         jinja_template = env.get_template(cf_filename)
-#     
-#         # Render it
-#         return jinja_template.render(context)
-
 
 def create_stack_name(context):
     return "%s-%s" % (context['cloudlet']['name'], context['blueprint']['name'] )
