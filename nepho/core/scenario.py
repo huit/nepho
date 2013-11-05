@@ -44,6 +44,7 @@ class Scenario:
         """Return a generated template file for this blueprint and these params & configs."""
 
         template_string = self.resourceManager.render_template(self)
+        providr = self.get_provider()
         return providr.format_template(template_string)
 
     def get_pattern(self):
