@@ -245,7 +245,7 @@ class CloudletManager:
                 return yaml.load(yaml_file)
    
     def get_registry(self):
-        """Returns a dictionary woth registry values."""
+        """Returns a dictionary with registry values."""
         self.update_registry()
         cache_dir = self.config.get('cache_dir')
         registry_cache = path.join(cache_dir, "registry.yaml")

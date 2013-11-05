@@ -4,7 +4,13 @@ from nepho.core import common, pattern, resource, config, context, provider, pro
 from os import path
 
 class Scenario:
-    """A class that encapsulates a blueprint with an actual parameter and config environment."""
+    """
+    A class that encapsulates a blueprint with an actual parameter and config environment.
+    
+    The class is intended to be assembled, then handed off to other objects that
+      need access to the overall state of the request.
+      
+    """
     
     def __init__(self, config, bprint, params):
 
@@ -36,13 +42,7 @@ class Scenario:
     
     def get_template(self):
         """Return a generated template file for this blueprint and these params & configs."""
-        
-        providr = self.get_provider()
-        pattern = self.get_pattern()
-        ctx = self.get_context()
-        print pattern
-        print ctx
-        
+
         template_string = self.resourceManager.render_template(self)
         return providr.format_template(template_string)
 
