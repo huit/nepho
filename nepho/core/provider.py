@@ -28,7 +28,11 @@ class AbstractProvider:
         self.contextManager.set_blueprint(self.blueprint)
         
         return self.pattern
-                
+              
+    def set_params(self, params):
+        """Set param dictionary of any transient parameters, like those set on the command line."""
+        self.contextManager.add_params(params)
+           
     def get_pattern(self):
         return self.pattern
         

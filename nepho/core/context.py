@@ -15,22 +15,32 @@ class ContextManager:
 
         self.configManager = cfgMgr
         self.blueprint = None
-        self.provider = None
+#        self.provider = None
+        self.transient_params = dict()
             
 
     def set_blueprint(self, bprint):
         self.blueprint = bprint
         
-    def set_provider(self,providr):
-        self.provider = providr
+#    def set_provider(self,providr):
+#        self.provider = providr
+        
+    def add_params(self, params):
+        self.transient_params = params
         
     def generate(self):
         """Generates a context object to be injected into the templating engine."""
         
         context = dict()
         config = self.configManager.to_dict()
+            
+        # construct the parameters data structure    
+        context['parameters'] = dict()            
         if "parameters" in config:
             context['parameters'] = copy.copy(config['parameters'])
+        if self.transient_params is not None:
+            for (k,v) in self.transient_params.items():
+                 context['parameters'][k] = v         
                     
         context['config'] = config
         

@@ -15,8 +15,6 @@ from nepho.cli import base
 from nepho.core import common, cloudlet, stack, provider, provider_factory, resource, context
 
 
- 
-
 class NephoStackController(base.NephoBaseController):
     class Meta:
         label = 'stack'
@@ -56,6 +54,8 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack show-context my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
         
+        params = self.parse_params()
+          
         bprint = self.load_blueprint()
         providr = self.create_provider(bprint)
         providr.load_pattern(bprint)
@@ -64,6 +64,7 @@ class NephoStackController(base.NephoBaseController):
         resourceManager = resource.ResourceManager(self.nepho_config)
         contextManager = context.ContextManager(self.nepho_config)
         contextManager.set_blueprint(bprint)
+        contextManager.add_params(params)
         
         ctxt = contextManager.generate()
         
@@ -95,15 +96,19 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack show-template my-app development --params AwsAvailZone1=us-east-1a
                   nepho stack show-template my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
-        
+
+        params = self.parse_params()
+                
         bprint = self.load_blueprint()
         providr = self.create_provider(bprint)
+        provider.set_params(params)
         providr.load_pattern(bprint)
         pattern = providr.get_pattern()
       
         resourceManager = resource.ResourceManager(self.nepho_config)
         contextManager = context.ContextManager(self.nepho_config)
         contextManager.set_blueprint(bprint)
+        contextManager.add_params(params)
         
         template_string = resourceManager.render_template(pattern, contextManager.generate())
         
@@ -132,9 +137,12 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack create my-app development --params AwsAvailZone1=us-east-1a
                   nepho stack create my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
-        
+
+        params = self.parse_params()      
+          
         bprint = self.load_blueprint()
         providr = self.create_provider(bprint)
+        providr.set_params(params)
 
         providr.deploy()
         
@@ -150,9 +158,12 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
+        params = self.parse_params()
+                
         # Ready a provider object that knows about our request
         bprint = self.load_blueprint()       # helper method knows about command line args ...
         providr = self.create_provider(bprint)
+        provider.set_params(params)
         
         status = providr.status()
         
@@ -181,8 +192,10 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
+        params = self.parse_params()
         bprint = self.load_blueprint() 
         providr = self.create_provider(bprint)
+        provider.set_params(params)
 
         providr.access()
         
@@ -197,6 +210,7 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
+        params = self.parse_params()
         bprint = self.load_blueprint() 
         providr = self.create_provider(bprint)
         
@@ -233,7 +247,17 @@ class NephoStackController(base.NephoBaseController):
         
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
-    
+
+    def parse_params(self):
+        """Helper method to extract params from command line into a dict."""
+        params=dict()
+        if self.pargs.params is not None:
+            paramList = self.pargs.params
+            for item in paramList[0]:
+                (k,v) = item.split("=")
+                params[k]=v
+        return params
+        
     def load_blueprint(self):
         """Helper method to load blueprint & pattern from args."""
         try:
