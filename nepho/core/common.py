@@ -1,19 +1,25 @@
 import glob
 from os import path
 
-# Merge two dicts, user and system, recursively, with user taking precedence
+
 def merge(user, system):
+    """
+    Merge two dicts, user and system, recursively, with user taking precedence.
+    """
     if isinstance(user, dict) and isinstance(system, dict):
-        for k,v in system.iteritems():
+        for k, v in system.iteritems():
             if k not in user:
                 user[k] = v
             else:
-                user[k] = merge(user[k],v)
+                user[k] = merge(user[k], v)
     return user
 
-# Return the item selected by the user, or, optionally, "all".  If there is only
-# one list item, return it without prompting.
+
 def select_list(self, items_list=[], all=False, desc="Select an item:"):
+    """
+    Return the item selected by the user, or, optionally, "all".  If there is
+    only one list item, return it without prompting.
+    """
     if items_list == []:
         return
     elif len(items_list) == 1:
@@ -43,7 +49,8 @@ def select_list(self, items_list=[], all=False, desc="Select an item:"):
         else:
             print "Invalid selection, please select a number from the list."
             exit(1)
-            
+
+
 def all_cloudlets(self):
     dirs = self.config.get('nepho', 'cloudlet_dirs')
 
@@ -78,6 +85,3 @@ def find_blueprint(self, cloudlet, name):
     blueprint_paths = all_blueprints(self, cloudlet)
     paths = [path for path in blueprint_paths if name in path]
     return paths[0]
-
-
-
