@@ -1,7 +1,49 @@
 import glob
 from os import path
 
+# Merge two dicts, user and system, recursively, with user taking precedence
+def merge(user, system):
+    if isinstance(user, dict) and isinstance(system, dict):
+        for k,v in system.iteritems():
+            if k not in user:
+                user[k] = v
+            else:
+                user[k] = merge(user[k],v)
+    return user
 
+# Return the item selected by the user, or, optionally, "all".  If there is only
+# one list item, return it without prompting.
+def select_list(self, items_list=[], all=False, desc="Select an item:"):
+    if items_list == []:
+        return
+    elif len(items_list) == 1:
+        return items_list[0]
+    else:
+        item_incr = 0
+        print ""
+        for one_item in items_list:
+            item_incr += 1
+            print "  %d) %s" % (item_incr, one_item.strip())
+        if all is True:
+            print "  0) All"
+        user_item = int()
+        try:
+            user_item = input("\n%s [1]: " % (desc))
+        except NameError:
+            # User did not input a number
+            user_item = -1
+        except SyntaxError:
+            # User accepted default
+            user_item = 1
+
+        if user_item == 0 and all is True:
+            return items_list
+        elif user_item <= item_incr and user_item > 0:
+            return items_list[user_item - 1]
+        else:
+            print "Invalid selection, please select a number from the list."
+            exit(1)
+            
 def all_cloudlets(self):
     dirs = self.config.get('nepho', 'cloudlet_dirs')
 
@@ -38,35 +80,4 @@ def find_blueprint(self, cloudlet, name):
     return paths[0]
 
 
-# Return the item selected by the user, or, optionally, "all".  If there is only
-# one list item, return it without prompting.
-def select_list(self, items_list=[], all=False, desc="Select an item:"):
-    if items_list == []:
-        return
-    elif len(items_list) == 1:
-        return items_list[0]
-    else:
-        item_incr = 0
-        print ""
-        for one_item in items_list:
-            item_incr += 1
-            print "  %d) %s" % (item_incr, one_item.strip())
-        if all is True:
-            print "  0) All"
-        user_item = int()
-        try:
-            user_item = input("\n%s [1]: " % (desc))
-        except NameError:
-            # User did not input a number
-            user_item = -1
-        except SyntaxError:
-            # User accepted default
-            user_item = 1
 
-        if user_item == 0 and all is True:
-            return items_list
-        elif user_item <= item_incr and user_item > 0:
-            return items_list[user_item - 1]
-        else:
-            print "Invalid selection, please select a number from the list."
-            exit(1)

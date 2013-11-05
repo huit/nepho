@@ -1,6 +1,6 @@
 # coding: utf-8
 import yaml
-#from nepho.core import common
+from nepho.core import common
 from os import path
 
 class ConfigManager:
@@ -18,11 +18,20 @@ class ConfigManager:
 
         self.data = dict()
         
+        # Load and copy defaults from the ini_config 
+        #  then override with saved values from local_config
+       
         self.ini_config = ini_config
         local_config = self.ini_config.get('nepho', 'local_config')
-        self.load(local_config)
+        system_data = dict()
+
         for (k,v) in self.ini_config.items('nepho'):
-            self.data[k] = v         
+            system_data[k] = v   
+   
+        self.load(local_config)
+        self.data = common.merge(self.data, system_data)
+
+        
         self.save()     
 
         
@@ -78,7 +87,7 @@ class ConfigManager:
     def load(self, config_file):
         """Load in configs from local settings YAML file."""
         try:
-            self.data = yaml.load(open(config_file))
+            self.data = yaml.load(open(config_file))           
         except Exception as e:
             pass
     

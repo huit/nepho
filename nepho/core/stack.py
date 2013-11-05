@@ -1,12 +1,4 @@
-# Merge two dicts, user and system, recursively, with user taking precedence
-def merge(user, system):
-    if isinstance(user, dict) and isinstance(system, dict):
-        for k,v in system.iteritems():
-            if k not in user:
-                user[k] = v
-            else:
-                user[k] = merge(user[k],v)
-    return user
+
 
 # Take multiple directory paths for the same blueprint, find and read/validate
 # each YAML file, and merge them, with later paths taking precedence. Return
