@@ -127,9 +127,9 @@ class NephoCloudletController(base.NephoBaseController):
             exit(1)
 
         name = self.pargs.string[0]
-        #registry = cloudlet.cloudlet_registry(self)
+        registry = self.cloudletManager.get_registry()
 
-        if name in self.cloudletManager.get_registry():
+        if name in registry:
             url = registry[name]['source']
         else:
             if self.pargs.location is None:
@@ -138,20 +138,15 @@ class NephoCloudletController(base.NephoBaseController):
             else:
                 url = self.pargs.location
 
-        
         cloudlet_dirs = self.cloudletManager.all_cloudlet_dirs()
         selected_dir = common.select_list(self, cloudlet_dirs, False, "Select an install location:")
 
-        cloudlt = self.cloudletManager.new(name, selected_dir, url)
-#        cloudlt.clone(url)
-        
-#        cloudlet_dirs = self.config.get('nepho', 'cloudlet_dirs')
-#        selected_dir = common.select_list(self, cloudlet_dirs, False, "Select an install location:")
+        try:
+            cloudlt = self.cloudletManager.new(name, selected_dir, url)
+        except:
+            print colored("└──", "yellow"), name, "(", colored("error", "red"), "- install failed )"
 
-#        repo_path = path.join(selected_dir, name)
-
-        # The clone_cloudlet method will validate the location URL
-#        cloudlet.clone_cloudlet(self, url, repo_path)
+        return
 
     @controller.expose(help="Upgrade an installed Nepho cloudlet", aliases=["upgrade"])
     def update(self):
