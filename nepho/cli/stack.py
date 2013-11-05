@@ -12,7 +12,7 @@ from cement.core import controller
 
 import nepho.core.config
 from nepho.cli import base
-from nepho.core import common, cloudlet, stack, provider, provider_factory, resource, context
+from nepho.core import common, cloudlet, stack, provider, provider_factory, resource, context, scenario
 
 
 class NephoStackController(base.NephoBaseController):
@@ -54,19 +54,9 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack show-context my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
         
-        params = self.parse_params()
-          
-        bprint = self.load_blueprint()
-        providr = self.create_provider(bprint)
-        providr.load_pattern(bprint)
-        pattern = providr.get_pattern()
-      
-        resourceManager = resource.ResourceManager(self.nepho_config)
-        contextManager = context.ContextManager(self.nepho_config)
-        contextManager.set_blueprint(bprint)
-        contextManager.add_params(params)
-        
-        ctxt = contextManager.generate()
+        scene = self._assemble_scenario()
+        ctxt = scene.get_context()
+
         
         #Use JSON lib to pretty print a sorted version of this ...
         print colored("Context:", "yellow")
@@ -97,25 +87,9 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack show-template my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
 
-        params = self.parse_params()
-                
-        bprint = self.load_blueprint()
-        providr = self.create_provider(bprint)
-        provider.set_params(params)
-        providr.load_pattern(bprint)
-        pattern = providr.get_pattern()
-      
-        resourceManager = resource.ResourceManager(self.nepho_config)
-        contextManager = context.ContextManager(self.nepho_config)
-        contextManager.set_blueprint(bprint)
-        contextManager.add_params(params)
-        
-        template_string = resourceManager.render_template(pattern, contextManager.generate())
-        
-        #providr.validate_template(template_string)       
-        print providr.format_template(template_string)
-        
-        
+        scene = self._assemble_scenario()       
+        print scene.get_template()
+
                         
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy'])
     def create(self):
@@ -138,13 +112,8 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack create my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
 
-        params = self.parse_params()      
-          
-        bprint = self.load_blueprint()
-        providr = self.create_provider(bprint)
-        providr.set_params(params)
-
-        providr.deploy()
+        scene = self._assemble_scenario()
+        scene.get_provider().deploy()
         
 
     @controller.expose(help='Check on the status of a stack.')
@@ -157,15 +126,12 @@ class NephoStackController(base.NephoBaseController):
                   nepho stack status my-app development 
                 """)
             exit(1)
+ 
+        scene = self._assemble_scenario()
         
-        params = self.parse_params()
-                
-        # Ready a provider object that knows about our request
-        bprint = self.load_blueprint()       # helper method knows about command line args ...
-        providr = self.create_provider(bprint)
-        provider.set_params(params)
-        
-        status = providr.status()
+        status = scene.get_provider().status()
+        print status
+        exit(0)
         
         #
         # Report system status
@@ -192,12 +158,9 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
-        params = self.parse_params()
-        bprint = self.load_blueprint() 
-        providr = self.create_provider(bprint)
-        provider.set_params(params)
+        scene = self._assemble_scenario()
 
-        providr.access()
+        scene.get_provider().access()
         
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
     def destroy(self):
@@ -210,11 +173,9 @@ class NephoStackController(base.NephoBaseController):
                 """)
             exit(1)
         
-        params = self.parse_params()
-        bprint = self.load_blueprint() 
-        providr = self.create_provider(bprint)
+        scene = self._assemble_scenario()
         
-        providr.destroy()
+        scene.get_provider().destroy()
         
          
     @controller.expose(help='List deployed stacks')
@@ -248,7 +209,7 @@ class NephoStackController(base.NephoBaseController):
         
         print "Partially implemented action. (input: %s)" % self.pargs.params
 
-    def parse_params(self):
+    def _parse_params(self):
         """Helper method to extract params from command line into a dict."""
         params=dict()
         if self.pargs.params is not None:
@@ -258,7 +219,7 @@ class NephoStackController(base.NephoBaseController):
                 params[k]=v
         return params
         
-    def load_blueprint(self):
+    def _load_blueprint(self):
         """Helper method to load blueprint & pattern from args."""
         try:
             cloudlt = self.cloudletManager.find(self.pargs.cloudlet) 
@@ -275,13 +236,14 @@ class NephoStackController(base.NephoBaseController):
                 
         return bprint
     
-    def create_provider(self, bprint):     
-        """Helper method to create a suitable provider given a blueprint."""
-        # Create an appropriate provider, and set the target pattern.
-        provider_name = bprint.provider_name()
-        providr = provider_factory.ProviderFactory().create(provider_name, self.nepho_config)
-        providr.load_pattern(bprint)
+    def _assemble_scenario(self):     
+        """Helper method to create a suitable scenario from the command line options."""
+
+        params = self._parse_params()               
+        bprint = self._load_blueprint()        
+        scene = scenario.Scenario(self.nepho_config, bprint, params)
         
-        return providr
+        return scene
+
         
         

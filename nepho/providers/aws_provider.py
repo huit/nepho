@@ -4,11 +4,9 @@ from os import path
 import yaml
 import json
 import collections
-#from nepho.core import common, resource, pattern
 
 import botocore.session
 import botocore.hooks
-#import botocore.xform_name
 from botocore.hooks import first_non_none_response
 from botocore.hooks import HierarchicalEmitter
 
@@ -17,32 +15,17 @@ from botocore.compat import copy_kwargs, OrderedDict
 import awscli
 import awscli.clidriver
 import awscli.plugin
-#import awscli.argparser
-#from awscli import clidriver
-
-#import awscli.clidriver
-#from awscli import EnvironmentVariables, __version__
-# from awscli.formatter import get_formatter
-# from awscli.paramfile import get_paramfile
-# from awscli.plugin import load_plugins
-# from awscli.argparser import MainArgParser
-# from awscli.argparser import ServiceArgParser
-# from awscli.argparser import OperationArgParser
-# from awscli import clidriver
-
-#import awscli.clidriver
 
 import nepho
-
         
 class AWSProvider(nepho.core.provider.AbstractProvider):   
-    """An infrastructure provider class for Vagrant"""
+    """An infrastructure provider class for AWS CloudFormation"""
 
     PROVIDER_ID = "aws"
     TEMPLATE_FILENAME = "cf.json"
     
-    def __init__(self, config):
-        nepho.core.provider.AbstractProvider.__init__(self,config)    
+    def __init__(self, config, scenario=None):
+        nepho.core.provider.AbstractProvider.__init__(self, config, scenario)    
         
         self.clidriver = self.setup_awscli_driver()
         
@@ -74,14 +57,15 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             
     def format_template(self, raw_template):
         """Pretty formats a CF template"""
+        
         cf_dict = parse_cf_json(raw_template)
         return get_cf_json(cf_dict, pretty=True)
         
     def deploy(self):
         """Deploy a given pattern."""
         
-        context = self.contextManager.generate()
-        raw_template = self.resourceManager.render_template(self.pattern, context)  
+        context = self.scenario.get_context()
+        raw_template = self.scenario.get_template()
         template_json = self.format_template(raw_template) 
               
         stack_name = create_stack_name(context)
@@ -107,20 +91,21 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         
  
     def status(self):
+        """Check on the status of a stack within CloudFormation."""
         
         context = self.contextManager.generate()
         stack_name = create_stack_name(context)
         
         main_args=[
                'cloudformation',
-               'status',
+               'describe-stacks',
                '--stack-name', stack_name
                ]
         self.clidriver.main(main_args)
            
     def destroy(self):
-        
-        
+        """Delete a CloudFormation stack."""
+               
         context = self.contextManager.generate()
         stack_name = create_stack_name(context)
         
@@ -131,7 +116,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                ]
         
         try:
-            self.clidriver.main(main_args)
+            return self.clidriver.main(main_args)
         except Exception:
             print "Failed to delete stack"  # TODO move to CLI related code
         print "Successfully deleted stack."

@@ -15,15 +15,11 @@ class ContextManager:
 
         self.configManager = cfgMgr
         self.blueprint = None
-#        self.provider = None
         self.transient_params = dict()
             
 
     def set_blueprint(self, bprint):
         self.blueprint = bprint
-        
-#    def set_provider(self,providr):
-#        self.provider = providr
         
     def add_params(self, params):
         self.transient_params = params
@@ -50,7 +46,7 @@ class ContextManager:
             context['blueprint'] = self.blueprint.defn
 
         #
-        # Temporary measure
+        # Temporary measure for backwards compat
         #
         context['scripts'] = None
 

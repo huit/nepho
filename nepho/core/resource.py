@@ -68,9 +68,13 @@ class ResourceManager:
 
         return pattern_file
     
-    def render_template(self, pattern, context):
+    def render_template(self, scenario):
         """Convert a template file into a rendered string."""
-        providr = pattern.provider
+
+        
+        providr = scenario.get_provider()
+        pattern = scenario.get_pattern()
+        context = scenario.get_context()
         
         template_file_abs = pattern.get_template_file()
         template_dir = path.dirname(template_file_abs)
