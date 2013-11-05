@@ -140,7 +140,7 @@ class Cloudlet:
         return self.path
 
 class CloudletManager:
-    """A class to manage cloudlets"""
+    """A class to create, lookup, and manage cloudlets"""
     
     def __init__(self, config = None):
         self.config = config

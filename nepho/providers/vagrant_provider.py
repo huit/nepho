@@ -25,8 +25,8 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     def initialize_vagrant(self):
         """Creates the desired Vagrantfile in CWD, by rendering a tempalte + context."""
 
-        context = self.contextManager.generate()
-        Vagrantfile_content = self.resourceManager.render_template(self.pattern, context)  
+        Vagrantfile_content = self.scenario.get_template()
+
         try:
             vfile = open("Vagrantfile", "w")
             vfile.write(NEPHO_VAGRANT_BOILER_PLATE)
@@ -42,9 +42,8 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         v = vagrant.Vagrant()
         try:
             v.up()      
-        except:
-            subprocess.CalledProcessError
-            print "Vagrant exited with non-zero code, but your VM is liekly running. Please use the status subcommand to check."
+        except subprocess.CalledProcessError:
+            print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."
             
     def status(self):
         v = vagrant.Vagrant()

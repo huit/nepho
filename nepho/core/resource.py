@@ -32,12 +32,12 @@ class ResourceManager:
         
            ./resources/patterns/[blueprint name]/
            
-        or in the common directory at
+        or in a common directory at
         
            ./resources/patterns/common/
            
         If given with a cloudlet referenence (i.e. cloudlet_name > pattern_name) it
-        looks up with the referenced coudlet dir
+        looks up with the referenced cloudlet dir
         
           [cloudlet_name]/resources/patterns/pattern_name   
 
@@ -68,20 +68,21 @@ class ResourceManager:
 
         return pattern_file
     
-    def render_template(self, pattern, context):
+    def render_template(self, scenario):
         """Convert a template file into a rendered string."""
-        providr = pattern.provider
+
+        
+        providr = scenario.get_provider()
+        pattern = scenario.get_pattern()
+        context = scenario.get_context()
         
         template_file_abs = pattern.get_template_file()
         template_dir = path.dirname(template_file_abs)
-        template_common_dir = path.join(template_dir, 
-                                         "..", "..", 
-                                         "common", providr.PROVIDER_ID )
+        template_common_dir = path.join(
+                template_dir, "..", "..", "common", providr.PROVIDER_ID )
         
         template_file = path.basename(template_file_abs)
         template_dirs = [template_dir, template_common_dir]
-
-
     
         # Use Jinja2
         jinjaFSloader = jinja2.FileSystemLoader(template_dirs)
