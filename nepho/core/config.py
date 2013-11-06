@@ -46,8 +46,15 @@ class ConfigManager:
     def get(self, key, domain=None):
         """Basic getter for config values."""
         if domain is not None:
-            return self.data[domain][key]
-        return self.data[key]
+            try:
+                return self.data[domain][key]
+            except KeyError:
+                return None
+        else:
+            try:
+                return self.data[key]
+            except KeyError:
+                return None
 
     def set(self, key, value, domain=None):
         """Basic setter for config values."""
@@ -64,9 +71,15 @@ class ConfigManager:
         """Basic setter for config values."""
         if domain is not None:
             if domain in self.data:
-                del self.data[domain][key]
+                try:
+                    del self.data[domain][key]
+                except KeyError:
+                    pass
         else:
-            del self.data[key]
+            try:
+                del self.data[key]
+            except KeyError:
+                pass
         self.save()
 
     def to_dict(self, domain=None):

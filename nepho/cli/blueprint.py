@@ -8,8 +8,9 @@ from pprint import pprint
 
 import nepho.core.config
 from cement.core import controller
-from nepho.cli import base
-from nepho.core import common, cloudlet, blueprint, resource, provider, provider_factory
+from nepho.cli import base, scope
+from nepho.core import cloudlet
+
 
 class NephoBlueprintController(base.NephoBaseController):
     class Meta:
@@ -18,15 +19,15 @@ class NephoBlueprintController(base.NephoBaseController):
         description = 'list and view individual cloudlet deployment blueprints'
         usage = "nepho blueprint <action> <cloudlet> [blueprint]"
         arguments = [
-            (['cloudlet'], dict(help=argparse.SUPPRESS, nargs='?')),
-            (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
+            (['cloudlet'], dict(help=argparse.SUPPRESS, default=None)),
+            (['blueprint'], dict(help=argparse.SUPPRESS, default=None)),
         ]
 
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
         self.nepho_config = nepho.core.config.ConfigManager(self.config)
         self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
-        
+
     @controller.expose(help='List all blueprints in a cloudlet')
     def list(self):
         if self.pargs.cloudlet is None:
@@ -34,14 +35,14 @@ class NephoBlueprintController(base.NephoBaseController):
             exit(1)
 
         try:
-            cloudlt = self.cloudletManager.find(self.pargs.cloudlet) 
+            cloudlt = self.cloudletManager.find(self.pargs.cloudlet)
             y = cloudlt.defn
         except IOError:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
             exit(1)
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
-                    
+
         blueprints = cloudlt.blueprints()
 
         # Prepare to wrap description text
@@ -55,33 +56,31 @@ class NephoBlueprintController(base.NephoBaseController):
             else:
                 print colored("    └──", "yellow"), colored(bp.name, attrs=['underline'])
                 print colored("        Error - missing or malformed cloudlet.yaml", "red")
-    
-        return
 
+        return
 
     @controller.expose(help='Describe a blueprint')
     def describe(self):
         if self.pargs.cloudlet is None or self.pargs.blueprint is None:
             print "Usage: nepho blueprint describe <cloudlet> <blueprint>"
             exit(1)
-        
+
         try:
-            cloudlt = self.cloudletManager.find(self.pargs.cloudlet) 
+            cloudlt = self.cloudletManager.find(self.pargs.cloudlet)
         except IOError:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
             exit(1)
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (cloudlt.defn['version']), ")"
-            
-        bprint = cloudlt.blueprint(self.pargs.blueprint)    
-        #bprint = BlueprintManager.retrieve(self.pargs.cloudlet, self.pargs.blueprint)
-        
-        #blueprint.describe_blueprint(self, self.pargs.cloudlet, self.pargs.blueprint)
 
+        bprint = cloudlt.blueprint(self.pargs.blueprint)
+        #bprint = BlueprintManager.retrieve(self.pargs.cloudlet, self.pargs.blueprint)
+
+        #blueprint.describe_blueprint(self, self.pargs.cloudlet, self.pargs.blueprint)
 
         #y = load_blueprint(self,cloudlet, name)
         y = bprint.defn
-        
+
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
 
         print "-" * 80
@@ -91,12 +90,10 @@ class NephoBlueprintController(base.NephoBaseController):
         print wrapper.fill("summary:      %s" % (y['summary']))
         print wrapper.fill("description:  %s" % (y['description']))
         print "-" * 80
-    
+
         p = y.pop('parameters', None)
-    
+
         pprint(p)
-    
+
         print "-" * 80
         return
-
-    
