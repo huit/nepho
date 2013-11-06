@@ -1,5 +1,6 @@
 # nepho
 ### Command line cross-cloud orchestration tool for constructing virtual datacenters
+[![Build Status](https://travis-ci.org/huit/nepho.png?branch=master)](https://travis-ci.org/huit/nepho)
 
 Nepho is a generic wrapper/CLI interface for spinning up complete working application stacks in virtual environments.  Nepho abstracts datacenter creation, instance configuration, and application deployment into portable "cloudlets" that can be shared between developers and teams.
 
