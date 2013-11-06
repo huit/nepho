@@ -39,3 +39,4 @@ Vagrantfile
 test.json
 .vagrant
 .settings
+.ruby-version
