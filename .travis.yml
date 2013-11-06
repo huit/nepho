@@ -1,7 +1,7 @@
 language: python
-notifications:
-  email:
-    - tfhartmann@gmail.com
+#notifications:
+#  email:
+#    - tfhartmann@gmail.com
 python:
   - "2.7"
 # command to install dependencies
