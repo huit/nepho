@@ -35,17 +35,17 @@ class NephoCloudletController(base.NephoBaseController):
         super(NephoCloudletController, self)._setup(app)
         self.nepho_config = nepho.core.config.ConfigManager(self.config)
         self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
-        
+
     @controller.expose(help="List all installed cloudlets")
     def list(self):
-        
+
         cloudlets = self.cloudletManager.list()
-        
+
         dir = ""
         items = list()
 
         try:
-            for cloudlt in cloudlets: #sorted(all_cloudlets):
+            for cloudlt in cloudlets:  # sorted(all_cloudlets):
                 # Print directory if it changes
                 cloudlet_path = cloudlt.get_path()
                 if dir != path.dirname(cloudlet_path):
@@ -69,17 +69,17 @@ class NephoCloudletController(base.NephoBaseController):
             print colored("└──", "yellow"), colored("No cloudlets installed.", "blue")
 
         return
-    
+
         #cloudlet.list_all_cloudlets(self)
 
     @controller.expose(help="Describe an installed cloudlet")
     def describe(self):
-        
+
         cloudlt = self.cloudletManager.find(self.pargs.string[0])
-        
+
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
         y = cloudlt.defn
-        
+
         print "-" * 80
         print "Name:         %s" % (y['name'])
         print "Version:      %s" % (y['version'])
@@ -96,19 +96,19 @@ class NephoCloudletController(base.NephoBaseController):
         # options, and experimented with throwing the registry into a local
         # sqlite database, but it seemed like overkill. Really this should be
         # calling a web service.
-        
+
         targetString = self.pargs.string[0]
         registry = self.cloudletManager.get_registry()
-        
+
         matchList = list()
         for cloudletRepo in registry.keys():
-            flattenedText =  "%s: %s" % (cloudletRepo, registry[cloudletRepo])
+            flattenedText = "%s: %s" % (cloudletRepo, registry[cloudletRepo])
             if targetString in flattenedText:
                 matchList.append(cloudletRepo)
-        
+
         if len(matchList) == 0:
             print "No matches found."
-        else:                
+        else:
             for cloudletRepo in matchList:
                 cloudletDict = registry[cloudletRepo]
 
@@ -120,11 +120,10 @@ class NephoCloudletController(base.NephoBaseController):
                 print "License:      %s" % (cloudletDict['license'])
                 print wrapper.fill("Summary:      %s" % (cloudletDict['summary']))
                 print wrapper.fill("Description:  %s" % (cloudletDict['description']))
-                print "-" * 80 
-        
+                print "-" * 80
+
         #print "Unimplemented action. (input: %s)" % self.pargs.string
 
-    
     @controller.expose(help="Install a Nepho cloudlet from the Nepho Cloudlet Registry or from an external Git repository")
     def install(self):
         if self.pargs.string == []:
@@ -155,12 +154,12 @@ class NephoCloudletController(base.NephoBaseController):
 
     @controller.expose(help="Upgrade an installed Nepho cloudlet", aliases=["upgrade"])
     def update(self):
-        
+
         cloudlts = self.cloudletManager.find(self.pargs.string[0])
         if cloudlts is None:
             print "Cloudlet is not installed."
             exit(1)
-        
+
         if not isinstance(cloudlts, list):
             cloudlts = [cloudlts]
         for cloudlt in cloudlts:
@@ -170,7 +169,7 @@ class NephoCloudletController(base.NephoBaseController):
     def uninstall(self):
         name = self.pargs.string[0]
         cloudlt = self.cloudletManager.find(name)
-        
+
         if cloudlt is None:
             print "No cloudlet named %s was found.\n" % (name)
             exit(1)
@@ -185,21 +184,20 @@ class NephoCloudletController(base.NephoBaseController):
         cloudlt.uninstall()
 
     @controller.expose(help="Update the local cloudlet registry.", aliases=["registry-update", "update-registry"])
-    def registry_update(self):      
+    def registry_update(self):
         self.cloudletManager.clear_registry()
         self.cloudletManager.update_registry()
 
-        
     def update_registry(self):
         cloudlts = self.cloudletManager.find(self.pargs.string[0])
         if cloudlts is None:
             print "Cloudlet is not installed."
             exit(1)
-        
+
         if not isinstance(cloudlts, list):
             cloudlts = [cloudlts]
         for cloudlt in cloudlts:
-            cloudlt.update()        
+            cloudlt.update()
 #        try:
 #            name = self.pargs.string[0]
 #            possible_paths = common.find_cloudlet(self, name, True)
