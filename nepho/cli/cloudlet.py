@@ -103,7 +103,7 @@ class NephoCloudletController(base.NephoBaseController):
         matchList = list()
         for cloudletRepo in registry.keys():
             flattenedText = "%s: %s" % (cloudletRepo, registry[cloudletRepo])
-            if ( targetString == '' ) or ( targetString in flattenedText ):
+            if (targetString == '') or (targetString in flattenedText):
                 matchList.append(cloudletRepo)
 
         if len(matchList) == 0:
