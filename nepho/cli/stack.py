@@ -216,7 +216,6 @@ class NephoStackController(base.NephoBaseController):
         """Helper method to load blueprint & pattern from args."""
         try:
             cloudlt = self.cloudletManager.find(self.pargs.cloudlet)
-            y = cloudlt.defn
         except Exception:
             print colored("Error loading cloudlet %s" % (self.pargs.cloudlet), "red")
             exit(1)

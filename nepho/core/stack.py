@@ -1,9 +1,14 @@
+import yaml
+from os import basename, join, isfile
+from nepho.common import merge
 
 
-# Take multiple directory paths for the same blueprint, find and read/validate
-# each YAML file, and merge them, with later paths taking precedence. Return
-# result as a dict.
 def load_and_merge_blueprint(paths):
+    """
+    Take multiple directory paths for the same blueprint, find and read/validate
+    each YAML file, and merge them, with later paths taking precedence. Return
+    result as a dict.
+    """
     blueprint = None
     for p in paths:
         blueprint_key = basename(p)
@@ -17,7 +22,7 @@ def load_and_merge_blueprint(paths):
                 print "Error loading or parsing deployment blueprint file \"%s\"" % (blueprint_file)
                 print e
                 exit(1)
-            if blueprint != None:
+            if blueprint is not None:
                 blueprint = merge(blueprint_yaml, blueprint)
             else:
                 blueprint = blueprint_yaml

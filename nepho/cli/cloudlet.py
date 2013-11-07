@@ -146,7 +146,7 @@ class NephoCloudletController(base.NephoBaseController):
         selected_dir = common.select_list(self, cloudlet_dirs, False, "Select an install location:")
 
         try:
-            cloudlt = self.cloudletManager.new(name, selected_dir, url)
+            self.cloudletManager.new(name, selected_dir, url)
         except:
             print colored("└──", "yellow"), name, "(", colored("error", "red"), "- install failed )"
 
