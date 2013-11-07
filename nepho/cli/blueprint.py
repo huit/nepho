@@ -8,7 +8,7 @@ from pprint import pprint
 
 import nepho.core.config
 from cement.core import controller
-from nepho.cli import base, scope
+from nepho.cli import base
 from nepho.core import cloudlet
 
 
@@ -19,8 +19,8 @@ class NephoBlueprintController(base.NephoBaseController):
         description = 'list and view individual cloudlet deployment blueprints'
         usage = "nepho blueprint <action> <cloudlet> [blueprint]"
         arguments = [
-            (['cloudlet'], dict(help=argparse.SUPPRESS, default=None)),
-            (['blueprint'], dict(help=argparse.SUPPRESS, default=None)),
+            (['cloudlet'], dict(help=argparse.SUPPRESS,)),
+            (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
         ]
 
     def _setup(self, app):
