@@ -1,6 +1,6 @@
 import yaml
-from os import basename, join, isfile
-from nepho.common import merge
+from os.path import basename, join, isfile
+from nepho.core.common import merge
 
 
 def load_and_merge_blueprint(paths):
