@@ -97,19 +97,19 @@ class NephoCloudletController(base.NephoBaseController):
         # sqlite database, but it seemed like overkill. Really this should be
         # calling a web service.
 
-        targetString = self.pargs.string[0]
+        targetString = self.pargs.string[0] if len(self.pargs.string) > 0 else ''
         registry = self.cloudletManager.get_registry()
 
         matchList = list()
         for cloudletRepo in registry.keys():
             flattenedText = "%s: %s" % (cloudletRepo, registry[cloudletRepo])
-            if targetString in flattenedText:
+            if ( targetString == '' ) or ( targetString in flattenedText ):
                 matchList.append(cloudletRepo)
 
         if len(matchList) == 0:
             print "No matches found."
         else:
-            for cloudletRepo in matchList:
+            for cloudletRepo in sorted(matchList):
                 cloudletDict = registry[cloudletRepo]
 
                 wrapper = TextWrapper(width=80, subsequent_indent="              ")
