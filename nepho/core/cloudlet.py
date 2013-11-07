@@ -7,6 +7,7 @@ import re
 import yaml
 import requests
 import glob
+from termcolor import colored
 from shutil import rmtree, copyfileobj
 
 from git import Repo
@@ -75,7 +76,7 @@ class Cloudlet:
             validate = Repo.init(temp_repo, bare=True)
             validate.git.ls_remote(url, heads=True)
         except Exception as e:
-            print "Invalid or inaccessible remote repository URL."
+            print colored("Error: ", "red") + "Invalid or inaccessible remote repository URL.\n"
             print e
             exit(1)
         else:
