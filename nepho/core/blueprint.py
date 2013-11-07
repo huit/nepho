@@ -22,6 +22,7 @@ class Blueprint:
                 exit(1)     
         self.name =  path.basename(blueprint_file).replace(".yaml", "")
         self.defn['name'] = self.name
+        self.provider_name = self.defn['provider']
         self.validate()
 
     def validate(self):
@@ -46,12 +47,6 @@ class Blueprint:
         patternString = self.defn['pattern']
         pattrn = pattern.Pattern(patternString)
         return pattrn
-    
-    def provider_name(self):
-        """returns a provider pbjects that corresponds to the one indicated in the blueprint."""
-        providerString = self.defn['provider']
-        
-        return providerString
     
             
         

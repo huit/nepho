@@ -113,7 +113,7 @@ class NephoStackController(base.NephoBaseController):
             exit(1)
 
         scene = self._assemble_scenario()
-        scene.get_provider().deploy()
+        scene.provider.deploy()
         
 
     @controller.expose(help='Check on the status of a stack.')
@@ -129,7 +129,7 @@ class NephoStackController(base.NephoBaseController):
  
         scene = self._assemble_scenario()
         
-        status = scene.get_provider().status()
+        status = scene.provider.status()
         print status
         exit(0)
         
@@ -160,7 +160,7 @@ class NephoStackController(base.NephoBaseController):
         
         scene = self._assemble_scenario()
 
-        scene.get_provider().access()
+        scene.provider.access()
         
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
     def destroy(self):
@@ -175,7 +175,7 @@ class NephoStackController(base.NephoBaseController):
         
         scene = self._assemble_scenario()
         
-        scene.get_provider().destroy()
+        scene.provider.destroy()
         
          
     @controller.expose(help='List deployed stacks')
