@@ -48,10 +48,11 @@ from nepho.command import command
 
 LOG = logging.getLogger('nepho-dummy')
 
+
 def scan_deployments(deployment_dir=resource_filename('nepho', 'data/deployments')):
     from os import listdir
     from os.path import isfile, join
-    files = [ f for f in listdir(deployment_dir) if isfile(join(deployment_dir,f)) ]
+    files = [f for f in listdir(deployment_dir) if isfile(join(deployment_dir, f))]
 
     deployDict = dict()
     for filename in files:
@@ -62,6 +63,7 @@ def scan_deployments(deployment_dir=resource_filename('nepho', 'data/deployments
         deployDict[deployment_name] = fDict
 
     return deployDict
+
 
 def load_deployment_file(deployment, environment):
     """
@@ -91,6 +93,7 @@ def load_deployment_file(deployment, environment):
 
     return paramsMap
 
+
 def get_management_settings(map):
     " Returns dict as a context for the template for how to handle system management"
     management = None
@@ -104,15 +107,15 @@ def get_management_settings(map):
     pkgs = []
 
     if management == 'none':
-        pkgs = [ "httpd" ]
+        pkgs = ["httpd"]
 
     if management == 'script':
-       mgmt_script_file = '%s/%s' % (mgmt_script_dir, map.pop('script'))
-       pkgs= ['bash']
+        mgmt_script_file = '%s/%s' % (mgmt_script_dir, map.pop('script'))
+        pkgs = ['bash']
 
     if management == 'puppet':
         mgmt_script_file = '%s/%s' % (mgmt_script_dir, 'puppet-snippet.sh')
-        pkgs = ["gcc", "ruby","ruby-devel", "rubygems", "puppet" ]
+        pkgs = ["gcc", "ruby", "ruby-devel", "rubygems", "puppet"]
 
     # Load script into a array of lines
     if mgmt_script_file is not None:
@@ -128,13 +131,11 @@ def get_management_settings(map):
         map.pop('packages')
 
     mgmtMap = dict(
-                     management = management,
-                     script_array = mgmt_script_array,
-                     packages = pkgs
-                   )
-
+        management = management,
+        script_array = mgmt_script_array,
+        packages = pkgs
+    )
     return mgmtMap
-
 
 
 def main(args_json=None):
@@ -144,7 +145,7 @@ def main(args_json=None):
     # Read in command line options as JSON
     if args_json is None:
         args_json = command()
-    args=json.loads(args_json)
+    args = json.loads(args_json)
 
     # Very basic parsing to determine deployment and environment to use
     plugin_name = args['subcmd']
@@ -157,7 +158,7 @@ def main(args_json=None):
         print "-----------------------------------------"
         for dk in deployments.keys():
             deployDict = deployments[dk]
-            env_str = string.join( deployDict.keys(), ", " )
+            env_str = string.join(deployDict.keys(), ", ")
             print "  %s:  %s" % (dk, env_str)
         print ""
 
@@ -168,18 +169,13 @@ def main(args_json=None):
     if args['opts']['name'] is not None and len(args['opts']['name']) > 1:
         stack_name = args['opts']['name']
 
-
     # Load settings from YAML deployment file
     paramsMap = load_deployment_file(deployment_name, env_name)
-
-
-    pattern =  paramsMap['pattern']
+    pattern = paramsMap['pattern']
     paramsMap.pop('pattern')
 
     # Determine how to manage deployed instances
     context = get_management_settings(paramsMap)
-
-
 
     if args['subcmd'] == 'show-template':
         raw_template = get_cf_template(pattern, context)
@@ -194,7 +190,7 @@ def main(args_json=None):
         raw_template = get_cf_template(pattern, context)
         print "Jinja2 template loading succeeded."
         try:
-             cf_dict = parse_cf_json(raw_template)
+            cf_dict = parse_cf_json(raw_template)
         except ValueError as e:
             print "Invalid JSON: "
             print e
@@ -204,22 +200,22 @@ def main(args_json=None):
             print raw_template
             sys.exit(1)
         print "JSON valid."
-        main_args=[
-               'cloudformation',
-               'validate-template',
-               '--template-body', get_cf_json(cf_dict)
-               ]
+        main_args = [
+            'cloudformation',
+            'validate-template',
+            '--template-body', get_cf_json(cf_dict)
+        ]
         return aws_driver.main(main_args)
 
         #print json.dumps(cf_json, sort_keys=True,indent=4, separators=(',', ': '))
     if args['subcmd'] == 'show-params':
         try:
-             cf_dict = parse_cf_json( get_cf_template(pattern, context) )
+            cf_dict = parse_cf_json(get_cf_template(pattern, context))
         except ValueError as e:
             print "Invalid JSON: run the \"validate-template\" subcommand to debug."
             sys.exit(1)
 
-        paramsJSON= cf_dict['Parameters']
+        paramsJSON = cf_dict['Parameters']
         print "Template parameters:"
         print "---------------------------"
         print get_cf_json(paramsJSON, pretty=True)
@@ -229,40 +225,40 @@ def main(args_json=None):
     # Load as JSON to validate it
     #
     try:
-        cf_dict = parse_cf_json( get_cf_template(pattern, context) )
+        cf_dict = parse_cf_json(get_cf_template(pattern, context))
     except ValueError:
         print "Error parsing JSON"
-        print get_cf_template(pattern,context)
+        print get_cf_template(pattern, context)
         sys.exit(1)
 
     if args['subcmd'] == 'deploy':
 
-        main_args=[
-               'cloudformation',
-               'create-stack',
-               '--capabilities', 'CAPABILITY_IAM',
-               '--disable-rollback',
-               '--stack-name', stack_name
-               ]
+        main_args = [
+            'cloudformation',
+            'create-stack',
+            '--capabilities', 'CAPABILITY_IAM',
+            '--disable-rollback',
+            '--stack-name', stack_name
+        ]
         if paramsMap is not None and len(paramsMap.keys()) > 0:
             main_args.append("--parameters")
             for key in paramsMap.keys():
                 main_args.append("ParameterKey=%s,ParameterValue=%s" % (key, paramsMap[key]))
-        
+
         main_args.append("--template-body")
         raw_templ = get_cf_template(pattern, context)
-        templ_json = get_cf_json( parse_cf_json(raw_templ) )
-        main_args.append( templ_json )
-        
+        templ_json = get_cf_json(parse_cf_json(raw_templ))
+        main_args.append(templ_json)
+
         return aws_driver.main(main_args)
 
     if args['subcmd'] == 'delete':
 
-        main_args=[
-               'cloudformation',
-               'delete-stack',
-               '--stack-name', stack_name
-               ]
+        main_args = [
+            'cloudformation',
+            'delete-stack',
+            '--stack-name', stack_name
+        ]
         return aws_driver.main(main_args)
 
     # If we end up here, then the subcommand is not known.
@@ -272,4 +268,3 @@ def main(args_json=None):
 
 if __name__ == '__main__':
     sys.exit(main())
-
