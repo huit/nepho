@@ -218,9 +218,9 @@ class CloudletManager:
     def update_registry(self):
         """Pulls down a fresh copy of the cloudlet registry."""
 
-        # If the local registry is missing, empty, or stale (over 1 hour old)
+        # If the local registry is missing, empty, or stale (over 4 hours old)
         # update it from the configured URL. In either case, return the YAML object
-        if not path.exists(self.registry_cache) or path.getsize(self.registry_cache) == 0 or (time() - path.getmtime(self.registry_cache)) > 3600:
+        if not path.exists(self.registry_cache) or path.getsize(self.registry_cache) == 0 or (time() - path.getmtime(self.registry_cache)) > 14400:
             print "Updating cloudlet registry from: %s" % (self.registry)
             try:
                 response = requests.get(self.registry, stream=True)
