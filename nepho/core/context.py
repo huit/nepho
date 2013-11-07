@@ -2,21 +2,17 @@
 import copy
 
 
-class ContextManager:
+class Context:
     """
-        A context handler class for Nepho.
-
-        Produces a context dictionary for use with templating engines.
+    Produce a context dictionary for use with the Jinja2 templating engine. It
+    contains cloudlet.yaml content, blueprint.yaml content, parameters, and
+    all nepho config values.
     """
 
     def __init__(self, cfgMgr):
-
         self.configManager = cfgMgr
         self.blueprint = None
         self.transient_params = dict()
-
-    def set_blueprint(self, bprint):
-        self.blueprint = bprint
 
     def add_params(self, params):
         self.transient_params = params
@@ -26,6 +22,10 @@ class ContextManager:
 
         context = dict()
         config = self.configManager.to_dict()
+
+        # TODO: Make this compatible with the published cloudlet spec, i.e.
+        # include params from the blueprint.yaml file as well as user-provided
+        # params, both from local yaml files, prompting, and command line.
 
         # construct the parameters data structure
         context['parameters'] = dict()

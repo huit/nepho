@@ -72,9 +72,12 @@ class ResourceManager:
         """Convert a template file into a rendered string."""
 
         
-        providr = scenario.get_provider()
+        providr = scenario.provider
         pattern = scenario.get_pattern()
         context = scenario.get_context()
+
+        print "provider is"
+        print providr
         
         template_file_abs = pattern.get_template_file()
         template_dir = path.dirname(template_file_abs)
