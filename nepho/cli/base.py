@@ -63,9 +63,8 @@ class NephoBaseController(controller.CementBaseController):
                         makedirs(value)
 
         self.my_shared_obj = dict()
-        
+
         self.nepho_config = nepho.core.config.ConfigManager(self.config)
-        
 
     @controller.expose(hide=True)
     def default(self):
