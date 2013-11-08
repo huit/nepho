@@ -14,7 +14,9 @@ from nepho.core import common, cloudlet, blueprint, config
 class NephoConfigController(base.NephoBaseController):
     class Meta:
         label = 'config'
-        stacked_on = None
+        interface = controller.IController
+        stacked_on = 'base'
+        stacked_type = 'nested'
         description = 'list, view and modify config settings'
         usage = "nepho config <action> [key] [value]"
         arguments = [
@@ -24,15 +26,12 @@ class NephoConfigController(base.NephoBaseController):
 
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
-        self.nepho_config = nepho.core.config.ConfigManager(self.config)
+        self.nepho_config = nepho.core.config.ConfigManager(self.app.config)
 
     @controller.expose(help='List all config values.')
     def list(self):
-
         print "-" * 80
-
-        keys = sorted(self.nepho_config.keys())
-        for k in keys:
+        for k in sorted(self.nepho_config.keys()):
             v = self.nepho_config.get(k)
             if isinstance(v, basestring):
                 print colored(" %s: " % (k), "yellow"), colored("\"%s\"" % (v), "blue")
@@ -42,21 +41,21 @@ class NephoConfigController(base.NephoBaseController):
 
     @controller.expose(help='Get a config value')
     def get(self):
-        if self.pargs.key is None:
+        if self.app.pargs.key is None:
             print "Usage: nepho config get <key>"
             exit(1)
-        print self.nepho_config.get(self.pargs.key)
+        print self.nepho_config.get(self.app.pargs.key)
 
     @controller.expose(help='Set a config value', aliases=["add"])
     def set(self):
-        if self.pargs.key is None or self.pargs.value is None:
+        if self.app.pargs.key is None or self.app.pargs.value is None:
             print "Usage: nepho config set <key> <value>"
             exit(1)
-        self.nepho_config.set(self.pargs.key, self.pargs.value)
+        self.nepho_config.set(self.app.pargs.key, self.app.pargs.value)
 
     @controller.expose(help='Unset a config value', aliases=["delete", "remove"])
     def unset(self):
-        if self.pargs.key is None:
-            print "Usage: nepho config unset <key> <value>"
+        if self.app.pargs.key is None:
+            print "Usage: nepho config unset <key>"
             exit(1)
-        self.nepho_config.unset(self.pargs.key)
+        self.nepho_config.unset(self.app.pargs.key)
