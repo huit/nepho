@@ -19,7 +19,7 @@ class NephoBlueprintController(base.NephoBaseController):
         description = 'list and view individual cloudlet deployment blueprints'
         usage = "nepho blueprint <action> <cloudlet> [blueprint]"
         arguments = [
-            (['cloudlet'], dict(help=argparse.SUPPRESS,)),
+            (['cloudlet'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
         ]
 
@@ -30,12 +30,15 @@ class NephoBlueprintController(base.NephoBaseController):
 
     @controller.expose(help='List all blueprints in a cloudlet')
     def list(self):
-        if self.pargs.cloudlet is None:
-            print "Usage: nepho blueprint list <cloudlet>"
+        
+        cloudlet_name = self._read_cloudlet()
+        
+        if cloudlet_name is None:
+            print "Usage: nepho blueprint list [cloudlet]"
             exit(1)
 
         try:
-            cloudlt = self.cloudletManager.find(self.pargs.cloudlet)
+            cloudlt = self.cloudletManager.find(cloudlet_name)
             y = cloudlt.defn
         except IOError:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
@@ -61,24 +64,24 @@ class NephoBlueprintController(base.NephoBaseController):
 
     @controller.expose(help='Describe a blueprint')
     def describe(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        
+        print blueprint_name
+        if cloudlet_name is None or blueprint_name is None:
             print "Usage: nepho blueprint describe <cloudlet> <blueprint>"
             exit(1)
 
         try:
-            cloudlt = self.cloudletManager.find(self.pargs.cloudlet)
+            cloudlt = self.cloudletManager.find(cloudlet_name)
         except IOError:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
             exit(1)
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (cloudlt.defn['version']), ")"
 
-        bprint = cloudlt.blueprint(self.pargs.blueprint)
-        #bprint = BlueprintManager.retrieve(self.pargs.cloudlet, self.pargs.blueprint)
+        bprint = cloudlt.blueprint(blueprint_name)
 
-        #blueprint.describe_blueprint(self, self.pargs.cloudlet, self.pargs.blueprint)
-
-        #y = load_blueprint(self,cloudlet, name)
         y = bprint.defn
 
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
@@ -97,3 +100,27 @@ class NephoBlueprintController(base.NephoBaseController):
 
         print "-" * 80
         return
+
+    def _read_cloudlet(self):
+        """Determine the cloudlet name to operate on."""
+        
+        cloudlet_name = self.nepho_config.get("scope_cloudlet")
+        if self.pargs.cloudlet is not None:
+            cloudlet_name =  self.pargs.cloudlet
+        
+#        if cloudlet_name is None:
+#            print colored("No cloudlet specified. ", "red")
+#            exit(1)
+            
+        return cloudlet_name
+    
+    def _read_cloudlet_and_blueprint(self):
+        """Determine the cloudlet and blueprint names to operate on."""
+        
+        cloudlet_name = self._read_cloudlet()
+        blueprint_name = self.nepho_config.get("scope_blueprint")
+        if self.pargs.blueprint is not None:
+            blueprint_name = self.pargs.blueprint
+            
+        return (cloudlet_name, blueprint_name)
+    

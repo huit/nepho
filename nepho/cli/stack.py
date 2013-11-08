@@ -35,7 +35,10 @@ class NephoStackController(base.NephoBaseController):
 
     @controller.expose(help='Show the context for a stack from a blueprint and configs', aliases=['show-context'])
     def show_context(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        
+        if cloudlet_name is None or blueprint_name is None:
             print dedent("""\
                 Usage: nepho stack show-context <cloudlet> <blueprint> [--save] [--params Key1=Val1]
 
@@ -65,7 +68,9 @@ class NephoStackController(base.NephoBaseController):
 
     @controller.expose(help='Show the template output for a stack from a blueprint', aliases=['show-template'])
     def show_template(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        if cloudlet_name is None or blueprint_name is None:
             print dedent("""\
                 Usage: nepho stack show-template <cloudlet> <blueprint> [--save] [--params Key1=Val1]
 
@@ -89,7 +94,9 @@ class NephoStackController(base.NephoBaseController):
 
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy'])
     def create(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        if cloudlet_name is None or blueprint_name is None:
             print dedent("""\
                 Usage: nepho stack create <cloudlet> <blueprint> [--save] [--params Key1=Val1]
 
@@ -113,7 +120,9 @@ class NephoStackController(base.NephoBaseController):
 
     @controller.expose(help='Check on the status of a stack.')
     def status(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        if cloudlet_name is None or blueprint_name is None:
             print dedent("""\
                 Usage: nepho stack status <cloudlet> <blueprint>
 
@@ -131,7 +140,7 @@ class NephoStackController(base.NephoBaseController):
         #
         # Report system status
         #
-        header_string = "%s/%s" % (self.pargs.cloudlet, self.pargs.blueprint)
+        header_string = "%s/%s" % (cloudlet_name, blueprint_name)
         print colored(header_string, "yellow")
         print colored("-" * len(header_string), "yellow")
         rep_string = "The stack is currently %s." % (status['default'])
@@ -144,7 +153,9 @@ class NephoStackController(base.NephoBaseController):
 
     @controller.expose(help='Gain access to the stack')
     def access(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        if cloudlet_name is None or blueprint_name is None:
             print dedent("""\
                 Usage: nepho stack access <cloudlet> <blueprint>
 
@@ -159,7 +170,9 @@ class NephoStackController(base.NephoBaseController):
 
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
     def destroy(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        if cloudlet_name is None or blueprint_name is None:
             print dedent("""\
                 Usage: nepho stack destroy <cloudlet> <blueprint>
 
@@ -174,7 +187,9 @@ class NephoStackController(base.NephoBaseController):
 
     @controller.expose(help='List deployed stacks')
     def list(self):
-        if self.pargs.cloudlet is None or self.pargs.blueprint is None:
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
+        if cloudlet_name is None or blueprint_name is None:
             print dedent("""
                 Usage: nepho stack list <cloudlet> <blueprint>
 
@@ -185,7 +200,7 @@ class NephoStackController(base.NephoBaseController):
             exit(1)
 
         try:
-            cloudlt = self.cloudletManager.find(self.pargs.cloudlet)
+            cloudlt = self.cloudletManager.find(cloudlet_name)
             y = cloudlt.defn
         except IOError:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
@@ -193,7 +208,7 @@ class NephoStackController(base.NephoBaseController):
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
 
-        bprint = cloudlt.blueprint(self.pargs.blueprint)
+        bprint = cloudlt.blueprint(blueprint_name)
 
         # Create an appropriate provider, and set the target pattern.
         provider_name = bprint.provider_name()
@@ -202,6 +217,29 @@ class NephoStackController(base.NephoBaseController):
 
         print "Partially implemented action. (input: %s)" % self.pargs.params
 
+    def _read_cloudlet(self):
+        """Determine the cloudlet name to operate on."""
+        
+        cloudlet_name = self.nepho_config.get("scope_cloudlet")
+        if self.pargs.cloudlet is not None:
+            cloudlet_name =  self.pargs.cloudlet
+        
+#        if cloudlet_name is None:
+#            print colored("No cloudlet specified. ", "red")
+#            exit(1)
+            
+        return cloudlet_name
+    
+    def _read_cloudlet_and_blueprint(self):
+        """Determine the cloudlet and blueprint names to operate on."""
+        
+        cloudlet_name = self._read_cloudlet()
+        blueprint_name = self.nepho_config.get("scope_blueprint")
+        if self.pargs.blueprint is not None:
+            blueprint_name = self.pargs.blueprint
+            
+        return (cloudlet_name, blueprint_name)
+    
     def _parse_params(self):
         """Helper method to extract params from command line into a dict."""
         params = dict()
@@ -214,16 +252,18 @@ class NephoStackController(base.NephoBaseController):
 
     def _load_blueprint(self):
         """Helper method to load blueprint & pattern from args."""
+        
+        (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
         try:
-            cloudlt = self.cloudletManager.find(self.pargs.cloudlet)
+            cloudlt = self.cloudletManager.find(cloudlet_name)
         except Exception:
-            print colored("Error loading cloudlet %s" % (self.pargs.cloudlet), "red")
+            print colored("Error loading cloudlet %s" % (cloudlet_name), "red")
             exit(1)
 
-        bprint = cloudlt.blueprint(self.pargs.blueprint)
+        bprint = cloudlt.blueprint(blueprint_name)
 
         if bprint is None:
-            print "Cannot find blueprint %s in cloudlet %s." % (self.pargs.blueprint, self.pargs.cloudlet)
+            print "Cannot find blueprint %s in cloudlet %s." % (blueprint_name, cloudlet_name)
             exit(1)
 
         return bprint

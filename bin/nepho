@@ -14,7 +14,7 @@ def main():
     handler.register(cli.stack.NephoStackController)
     handler.register(cli.config.NephoConfigController)
     handler.register(cli.parameter.NephoParameterController)
-    #handler.register(cli.scope.NephoScopeController)
+    handler.register(cli.scope.NephoScopeController)
 
     try:
         app.setup()

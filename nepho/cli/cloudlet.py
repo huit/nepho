@@ -75,7 +75,12 @@ class NephoCloudletController(base.NephoBaseController):
     @controller.expose(help="Describe an installed cloudlet")
     def describe(self):
 
-        cloudlt = self.cloudletManager.find(self.pargs.string[0])
+        cloudlet_name = self._read_cloudlet()
+            
+        cloudlt = self.cloudletManager.find(cloudlet_name)
+        if cloudlt is None:
+            print colored("No cloudlet named \"%s\" found." % (cloudlet_name), "red")
+            exit(1)        
 
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
         y = cloudlt.defn
@@ -130,7 +135,7 @@ class NephoCloudletController(base.NephoBaseController):
             print "Usage: nepho cloudlet install <cloudlet> [--location <location>]"
             exit(1)
 
-        name = self.pargs.string[0]
+        name = self._read_cloudlet()
         registry = self.cloudletManager.get_registry()
 
         if name in registry:
@@ -155,7 +160,9 @@ class NephoCloudletController(base.NephoBaseController):
     @controller.expose(help="Upgrade an installed Nepho cloudlet", aliases=["upgrade"])
     def update(self):
 
-        cloudlts = self.cloudletManager.find(self.pargs.string[0])
+        name = self._read_cloudlet()
+        
+        cloudlts = self.cloudletManager.find(name)
         if cloudlts is None:
             print "Cloudlet is not installed."
             exit(1)
@@ -167,7 +174,7 @@ class NephoCloudletController(base.NephoBaseController):
 
     @controller.expose(help="Uninstall a Nepho cloudlet")
     def uninstall(self):
-        name = self.pargs.string[0]
+        name = self._read_cloudlet()
         cloudlt = self.cloudletManager.find(name)
 
         if cloudlt is None:
@@ -198,6 +205,20 @@ class NephoCloudletController(base.NephoBaseController):
             cloudlts = [cloudlts]
         for cloudlt in cloudlts:
             cloudlt.update()
+            
+    def _read_cloudlet(self):
+        """Determine the cloudlet name to operate on."""
+        
+        cloudlet_name = self.nepho_config.get("scope_cloudlet")
+        if len(self.pargs.string) > 0 and self.pargs.string[0] is not None:
+            cloudlet_name = self.pargs.string[0]
+        
+        if cloudlet_name is None:
+            print colored("No cloudlet specified. ", "red")
+            exit(1)
+            
+        return cloudlet_name
+    
 #        try:
 #            name = self.pargs.string[0]
 #            possible_paths = common.find_cloudlet(self, name, True)
