@@ -106,10 +106,10 @@ class NephoBlueprintController(base.NephoBaseController):
 
         cloudlet_name = self.nepho_config.get("scope_cloudlet")
         if self.pargs.cloudlet is not None:
-            cloudlet_name =  self.pargs.cloudlet
+            cloudlet_name = self.pargs.cloudlet
 
         return cloudlet_name
-    
+
     def _read_cloudlet_and_blueprint(self):
         """Determine the cloudlet and blueprint names to operate on."""
 
@@ -117,6 +117,5 @@ class NephoBlueprintController(base.NephoBaseController):
         blueprint_name = self.nepho_config.get("scope_blueprint")
         if self.pargs.blueprint is not None:
             blueprint_name = self.pargs.blueprint
-    
-        return (cloudlet_name, blueprint_name)
-    
+
+        return (cloudlet_name, blueprint_name)    

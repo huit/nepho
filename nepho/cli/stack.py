@@ -222,7 +222,7 @@ class NephoStackController(base.NephoBaseController):
 
         cloudlet_name = self.nepho_config.get("scope_cloudlet")
         if self.pargs.cloudlet is not None:
-            cloudlet_name =  self.pargs.cloudlet
+            cloudlet_name = self.pargs.cloudlet
 
         return cloudlet_name
 
