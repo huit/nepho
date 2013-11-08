@@ -75,7 +75,12 @@ class NephoCloudletController(base.NephoBaseController):
     @controller.expose(help="Describe an installed cloudlet")
     def describe(self):
 
-        cloudlt = self.cloudletManager.find(self.pargs.string[0])
+        cloudlet_name = self._read_cloudlet()
+
+        cloudlt = self.cloudletManager.find(cloudlet_name)
+        if cloudlt is None:
+            print colored("No cloudlet named \"%s\" found." % (cloudlet_name), "red")
+            exit(1)
 
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
         y = cloudlt.defn
@@ -97,19 +102,19 @@ class NephoCloudletController(base.NephoBaseController):
         # sqlite database, but it seemed like overkill. Really this should be
         # calling a web service.
 
-        targetString = self.pargs.string[0]
+        targetString = self.pargs.string[0] if len(self.pargs.string) > 0 else ''
         registry = self.cloudletManager.get_registry()
 
         matchList = list()
         for cloudletRepo in registry.keys():
             flattenedText = "%s: %s" % (cloudletRepo, registry[cloudletRepo])
-            if targetString in flattenedText:
+            if (targetString == '') or (targetString in flattenedText):
                 matchList.append(cloudletRepo)
 
         if len(matchList) == 0:
             print "No matches found."
         else:
-            for cloudletRepo in matchList:
+            for cloudletRepo in sorted(matchList):
                 cloudletDict = registry[cloudletRepo]
 
                 wrapper = TextWrapper(width=80, subsequent_indent="              ")
@@ -130,7 +135,7 @@ class NephoCloudletController(base.NephoBaseController):
             print "Usage: nepho cloudlet install <cloudlet> [--location <location>]"
             exit(1)
 
-        name = self.pargs.string[0]
+        name = self._read_cloudlet()
         registry = self.cloudletManager.get_registry()
 
         if name in registry:
@@ -154,7 +159,9 @@ class NephoCloudletController(base.NephoBaseController):
     @controller.expose(help="Upgrade an installed Nepho cloudlet", aliases=["upgrade"])
     def update(self):
 
-        cloudlts = self.cloudletManager.find(self.pargs.string[0])
+        name = self._read_cloudlet()
+
+        cloudlts = self.cloudletManager.find(name)
         if cloudlts is None:
             print "Cloudlet is not installed."
             exit(1)
@@ -166,7 +173,7 @@ class NephoCloudletController(base.NephoBaseController):
 
     @controller.expose(help="Uninstall a Nepho cloudlet")
     def uninstall(self):
-        name = self.pargs.string[0]
+        name = self._read_cloudlet()
         cloudlt = self.cloudletManager.find(name)
 
         if cloudlt is None:
@@ -197,18 +204,16 @@ class NephoCloudletController(base.NephoBaseController):
             cloudlts = [cloudlts]
         for cloudlt in cloudlts:
             cloudlt.update()
-#        try:
-#            name = self.pargs.string[0]
-#            possible_paths = common.find_cloudlet(self, name, True)
-#        except:
-#            print "Invalid cloudlet name provided."
-#            exit(1)
-#
-#        repo_paths = common.select_list(self, possible_paths, True, "Select which cloudlet to uninstall:")
-#
-#
-#        if isinstance(repo_paths, list):
-#            for one_path in repo_paths:
-#                cloudlet.archive_cloudlet(self, name, one_path)
-#        else:
-#            cloudlet.archive_cloudlet(self, name, repo_paths)
+
+    def _read_cloudlet(self):
+        """Determine the cloudlet name to operate on."""
+
+        cloudlet_name = self.nepho_config.get("scope_cloudlet")
+        if len(self.pargs.string) > 0 and self.pargs.string[0] is not None:
+            cloudlet_name = self.pargs.string[0]
+
+        if cloudlet_name is None:
+            print colored("No cloudlet specified. ", "red")
+            exit(1)
+
+        return cloudlet_name

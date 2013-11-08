@@ -1,5 +1,23 @@
 import glob
-from os import path
+import os
+
+
+class cwd:
+    """
+    Context manager for changing the current working directory
+
+    with cwd("foobar"):
+        do a thing
+    """
+    def __init__(self, newPath):
+        self.newPath = newPath
+
+    def __enter__(self):
+        self.savedPath = os.getcwd()
+        os.chdir(self.newPath)
+
+    def __exit__(self, etype, value, traceback):
+        os.chdir(self.savedPath)
 
 
 def merge(user, system):
@@ -57,7 +75,7 @@ def all_cloudlets(self):
     # Collect the filesystem paths to every cloudlet into one list
     cloudlet_paths = list()
     for one_dir in dirs:
-        cloudlet_paths.extend(glob.glob(path.join(one_dir, '*')))
+        cloudlet_paths.extend(glob.glob(os.path.join(one_dir, '*')))
 
     return cloudlet_paths
 
@@ -74,8 +92,8 @@ def find_cloudlet(self, name, multiple=False):
 def all_blueprints(self, name):
     cloudlet = find_cloudlet(self, name)
     blueprint_files = list()
-    if path.isdir(path.join(cloudlet, "blueprints")):
-        blueprint_files.extend(glob.glob(path.join(cloudlet, "blueprints", '*.yaml')))
+    if os.path.isdir(os.path.join(cloudlet, "blueprints")):
+        blueprint_files.extend(glob.glob(os.path.join(cloudlet, "blueprints", '*.yaml')))
         return blueprint_files
     else:
         return None

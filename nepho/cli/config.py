@@ -3,7 +3,6 @@
 
 import argparse
 from termcolor import colored
-from textwrap import TextWrapper
 from pprint import pprint
 
 import nepho.core.config
@@ -30,8 +29,6 @@ class NephoConfigController(base.NephoBaseController):
     @controller.expose(help='List all config values.')
     def list(self):
 
-        # Prepare to wrap description text
-        wrapper = TextWrapper(width=80, initial_indent="        ", subsequent_indent="        ")
         print "-" * 80
 
         keys = sorted(self.nepho_config.keys())
