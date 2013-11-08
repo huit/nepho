@@ -21,10 +21,10 @@ import nepho
 class AWSProvider(nepho.core.provider.AbstractProvider):
     """
     An infrastructure provider class for AWS CloudFormation
-    
+
     Note: if you create an output named SSHEndpoint, then you can
       use the "nepho stack access" command to connect directly to the stack.
-      
+
     """
 
     PROVIDER_ID = "aws"
@@ -43,17 +43,17 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             region = 'us-east-1'
 
         conn = boto.cloudformation.connect_to_region(region,
-                                                 aws_access_key_id = access_key,
-                                                 aws_secret_access_key = secret_key)
+                                                     aws_access_key_id = access_key,
+                                                     aws_secret_access_key = secret_key)
         if conn is None:
-            print "Boto connection to CloudFormation failed. PLease check your "
+            print "Boto connection to CloudFormation failed. Please check your "
             exit(1)
-        
-        return conn        
-            
+
+        return conn
+
 #     def validate_template(self, template_str):
 #         """Validate the template as JSON and CloudFormation."""
-# 
+#
 #         try:
 #             cf_dict = parse_cf_json(template_str)
 #             template = get_cf_json(cf_dict, pretty=True)
@@ -89,17 +89,18 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         try:
             stack_id = self.connection.create_stack(
-                       stack_name,
-                       template_body = template_json,
-                       parameters = params,
-                       capabilities = [ 'CAPABILITY_IAM' ],
-                       disable_rollback = True
-                    )
+                stack_name,
+                template_body = template_json,
+                parameters = params,
+                capabilities = ['CAPABILITY_IAM'],
+                disable_rollback = True
+            )
             return stack_id
         except boto.exception.BotoServerError as be:
-            print "Error communication with the CloudFormation service: %s" % (be)
+            print "Error communicating with the CloudFormation service: %s" % (be)
+            print "Check your parameters and template for validity!  You may need to manually remove any parameters that your template doesn't know how to accept."
 
-            exit (1)
+            exit(1)
 
     def status(self):
         """Check on the status of a stack within CloudFormation."""
@@ -113,7 +114,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         except boto.exception.BotoServerError as be:
             # Actually ,this may just mean that there's no stack by that name ...
             print "Error communication with the CloudFormation service: %s" % (be)
-            exit (1)
+            exit(1)
 
         # Just for now ...
         print_stack(stack[0])
@@ -124,11 +125,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         context = self.scenario.get_context()
         stack_name = create_stack_name(context)
-        
+
         # Return object of type boto.cloudformation.stack.Stack
         try:
             stack = self.connection.describe_stacks(stack_name_or_id=stack_name)
-            
+
             # this will need to be improved ... basically a stub for now ...
             outputs = stack.outputs
             access_hostname = outputs['SSHEndpoint']
@@ -136,24 +137,23 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         except boto.exception.BotoServerError as be:
             # Actually ,this may just mean that there's no stack by that name ...
             print "Error communication with the CloudFormation service: %s" % (be)
-            exit (1)
-            
+            exit(1)
+
         # Just for now ...
         print_stack(stack[0])
         return stack[0]
-    
+
     def destroy(self):
         """Delete a CloudFormation stack."""
 
         context = self.scenario.get_context()
-        
+
         stack_name = create_stack_name(context)
 
         out = self.connection.delete_stack(stack_name_or_id=stack_name)
-        
+
         print out
         return out
-
 
     #===========================================================================
     # These are example helper functions for capabilities not yet needed.
@@ -163,36 +163,34 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         """Return a list of CF stacks."""
         return self.connection.list_stack()
 
-
     def _get_stack(self, stack):
         context = self.scenario.get_context()
-        stack_name = create_stack_name(context)        
+        stack_name = create_stack_name(context)
 
         stacks = self.connection.describe_stacks(stack_name)
         if not stacks:
-            raise InvalidStackException(stack)
+            raise Exception(stack)
 
         return stacks[0]
-
 
     def _list_stacks(self):
         stacks = self.get_stacks()
         for stackSumm in stacks:
-            print_stack(get_stack(stackSumm.stack_id))
+            print_stack(self._get_stack(stackSumm.stack_id))
 
     def _load_aws_connection_settings(self):
         """Helper method to load up the conenction settings from configs, or the AWS file."""
-        
+
         access_key = self.config.get("aws_access_key_id")
         secret_key = self.config.get("aws_secret_access_key")
         region = self.config.get("aws_region")
-        
+
         try:
             aws_config_file = os.environ['AWS_CONFIG_FILE']
             import ConfigParser
             cp = ConfigParser.ConfigParser()
             cp.read(aws_config_file)
-    
+
             if access_key is None:
                 access_key = cp.get("default", "aws_access_key_id")
             if secret_key is None:
@@ -205,17 +203,19 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         return (access_key, secret_key, region)
 
+
 def print_stack(stack):
     print "---"
     print "Name:            %s" % stack.stack_name
-    print"ID:              %s"% stack.stack_id
+    print"ID:              %s" % stack.stack_id
     print "Status:          %s" % stack.stack_status
     print "Creation Time:   %s" % stack.creation_time
-    print"Outputs:         %s"% stack.outputs
+    print"Outputs:         %s" % stack.outputs
     print "Parameters:      %s" % stack.parameters
-    print"Tags:            %s"% stack.tags
+    print"Tags:            %s" % stack.tags
     print "Capabilities:    %s" % stack.capabilities
-    
+
+
 def create_stack_name(context):
     return "%s-%s" % (context['cloudlet']['name'], context['blueprint']['name'])
 
@@ -225,10 +225,10 @@ def parse_cf_json(str):
     return cf_dict
 
 
-def get_cf_json(orderDict, pretty=False):
+def get_cf_json(order_dict, pretty=False):
     outstr = None
     if pretty:
-        outstr = json.dumps(orderDict, indent=2, separators=(',', ': '))
+        outstr = json.dumps(order_dict, indent=2, separators=(',', ': '))
     else:
-        outstr = json.dumps(orderDict)
+        outstr = json.dumps(order_dict)
     return outstr

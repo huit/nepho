@@ -46,8 +46,8 @@ class ResourceManager:
 
         pattern_string = blueprint.pattern().name
 
-        main_cloudlet = blueprint.cloudlet
-        cloudlt = main_cloudlet
+        cloudlt = blueprint.cloudlet
+
         pattern_name = pattern_string
         if ">" in pattern_string:
             (cloudlet_name, pattern_name) = pattern_string.split(">")
@@ -55,9 +55,13 @@ class ResourceManager:
             pattern_name = pattern_name.strip()
             cloudlt = cloudlet.CloudletManager(self.config).find(cloudlet_name)
 
-        pattern_dir = path.join(cloudlt.path, "resources", "patterns", pattern_name)
-        if not path.isdir(pattern_dir):
-            pattern_dir = path.join(cloudlt.path, "resources", "patterns", "common")
+        try:
+            pattern_dir = path.join(cloudlt.path, "resources", "patterns", pattern_name)
+            if not path.isdir(pattern_dir):
+                pattern_dir = path.join(cloudlt.path, "resources", "patterns", "common")
+        except:
+            print "No cloudlet found for pattern '%s'" % (pattern_string)
+            exit(1)
 
         return pattern_dir
 
