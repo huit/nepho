@@ -15,17 +15,6 @@ import collections
 import boto
 import boto.cloudformation
 
-# import botocore.session
-# import botocore.hooks
-# from botocore.hooks import first_non_none_response
-# from botocore.hooks import HierarchicalEmitter
-# 
-# from botocore.compat import copy_kwargs, OrderedDict
-
-#import awscli
-#import awscli.clidriver
-#import awscli.plugin
-
 import nepho
 
 
