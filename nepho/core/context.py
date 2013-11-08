@@ -4,7 +4,8 @@ import copy
 
 class Context:
     """
-    Produce a context dictionary for use with the Jinja2 templating engine. It
+    Produce a context dictionary for use with the Jinja2 templating engine and
+    for use with a provider that requires a set of params (AWS right now). It
     contains cloudlet.yaml content, blueprint.yaml content, parameters, and
     all nepho config values.
     """
