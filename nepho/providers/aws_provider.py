@@ -30,7 +30,13 @@ import nepho
 
 
 class AWSProvider(nepho.core.provider.AbstractProvider):
-    """An infrastructure provider class for AWS CloudFormation"""
+    """
+    An infrastructure provider class for AWS CloudFormation
+    
+    Note: if you create an output named SSHEndpoint, then you can
+      use the "nepho stack access" command to connect directly to the stack.
+      
+    """
 
     PROVIDER_ID = "aws"
     TEMPLATE_FILENAME = "cf.json"
@@ -91,7 +97,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         params = list()
         for item in context['parameters'].items():
             params.append(item)
-        
+
         try:
             stack_id = self.connection.create_stack(
                        stack_name,
@@ -111,10 +117,33 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         context = self.scenario.get_context()
         stack_name = create_stack_name(context)
+
+        # Return object of type boto.cloudformation.stack.Stack
+        try:
+            stack = self.connection.describe_stacks(stack_name_or_id=stack_name)
+        except boto.exception.BotoServerError as be:
+            # Actually ,this may just mean that there's no stack by that name ...
+            print "Error communication with the CloudFormation service: %s" % (be)
+            exit (1)
+
+        # Just for now ...
+        print_stack(stack[0])
+        return stack[0]
+
+    def access(self):
+        """Check on the status of a stack within CloudFormation."""
+
+        context = self.scenario.get_context()
+        stack_name = create_stack_name(context)
         
         # Return object of type boto.cloudformation.stack.Stack
         try:
             stack = self.connection.describe_stacks(stack_name_or_id=stack_name)
+            
+            # this will need to be improved ... basically a stub for now ...
+            outputs = stack.outputs
+            access_hostname = outputs['SSHEndpoint']
+            return "ssh %s@%s" % ("ec2-user", access_hostname)
         except boto.exception.BotoServerError as be:
             # Actually ,this may just mean that there's no stack by that name ...
             print "Error communication with the CloudFormation service: %s" % (be)
@@ -123,8 +152,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         # Just for now ...
         print_stack(stack[0])
         return stack[0]
-
-
+    
     def destroy(self):
         """Delete a CloudFormation stack."""
 
