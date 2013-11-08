@@ -235,7 +235,7 @@ class NephoStackController(base.NephoBaseController):
             blueprint_name = self.pargs.blueprint
 
         return (cloudlet_name, blueprint_name)
-    
+
     def _parse_params(self):
         """Helper method to extract params from command line into a dict."""
         params = dict()

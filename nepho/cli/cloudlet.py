@@ -80,7 +80,7 @@ class NephoCloudletController(base.NephoBaseController):
         cloudlt = self.cloudletManager.find(cloudlet_name)
         if cloudlt is None:
             print colored("No cloudlet named \"%s\" found." % (cloudlet_name), "red")
-            exit(1)    
+            exit(1)
 
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
         y = cloudlt.defn

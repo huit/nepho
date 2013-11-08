@@ -118,4 +118,4 @@ class NephoBlueprintController(base.NephoBaseController):
         if self.pargs.blueprint is not None:
             blueprint_name = self.pargs.blueprint
 
-        return (cloudlet_name, blueprint_name)    
+        return (cloudlet_name, blueprint_name)   
