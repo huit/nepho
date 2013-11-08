@@ -30,9 +30,9 @@ class NephoBlueprintController(base.NephoBaseController):
 
     @controller.expose(help='List all blueprints in a cloudlet')
     def list(self):
-        
+
         cloudlet_name = self._read_cloudlet()
-        
+
         if cloudlet_name is None:
             print "Usage: nepho blueprint list [cloudlet]"
             exit(1)
@@ -64,9 +64,9 @@ class NephoBlueprintController(base.NephoBaseController):
 
     @controller.expose(help='Describe a blueprint')
     def describe(self):
-        
+
         (cloudlet_name, blueprint_name) = self._read_cloudlet_and_blueprint()
-        
+
         print blueprint_name
         if cloudlet_name is None or blueprint_name is None:
             print "Usage: nepho blueprint describe <cloudlet> <blueprint>"
@@ -103,24 +103,20 @@ class NephoBlueprintController(base.NephoBaseController):
 
     def _read_cloudlet(self):
         """Determine the cloudlet name to operate on."""
-        
+
         cloudlet_name = self.nepho_config.get("scope_cloudlet")
         if self.pargs.cloudlet is not None:
             cloudlet_name =  self.pargs.cloudlet
-        
-#        if cloudlet_name is None:
-#            print colored("No cloudlet specified. ", "red")
-#            exit(1)
-            
+
         return cloudlet_name
     
     def _read_cloudlet_and_blueprint(self):
         """Determine the cloudlet and blueprint names to operate on."""
-        
+
         cloudlet_name = self._read_cloudlet()
         blueprint_name = self.nepho_config.get("scope_blueprint")
         if self.pargs.blueprint is not None:
             blueprint_name = self.pargs.blueprint
-            
+    
         return (cloudlet_name, blueprint_name)
     
