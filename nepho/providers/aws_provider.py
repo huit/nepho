@@ -1,26 +1,31 @@
 # coding: utf-8
+#
+# Parts shamelessly stolen from:
+#
+#   http://www.technobabelfish.com/2013/08/boto-and-cloudformation.html
+#
+#
 from os import path
+import os
 
 import yaml
 import json
 import collections
 
-import botocore.session
-import botocore.hooks
-from botocore.hooks import first_non_none_response
-from botocore.hooks import HierarchicalEmitter
-
-from botocore.compat import copy_kwargs, OrderedDict
-
-import awscli
-import awscli.clidriver
-import awscli.plugin
+import boto
+import boto.cloudformation
 
 import nepho
 
 
 class AWSProvider(nepho.core.provider.AbstractProvider):
-    """An infrastructure provider class for AWS CloudFormation"""
+    """
+    An infrastructure provider class for AWS CloudFormation
+
+    Note: if you create an output named SSHEndpoint, then you can
+      use the "nepho stack access" command to connect directly to the stack.
+
+    """
 
     PROVIDER_ID = "aws"
     TEMPLATE_FILENAME = "cf.json"
@@ -28,33 +33,39 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def __init__(self, config, scenario=None):
         nepho.core.provider.AbstractProvider.__init__(self, config, scenario)
 
-        self.clidriver = self.setup_awscli_driver()
+        self.connection = self._setup_boto_connection()
 
-    def setup_awscli_driver(self):
-        envvars = awscli.EnvironmentVariables
-        emitter = botocore.hooks.HierarchicalEmitter()
-        session = botocore.session.Session(envvars, emitter)
+    def _setup_boto_connection(self):
+        """Helper method to setup a connection to CloudFormation."""
 
-        session.user_agent_name = 'aws-cli'
-        session.user_agent_version = awscli.__version__
-        awscli.plugin.load_plugins(session.full_config.get('plugins', {}), event_hooks=emitter)
-        return awscli.clidriver.CLIDriver(session=session)
+        (access_key, secret_key, region) = self._load_aws_connection_settings()
+        if region is None:
+            region = 'us-east-1'
 
-    def validate_template(self, template_str):
-        """Validate the template as JSON and CloudFormation."""
-
-        try:
-            cf_dict = parse_cf_json(template_str)
-            template = get_cf_json(cf_dict, pretty=True)
-            main_args = [
-                'cloudformation',
-                'validate-template',
-                '--template-body', template
-            ]
-            self.clidriver.main(main_args)
-        except:
-            print "Invalid CloudFormation JSON."
+        conn = boto.cloudformation.connect_to_region(region,
+                                                     aws_access_key_id = access_key,
+                                                     aws_secret_access_key = secret_key)
+        if conn is None:
+            print "Boto connection to CloudFormation failed. Please check your "
             exit(1)
+
+        return conn
+
+#     def validate_template(self, template_str):
+#         """Validate the template as JSON and CloudFormation."""
+#
+#         try:
+#             cf_dict = parse_cf_json(template_str)
+#             template = get_cf_json(cf_dict, pretty=True)
+#             main_args = [
+#                 'cloudformation',
+#                 'validate-template',
+#                 '--template-body', template
+#             ]
+#             self.clidriver.main(main_args)
+#         except:
+#             print "Invalid CloudFormation JSON."
+#             exit(1)
 
     def format_template(self, raw_template):
         """Pretty formats a CF template"""
@@ -66,60 +77,143 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         """Deploy a given pattern."""
 
         context = self.scenario.get_context()
-        raw_template = self.scenario.get_template()
-        template_json = self.format_template(raw_template)
 
         stack_name = create_stack_name(context)
 
-        main_args = [
-            'cloudformation',
-            'create-stack',
-            '--capabilities', 'CAPABILITY_IAM',
-            '--disable-rollback',
-            '--stack-name', stack_name
-        ]
+        raw_template = self.scenario.get_template()
+        template_json = self.format_template(raw_template)
 
-        paramsMap = context['parameters']
-        if paramsMap is not None and len(paramsMap.keys()) > 0:
-            main_args.append("--parameters")
-            for key in paramsMap.keys():
-                main_args.append("ParameterKey=%s,ParameterValue=%s" % (key, paramsMap[key]))
+        params = list()
+        for item in context['parameters'].items():
+            params.append(item)
 
-        main_args.append("--template-body")
-        main_args.append(template_json)
+        try:
+            stack_id = self.connection.create_stack(
+                stack_name,
+                template_body = template_json,
+                parameters = params,
+                capabilities = ['CAPABILITY_IAM'],
+                disable_rollback = True
+            )
+            return stack_id
+        except boto.exception.BotoServerError as be:
+            print "Error communicating with the CloudFormation service: %s" % (be)
+            print "Check your parameters and template for validity!  You may need to manually remove any parameters that your template doesn't know how to accept."
 
-        self.clidriver.main(main_args)
+            exit(1)
 
     def status(self):
         """Check on the status of a stack within CloudFormation."""
 
-        context = self.contextManager.generate()
+        context = self.scenario.get_context()
         stack_name = create_stack_name(context)
 
-        main_args = [
-            'cloudformation',
-            'describe-stacks',
-            '--stack-name', stack_name
-        ]
-        self.clidriver.main(main_args)
+        # Return object of type boto.cloudformation.stack.Stack
+        try:
+            stack = self.connection.describe_stacks(stack_name_or_id=stack_name)
+        except boto.exception.BotoServerError as be:
+            # Actually ,this may just mean that there's no stack by that name ...
+            print "Error communication with the CloudFormation service: %s" % (be)
+            exit(1)
+
+        # Just for now ...
+        print_stack(stack[0])
+        return stack[0]
+
+    def access(self):
+        """Check on the status of a stack within CloudFormation."""
+
+        context = self.scenario.get_context()
+        stack_name = create_stack_name(context)
+
+        # Return object of type boto.cloudformation.stack.Stack
+        try:
+            stack = self.connection.describe_stacks(stack_name_or_id=stack_name)
+
+            # this will need to be improved ... basically a stub for now ...
+            outputs = stack.outputs
+            access_hostname = outputs['SSHEndpoint']
+            return "ssh %s@%s" % ("ec2-user", access_hostname)
+        except boto.exception.BotoServerError as be:
+            # Actually ,this may just mean that there's no stack by that name ...
+            print "Error communication with the CloudFormation service: %s" % (be)
+            exit(1)
+
+        # Just for now ...
+        print_stack(stack[0])
+        return stack[0]
 
     def destroy(self):
         """Delete a CloudFormation stack."""
 
-        context = self.contextManager.generate()
+        context = self.scenario.get_context()
+
         stack_name = create_stack_name(context)
 
-        main_args = [
-            'cloudformation',
-            'delete-stack',
-            '--stack-name', stack_name
-        ]
+        out = self.connection.delete_stack(stack_name_or_id=stack_name)
+
+        print out
+        return out
+
+    #===========================================================================
+    # These are example helper functions for capabilities not yet needed.
+    #===========================================================================
+
+    def _get_stacks(self):
+        """Return a list of CF stacks."""
+        return self.connection.list_stack()
+
+    def _get_stack(self, stack):
+        context = self.scenario.get_context()
+        stack_name = create_stack_name(context)
+
+        stacks = self.connection.describe_stacks(stack_name)
+        if not stacks:
+            raise Exception(stack)
+
+        return stacks[0]
+
+    def _list_stacks(self):
+        stacks = self.get_stacks()
+        for stackSumm in stacks:
+            print_stack(self._get_stack(stackSumm.stack_id))
+
+    def _load_aws_connection_settings(self):
+        """Helper method to load up the conenction settings from configs, or the AWS file."""
+
+        access_key = self.config.get("aws_access_key_id")
+        secret_key = self.config.get("aws_secret_access_key")
+        region = self.config.get("aws_region")
 
         try:
-            return self.clidriver.main(main_args)
+            aws_config_file = os.environ['AWS_CONFIG_FILE']
+            import ConfigParser
+            cp = ConfigParser.ConfigParser()
+            cp.read(aws_config_file)
+
+            if access_key is None:
+                access_key = cp.get("default", "aws_access_key_id")
+            if secret_key is None:
+                secret_key = cp.get("default", "aws_secret_access_key")
+            if region is None:
+                region = cp.get("default", "region")
+
         except Exception:
-            print "Failed to delete stack"  # TODO move to CLI related code
-        print "Successfully deleted stack."
+            pass
+
+        return (access_key, secret_key, region)
+
+
+def print_stack(stack):
+    print "---"
+    print "Name:            %s" % stack.stack_name
+    print"ID:              %s" % stack.stack_id
+    print "Status:          %s" % stack.stack_status
+    print "Creation Time:   %s" % stack.creation_time
+    print"Outputs:         %s" % stack.outputs
+    print "Parameters:      %s" % stack.parameters
+    print"Tags:            %s" % stack.tags
+    print "Capabilities:    %s" % stack.capabilities
 
 
 def create_stack_name(context):
@@ -131,10 +225,10 @@ def parse_cf_json(str):
     return cf_dict
 
 
-def get_cf_json(orderDict, pretty=False):
+def get_cf_json(order_dict, pretty=False):
     outstr = None
     if pretty:
-        outstr = json.dumps(orderDict, indent=2, separators=(',', ': '))
+        outstr = json.dumps(order_dict, indent=2, separators=(',', ': '))
     else:
-        outstr = json.dumps(orderDict)
+        outstr = json.dumps(order_dict)
     return outstr

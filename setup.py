@@ -18,7 +18,6 @@ setup(
     install_requires = [
         'argparse>=1.2',
         'boto>=2.0',
-        'awscli>=1.2.3',
         'Jinja2',
         'PyYAML',
         'cement>=2.1,==2.1.4-dev',

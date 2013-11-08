@@ -46,32 +46,3 @@ class Scenario:
             self.pattern = pattern.Pattern(pattern_str, pattern_file)
             self.pattern.set_provider(self)
         return self.pattern
-
-#     def validate(self):
-#         """Validates the blueprint as defined to determine if it's sufficent and properly formed."""
-#
-#         # If a name isn't specified, our name is the blueprint's name
-#         if not "pattern" in self.defn or self.defn['pattern'] is None:
-#             self.defn['pattern'] = self.name
-#
-#         fields = ["provider" ]
-#         for f in fields:
-#             if not f in self.defn.keys():
-#                 print "Blueprint is missing required field %s." % (f)
-#                 exit(1)
-#
-#     def cloudlet(self):
-#         """Return the cloudlet that this blueprint is part of."""
-#         return self.cloudlet
-#
-#     def pattern(self):
-#         """Returns a pattern object that represents the pattern in the blueprint."""
-#         patternString = self.defn['pattern']
-#         pattrn = pattern.Pattern(patternString)
-#         return pattrn
-#
-#     def provider_name(self):
-#         """returns a provider pbjects that corresponds to the one indicated in the blueprint."""
-#         providerString = self.defn['provider']
-#
-#         return providerString
