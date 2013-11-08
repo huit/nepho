@@ -138,6 +138,31 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         return out
 
 
+    #===========================================================================
+    # These are example helper functions for capabilities not yet needed.
+    #===========================================================================
+
+    def _get_stacks(self):
+        """Return a list of CF stacks."""
+        return self.connection.list_stack()
+
+
+    def _get_stack(self, stack):
+        context = self.scenario.get_context()
+        stack_name = create_stack_name(context)        
+
+        stacks = self.connection.describe_stacks(stack_name)
+        if not stacks:
+            raise InvalidStackException(stack)
+
+        return stacks[0]
+
+
+    def _list_stacks(self):
+        stacks = self.get_stacks()
+        for stackSumm in stacks:
+            print_stack(get_stack(stackSumm.stack_id))
+
     def _load_aws_connection_settings(self):
         """Helper method to load up the conenction settings from configs, or the AWS file."""
         
