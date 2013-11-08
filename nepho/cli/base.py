@@ -15,6 +15,7 @@ defaults['nepho']['cloudlet_dirs']         = path.join("~", ".nepho", "cloudlets
 defaults['nepho']['local_dir']             = path.join("~", ".nepho", "local")
 defaults['nepho']['local_config']          = path.join("~", ".nepho", "local/config.yaml")
 defaults['nepho']['cloudlet_registry_url'] = "http://cloudlets.github.io/registry.yaml"
+defaults['nepho']['cloudlet_clone_proto']  = "https"
 defaults['base']['processed_config'] = False
 
 

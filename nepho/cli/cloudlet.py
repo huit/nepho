@@ -140,6 +140,8 @@ class NephoCloudletController(base.NephoBaseController):
 
         if name in registry:
             url = registry[name]['source']
+            if self.nepho_config.get('cloudlet_clone_proto') == "ssh":
+                url = url.replace('https://github.com/', 'git@github.com:', 1)
         else:
             if self.pargs.location is None:
                 print "Cloudlet name was not found in master registry. To install a custom cloudlet, specify a location with the --location option."
@@ -150,11 +152,8 @@ class NephoCloudletController(base.NephoBaseController):
         cloudlet_dirs = self.cloudletManager.all_cloudlet_dirs()
         selected_dir = common.select_list(self, cloudlet_dirs, False, "Select an install location:")
 
-        try:
-            self.cloudletManager.new(name, selected_dir, url)
-        except:
-            print colored("└──", "yellow"), name, "(", colored("error", "red"), "- install failed )"
-
+        # TODO: Move error handling from core to CLI
+        self.cloudletManager.new(name, selected_dir, url)
         return
 
     @controller.expose(help="Upgrade an installed Nepho cloudlet", aliases=["upgrade"])
