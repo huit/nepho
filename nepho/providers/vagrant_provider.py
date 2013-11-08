@@ -3,6 +3,7 @@
 
 import os
 from os import path
+import subprocess
 import yaml
 
 import vagrant
@@ -20,7 +21,12 @@ NEPHO_VAGRANT_BOILER_PLATE = """#
 
 
 class VagrantProvider(nepho.core.provider.AbstractProvider):
-    """An infrastructure provider class for Vagrant"""
+    """
+    An infrastructure provider class for Vagrant
+    
+    If you set a config value "vagrant_provider" it sill use that non-default provider.
+    
+    """
 
     PROVIDER_ID = "vagrant"
     TEMPLATE_FILENAME = "Vagrantfile"
@@ -43,8 +49,11 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         """Deploy a given pattern."""
         self.initialize_vagrant()
         v = vagrant.Vagrant()
+        vagrant_provider = self.config.get("vagrant_provider")
+        #vm_name = self._vm_name()
+        vm_name = None
         try:
-            v.up()
+            v.up(provider=vagrant_provider, vm_name=vm_name)
         except subprocess.CalledProcessError:
             print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."
 
@@ -71,3 +80,10 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         """Bring down a vagrant instance."""
         v = vagrant.Vagrant()
         v.destroy()
+    
+    def _vm_name(self):
+        """Helper method to generate the name for this VM."""
+        cloudlet_name = self.scenario.cloudlet.name
+        blueprint_name = self.scenario.blueprint.name
+        return "%s-%s" % (cloudlet_name, blueprint_name)
+        
