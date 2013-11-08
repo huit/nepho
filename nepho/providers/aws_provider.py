@@ -44,15 +44,17 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         """Helper method to setup a connection to CloudFormation."""
 
         (access_key, secret_key, region) = self._load_aws_connection_settings()
- 
-        print (access_key, secret_key, region)
-        
+        if region is None:
+            region = 'us-east-1'
+
         conn = boto.cloudformation.connect_to_region(region,
                                                  aws_access_key_id = access_key,
                                                  aws_secret_access_key = secret_key)
         if conn is None:
-            print "What's with that? Boto connection to CloudFormation failed."
+            print "Boto connection to CloudFormation failed. PLease check your "
             exit(1)
+        
+        return conn        
             
 #     def validate_template(self, template_str):
 #         """Validate the template as JSON and CloudFormation."""
@@ -89,33 +91,45 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         params = list()
         for item in context['parameters'].items():
             params.append(item)
-            
-        print params
-
-        stack_id = self.connection.create_stack(
+        
+        try:
+            stack_id = self.connection.create_stack(
                        stack_name,
                        template_body = template_json,
                        parameters = params,
                        capabilities = [ 'CAPABILITY_IAM' ],
                        disable_rollback = True
                     )
-                         
-        return stack_id
+            return stack_id
+        except boto.exception.BotoServerError as be:
+            print "Error communication with the CloudFormation service: %s" % (be)
+
+            exit (1)
 
     def status(self):
         """Check on the status of a stack within CloudFormation."""
 
-        context = self.contextManager.generate()
+        context = self.scenario.get_context()
         stack_name = create_stack_name(context)
+        
+        # Return object of type boto.cloudformation.stack.Stack
+        try:
+            stack = self.connection.describe_stacks(stack_name_or_id=stack_name)
+        except boto.exception.BotoServerError as be:
+            # Actually ,this may just mean that there's no stack by that name ...
+            print "Error communication with the CloudFormation service: %s" % (be)
+            exit (1)
+            
+        # Just for now ...
+        print_stack(stack[0])
+        return stack[0]
 
-        out = self.connection.describe_stacks(stack_name_or_id=stack_name)
-        print out
-        return out
 
     def destroy(self):
         """Delete a CloudFormation stack."""
 
-        context = self.contextManager.generate()
+        context = self.scenario.get_context()
+        
         stack_name = create_stack_name(context)
 
         out = self.connection.delete_stack(stack_name_or_id=stack_name)
@@ -149,6 +163,17 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         return (access_key, secret_key, region)
 
+def print_stack(stack):
+    print "---"
+    print "Name:            %s" % stack.stack_name
+    print"ID:              %s"% stack.stack_id
+    print "Status:          %s" % stack.stack_status
+    print "Creation Time:   %s" % stack.creation_time
+    print"Outputs:         %s"% stack.outputs
+    print "Parameters:      %s" % stack.parameters
+    print"Tags:            %s"% stack.tags
+    print "Capabilities:    %s" % stack.capabilities
+    
 def create_stack_name(context):
     return "%s-%s" % (context['cloudlet']['name'], context['blueprint']['name'])
 
