@@ -47,7 +47,7 @@ def set_scope(app):
         app.cloudlet_name = app.nepho_config.get('scope_cloudlet')
     else:
         try:
-            app.cloudlet_name = app.pargs.cloudlet or None
+            app.cloudlet_name = app.pargs.cloudlet
         except:
             # Nepho is called with no subcommand
             app.cloudlet_name = None
