@@ -30,6 +30,21 @@ class NephoParameterController(base.NephoBaseController):
         super(base.NephoBaseController, self)._setup(app)
         self.nepho_config = nepho.core.config.ConfigManager(self.app.config)
 
+    def _get_param(self, param, tier='common', provider=None, cloudlet=None, blueprint='common'):
+        params = self.nepho_config.keys('parameters')
+        try:
+            if tier == 'cloudlet' and blueprint is not None:
+                return params[tier]['cloudlet'][cloudlet][blueprint][key]
+            elif tier == 'provider' and provider is not None:
+                return params[tier]['provider'][provider][key]
+            elif tier == 'common':
+                return params[tier][key]
+            else:
+                raise KeyError, "'", tier, "' is not a valid parameter tier"
+        except KeyError, detail:
+            print "Unable to retrieve parameter '", param, "': ", detail
+            return None
+
     @controller.expose(help='List parameters.')
     def list(self):
 
