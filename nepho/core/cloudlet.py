@@ -1,7 +1,6 @@
 # coding: utf-8
 import os
-from os import path
-from tempfile import mkdtemp
+import tempfile
 from time import time
 import re
 import yaml
@@ -31,7 +30,7 @@ class Cloudlet:
         self.defn = None
         if self.path is not None:
             try:
-                self.defn = yaml.load(open(path.join(self.path, "cloudlet.yaml")))
+                self.defn = yaml.load(open(os.path.join(self.path, "cloudlet.yaml")))
             except Exception:
                 print "Error loading cloudlet YAML file!"
                 exit(1)
@@ -53,10 +52,10 @@ class Cloudlet:
 
     def blueprints(self):
         """Returns a list of blueprints."""
-        blueprint_dir = path.join(self.path, "blueprints")
+        blueprint_dir = os.path.join(self.path, "blueprints")
         blueprint_files = list()
-        if path.isdir(blueprint_dir):
-            blueprint_files.extend(glob.glob(path.join(blueprint_dir, '*.yaml')))
+        if os.path.isdir(blueprint_dir):
+            blueprint_files.extend(glob.glob(os.path.join(blueprint_dir, '*.yaml')))
         else:
             return None
 
@@ -72,7 +71,7 @@ class Cloudlet:
          from the supplied remote git URL.
         """
         try:
-            temp_repo = mkdtemp()
+            temp_repo = tempfile.mkdtemp()
             validate = Repo.init(temp_repo, bare=True)
             validate.git.ls_remote(url, heads=True)
         except Exception as e:
@@ -107,12 +106,12 @@ class Cloudlet:
         repo = Repo(self.path)
         repo.remotes.origin.push()
 
-    def archive(self, repo_name, archive_dir="/tmp"):
+    def archive(self, repo_name, archive_dir=tempfile.gettempdir()):
         """Archives the cloudlet on disk as a tar file, and removes it."""
         repo = Repo(self.path)
         try:
             print "Archiving %s to %s." % (repo_name, archive_dir)
-            archive_file = path.join(archive_dir, "%s.tar") % (repo_name)
+            archive_file = os.path.join(archive_dir, "%s.tar") % (repo_name)
 
             # TODO: If a tar already exists, rotate/increment it. I tried using
             # logging.handlers.RotatingFileHandler for this, but it didn't quite
@@ -125,7 +124,7 @@ class Cloudlet:
             print e
             exit(1)
         else:
-            if path.islink(self.path):
+            if os.path.islink(self.path):
                 os.unlink(self.path)
             else:
                 rmtree(self.path)
@@ -147,7 +146,7 @@ class CloudletManager:
         self.config         = config
         self.registry       = self.config.get('cloudlet_registry_url')
         cache_dir           = self.config.get('cache_dir')
-        self.registry_cache = path.join(cache_dir, "registry.yaml")
+        self.registry_cache = os.path.join(cache_dir, "registry.yaml")
         self.update_registry()
 
     def all_cloudlet_dirs(self):
@@ -162,7 +161,7 @@ class CloudletManager:
         # Collect the filesystem paths to every cloudlet into one list
         cloudlet_paths = list()
         for one_dir in dirs:
-            cloudlet_paths.extend(glob.glob(path.join(one_dir, '*')))
+            cloudlet_paths.extend(glob.glob(os.path.join(one_dir, '*')))
 
         return cloudlet_paths
 
@@ -171,7 +170,7 @@ class CloudletManager:
         if target_dir is None:
             target_dir = self.all_cloudlet_dirs()[0]
 
-        cloudlet_path = path.join(target_dir, name)
+        cloudlet_path = os.path.join(target_dir, name)
         return Cloudlet(name, cloudlet_path, url)
 
     def find(self, name=None, multiple=False):
@@ -182,7 +181,7 @@ class CloudletManager:
         if name is None:
             paths = [path for path in cloudlet_paths]
         else:
-            paths = [path for path in cloudlet_paths if re.match(".*/" + name + "$", path)]
+            paths = [path for path in cloudlet_paths if (os.path.split(path))[1] == name]
         cloudlets = []
         for p in paths:
             cloudlets.append(Cloudlet(name, p))
@@ -221,7 +220,7 @@ class CloudletManager:
 
         # If the local registry is missing, empty, or stale (over 4 hours old)
         # update it from the configured URL. In either case, return the YAML object
-        if not path.exists(self.registry_cache) or path.getsize(self.registry_cache) == 0 or (time() - path.getmtime(self.registry_cache)) > 14400:
+        if not os.path.exists(self.registry_cache) or os.path.getsize(self.registry_cache) == 0 or (time() - os.path.getmtime(self.registry_cache)) > 14400:
             print "Updating cloudlet registry from: %s" % (self.registry)
             try:
                 response = requests.get(self.registry, stream=True)
