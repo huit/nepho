@@ -20,7 +20,7 @@ class Scenario:
         self.provider_name = self.blueprint.provider_name
 
         pfac = provider_factory.ProviderFactory()
-        self.provider = pfac.create(self.provider_name, self.config, self)
+        self.provider = pfac.create(self.provider_name, config, self)
 
         self.remgr = resource.ResourceManager(config)
         self.context = context.Context(config)

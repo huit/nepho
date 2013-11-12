@@ -14,7 +14,9 @@ from nepho.core import common, cloudlet, blueprint, config
 class NephoParameterController(base.NephoBaseController):
     class Meta:
         label = 'parameter'
-        stacked_on = None
+        interface = controller.IController
+        stacked_on = 'base'
+        stacked_type = 'nested'
         description = 'list, view and modify parameter settings'
         usage = "nepho parameter <action> [cloudlet] [blueprint] [key] [value]"
         arguments = [
@@ -26,7 +28,7 @@ class NephoParameterController(base.NephoBaseController):
 
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
-        self.nepho_config = nepho.core.config.ConfigManager(self.config)
+        self.nepho_config = nepho.core.config.ConfigManager(self.app.config)
 
     @controller.expose(help='List parameters.')
     def list(self):

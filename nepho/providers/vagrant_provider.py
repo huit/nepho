@@ -49,7 +49,7 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         """Deploy a given pattern."""
         self.initialize_vagrant()
         v = vagrant.Vagrant()
-        vagrant_provider = self.config.get("vagrant_provider")
+        vagrant_provider = self.app.config.get("vagrant_provider")
         #vm_name = self._vm_name()
         vm_name = None
         try:

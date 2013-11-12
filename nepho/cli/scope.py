@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from cement.core import controller
+from cement.core import controller, hook
 from termcolor import colored
 from nepho.cli import base
 
@@ -9,7 +9,9 @@ from nepho.cli import base
 class NephoScopeController(base.NephoBaseController):
     class Meta:
         label = 'scope'
-        stacked_on = None
+        interface = controller.IController
+        stacked_on = 'base'
+        stacked_type = 'nested'
         description = 'set a cloudlet (and optionally blueprint) scope for future commands'
         usage = "nepho config <action> [key] [value]"
         arguments = [
@@ -19,35 +21,38 @@ class NephoScopeController(base.NephoBaseController):
 
     @controller.expose(aliases=['set'], help="set a scope for future commands or view current scope")
     def default(self):
-        self.log.debug('Setting scope to cloudlet: %s, blueprint: %s' % (self.pargs.cloudlet, self.pargs.blueprint))
-        if self.pargs.cloudlet:
-            self.nepho_config.set('scope_cloudlet', self.pargs.cloudlet)
-            if self.pargs.blueprint:
+        new_cn = self.app.pargs.cloudlet
+        new_bp = self.app.pargs.blueprint
+        old_cn = self.app.nepho_config.get('scope_cloudlet')
+        old_bp = self.app.nepho_config.get('scope_blueprint')
+
+        self.app.log.debug('Setting scope to cloudlet: %s, blueprint: %s' % (new_cn, new_bp))
+
+        if new_cn:
+            self.app.nepho_config.set('scope_cloudlet', new_cn)
+            if new_bp:
                 # Only delete the blueprint if cloudlet is being explicitly set
                 # (i.e. user isn't just viewing current scope printout)
-                self.nepho_config.set('scope_blueprint', self.pargs.blueprint)
+                self.app.nepho_config.set('scope_blueprint', new_bp)
             else:
-                self.nepho_config.unset('scope_blueprint')
+                self.app.nepho_config.unset('scope_blueprint')
 
-        cloudlet = self.nepho_config.get('scope_cloudlet')
-        blueprint = self.nepho_config.get('scope_blueprint')
-
-        if cloudlet is None and blueprint is None:
-            print "Scope unset.  Run nepho scope <cloudlet> [blueprint] to set."
-        else:
-            print "Scope is currently " + colored(cloudlet, "blue") + " " + colored(blueprint or "", "cyan")
+            if new_cn != old_cn or new_bp != old_bp:
+                print "Set default command scope to " + colored(new_cn, "blue") + " " + colored(new_bp or "", "cyan")
+        elif old_cn is None:
+            print "Default command scope is unset. Run nepho scope <cloudlet> [blueprint] to set."
 
     @controller.expose(help="unset current scope")
     def unset(self):
-        self.log.debug('Unsetting scope.')
-        self.nepho_config.unset('scope_cloudlet')
-        self.nepho_config.unset('scope_blueprint')
+        self.app.log.debug('Unsetting scope.')
+        self.app.nepho_config.unset('scope_cloudlet')
+        self.app.nepho_config.unset('scope_blueprint')
 
-        print "Default scope unset.  Run nepho scope <cloudlet> [blueprint] to set."
+        print "Default command scope is now unset. Run nepho scope <cloudlet> [blueprint] to set."
 
-    def display(self):
-        cloudlet = self.nepho_config.get('scope_cloudlet')
-        blueprint = self.nepho_config.get('scope_blueprint')
 
-        if cloudlet is not None:
-            print "Default scope is " + colored(cloudlet, "blue") + " " + colored(blueprint or "", "cyan")
+def print_scope(app):
+    if app.nepho_config.get('scope_cloudlet') is not None:
+        print "Using default command scope " + colored(app.nepho_config.get('scope_cloudlet'), "cyan") + " " + colored(app.nepho_config.get('scope_blueprint') or "", "yellow") + "\n"
+    else:
+        pass
