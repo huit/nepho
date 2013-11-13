@@ -45,7 +45,7 @@ class NephoBlueprintController(base.NephoBaseController):
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
             exit(1)
         except AttributeError:
-            print 'Could not find Cloudlet:', cloudlet_name
+            print 'Could not find Cloudlet:'
             exit(1)
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
@@ -82,7 +82,7 @@ class NephoBlueprintController(base.NephoBaseController):
         else:
             pass
         if cloudlt is None:
-            print 'Could not find Cloudlet:', cloudlet_name
+            print 'Could not find Cloudlet:'
             exit(1)
 
         print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (cloudlt.defn['version']), ")"
