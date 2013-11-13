@@ -13,7 +13,7 @@ class NephoScopeController(base.NephoBaseController):
         stacked_on = 'base'
         stacked_type = 'nested'
         description = 'set a cloudlet (and optionally blueprint) scope for future commands'
-        usage = "nepho config <action> [key] [value]"
+        usage = "nepho scope <action> [cloudlet] [blueprint]"
         arguments = [
             (['cloudlet'], dict(help="Name of a cloudlet", nargs='?')),
             (['blueprint'], dict(help="Name of a blueprint (optional)", nargs='?')),
