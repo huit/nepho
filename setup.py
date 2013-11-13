@@ -12,13 +12,15 @@ setup(
     author_email = 'ithelp@harvard.edu',
     license      = 'MIT',
     scripts      = ['bin/nepho'],
+    dependency_links = [
+        'git+git://github.com/cement/cement.git@2.1.4.dev20131029203905#egg=cement-2.1.4-dev'
+    ],
     install_requires = [
         'argparse>=1.2',
         'boto>=2.0',
-        'awscli>=1.2.3',
         'Jinja2',
         'PyYAML',
-        'cement>=2.0',
+        'cement>=2.1,==2.1.4-dev',
         'termcolor',
         'gitpython==0.3.2.RC1',
         'requests>=1.2.3',
