@@ -100,7 +100,7 @@ class NephoStackController(base.NephoBaseController):
         scene = self._assemble_scenario()
 
         status = scene.provider.status()
-        print status
+        print json.dumps(status, sort_keys=True, indent=4, separators=(',', ': '))
         exit(0)
 
         #
