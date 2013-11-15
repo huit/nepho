@@ -199,7 +199,7 @@ class NephoCloudletController(base.NephoBaseController):
         if not isinstance(cl, list):
             cl = [cl]
         for c in cl:
-            c.archive(self.app.cloudlet_name, self.nepho_config.get('nepho', 'archive_dir'))
+            c.archive(self.app.cloudlet_name, self.nepho_config.get('archive_dir'))
             c.uninstall()
 
     @controller.expose(help="Update the local cloudlet registry.", aliases=["update-registry"])
