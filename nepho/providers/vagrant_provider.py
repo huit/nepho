@@ -23,9 +23,9 @@ NEPHO_VAGRANT_BOILER_PLATE = """#
 class VagrantProvider(nepho.core.provider.AbstractProvider):
     """
     An infrastructure provider class for Vagrant
-    
+
     If you set a config value "vagrant_provider" it sill use that non-default provider.
-    
+
     """
 
     PROVIDER_ID = "vagrant"
@@ -49,7 +49,7 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         """Deploy a given pattern."""
         self.initialize_vagrant()
         v = vagrant.Vagrant()
-        vagrant_provider = self.app.config.get("vagrant_provider")
+        vagrant_provider = self.config.get("vagrant_provider")
         #vm_name = self._vm_name()
         vm_name = None
         try:
@@ -80,10 +80,9 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         """Bring down a vagrant instance."""
         v = vagrant.Vagrant()
         v.destroy()
-    
+
     def _vm_name(self):
         """Helper method to generate the name for this VM."""
         cloudlet_name = self.scenario.cloudlet.name
         blueprint_name = self.scenario.blueprint.name
         return "%s-%s" % (cloudlet_name, blueprint_name)
-        
