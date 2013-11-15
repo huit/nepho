@@ -3,6 +3,7 @@ from cement.utils import test
 from nepho import cli
 from nepho.cli.base import Nepho
 
+
 class MyTestApp(Nepho):
     class Meta:
         argv = []
