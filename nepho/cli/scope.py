@@ -38,7 +38,7 @@ class NephoScopeController(base.NephoBaseController):
                 self.app.nepho_config.unset('scope_blueprint')
 
             if new_cn != old_cn or new_bp != old_bp:
-                print "Set default command scope to " + colored(new_cn, "blue") + " " + colored(new_bp or "", "cyan")
+                print "Set default command scope to " + colored(new_cn, "cyan") + " " + colored(new_bp or "", "yellow")
         elif old_cn is None:
             print "Default command scope is unset. Run nepho scope <cloudlet> [blueprint] to set."
 
