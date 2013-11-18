@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from os import path
 import yaml
+import os
 
 from termcolor import colored
 from textwrap import TextWrapper
@@ -56,9 +56,9 @@ class ResourceManager:
             cloudlt = cloudlet.CloudletManager(self.config).find(cloudlet_name)
 
         try:
-            pattern_dir = path.join(cloudlt.path, "resources", "patterns", pattern_name)
-            if not path.isdir(pattern_dir):
-                pattern_dir = path.join(cloudlt.path, "resources", "patterns", "common")
+            pattern_dir = os.path.join(cloudlt.path, "resources", "patterns", pattern_name)
+            if not os.path.isdir(pattern_dir):
+                pattern_dir = os.path.join(cloudlt.path, "resources", "patterns", "common")
         except:
             print "No cloudlet found for pattern '%s'" % (pattern_string)
             exit(1)
@@ -68,7 +68,8 @@ class ResourceManager:
     def lookup_pattern_file(self, blueprint, provider):
         """Given a blueprint and pattern name/string, lookup and return that pattern file."""
         pattern_dir = self.lookup_pattern_dir(blueprint)
-        pattern_file = path.join(pattern_dir, provider.PROVIDER_ID, provider.TEMPLATE_FILENAME)
+        pattern_file = os.path.join(
+            pattern_dir, provider.PROVIDER_ID, provider.TEMPLATE_FILENAME)
 
         return pattern_file
 
@@ -80,12 +81,15 @@ class ResourceManager:
         context = scenario.get_context()
 
         template_file_abs = pattern.get_template_file()
-        template_dir = path.dirname(template_file_abs)
-        template_common_dir = path.join(
-            template_dir, "..", "..", "common", providr.PROVIDER_ID)
+        template_dir = os.path.dirname(template_file_abs)
+        template_common_dir = os.path.join(
+            os.path.dirname(os.path.dirname(template_dir)), "common",
+            providr.PROVIDER_ID)
 
-        template_file = path.basename(template_file_abs)
+        template_file = os.path.basename(template_file_abs)
         template_dirs = [template_dir, template_common_dir]
+
+        print template_dirs
 
         # Use Jinja2
         jinjaFSloader = jinja2.FileSystemLoader(template_dirs)
