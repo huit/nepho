@@ -15,6 +15,9 @@ import collections
 import boto
 import boto.cloudformation
 
+# Boto debugging output
+#boto.set_stream_logger('foo')
+
 import nepho
 
 
@@ -76,7 +79,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def deploy(self):
         """Deploy a given pattern."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
 
         stack_name = create_stack_name(context)
 
@@ -105,7 +108,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def status(self):
         """Check on the status of a stack within CloudFormation."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
         stack_name = create_stack_name(context)
 
         # Return object of type boto.cloudformation.stack.Stack
@@ -123,7 +126,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def access(self):
         """Check on the status of a stack within CloudFormation."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
         stack_name = create_stack_name(context)
 
         # Return object of type boto.cloudformation.stack.Stack
@@ -146,7 +149,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def destroy(self):
         """Delete a CloudFormation stack."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
 
         stack_name = create_stack_name(context)
 
@@ -164,7 +167,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         return self.connection.list_stack()
 
     def _get_stack(self, stack):
-        context = self.scenario.get_context()
+        context = self.scenario.context
         stack_name = create_stack_name(context)
 
         stacks = self.connection.describe_stacks(stack_name)

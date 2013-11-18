@@ -40,7 +40,7 @@ class NephoBlueprintController(base.NephoBaseController):
 
         try:
             cloudlt = self.cloudletManager.find(self.app.cloudlet_name)
-            y = cloudlt.defn
+            y = cloudlt.definition
         except IOError:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
             exit(1)
@@ -57,7 +57,7 @@ class NephoBlueprintController(base.NephoBaseController):
 
         # Now list the available blueprints
         for bp in blueprints:
-            if bp.defn is not None:
+            if bp.definition is not None:
                 print colored("    └──", "yellow"), colored(bp.name, attrs=['underline'])
                 print wrapper.fill(y['summary'])
             else:
@@ -85,18 +85,17 @@ class NephoBlueprintController(base.NephoBaseController):
             print 'Could not find Cloudlet:'
             exit(1)
 
-        print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (cloudlt.defn['version']), ")"
+        print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (cloudlt.definition['version']), ")"
 
         bprint = cloudlt.blueprint(self.app.blueprint_name)
 
-        y = bprint.defn
+        y = bprint.definition
 
         wrapper = TextWrapper(width=80, subsequent_indent="              ")
 
         print "-" * 80
         print "name:         %s" % (y['name'])
         print "provider:     %s" % (y['provider'])
-        print "pattern:      %s" % (y['pattern'])
         print wrapper.fill("summary:      %s" % (y['summary']))
         print wrapper.fill("description:  %s" % (y['description']))
         print "-" * 80

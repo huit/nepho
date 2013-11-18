@@ -46,26 +46,26 @@ class NephoParameterController(base.NephoBaseController):
 
     @controller.expose(help='Get a parameter value')
     def get(self):
-        if self.pargs.key is None:
+        if self.app.pargs.key is None:
             print "Usage: nepho parameter get <key>"
             exit(1)
         domain = "parameters"
-        print self.nepho_config.get(self.pargs.key, domain)
+        print self.nepho_config.get(self.app.pargs.key, domain)
 
     @controller.expose(help='Set a parameter value', aliases=["add"])
     def set(self):
-        if self.pargs.key is None or self.pargs.value is None:
+        if self.app.pargs.key is None or self.app.pargs.value is None:
             print "Usage: nepho parameter set <key>"
             exit(1)
         domain = "parameters"
 
-        self.nepho_config.set(self.pargs.key, self.pargs.value, domain)
+        self.nepho_config.set(self.app.pargs.key, self.app.pargs.value, domain)
 
     @controller.expose(help='unset a parameter value', aliases=["remove", "delete"])
     def unset(self):
-        if self.pargs.key is None:
+        if self.app.pargs.key is None:
             print "Usage: nepho parameter unset <key>"
             exit(1)
         domain = "parameters"
 
-        self.nepho_config.unset(self.pargs.key, domain)
+        self.nepho_config.unset(self.app.pargs.key, domain)

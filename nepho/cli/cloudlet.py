@@ -59,7 +59,7 @@ class NephoCloudletController(base.NephoBaseController):
                 # subsequent versions will be ignored by other commands
                 if name not in items:
                     try:
-                        y = cloudlt.defn
+                        y = cloudlt.definition
                     except:
                         print colored("└──", "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
                     else:
@@ -88,7 +88,7 @@ class NephoCloudletController(base.NephoBaseController):
             exit(1)
         else:
             wrapper = TextWrapper(width=80, subsequent_indent="              ")
-            d = c.defn
+            d = c.definition
 
             print "-" * 80
             print "Name:         %s" % (d['name'])

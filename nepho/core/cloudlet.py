@@ -27,18 +27,18 @@ class Cloudlet:
             self.clone(url)
 
         # now load definition, and fail is unable
-        self.defn = None
+        self.definition = None
         if self.path is not None:
             try:
-                self.defn = yaml.load(open(os.path.join(self.path, "cloudlet.yaml")))
+                self.definition = yaml.load(open(os.path.join(self.path, "cloudlet.yaml")))
             except Exception:
                 print "Error loading cloudlet YAML file!"
                 exit(1)
 
         # include metadata into the definition dictionary
-        self.defn['name'] = self.name
-        self.defn['url'] = self.url
-        self.defn['path'] = self.path
+        self.definition['name'] = self.name
+        self.definition['url'] = self.url
+        self.definition['path'] = self.path
 
     def serialize(self):
         """Returns the cloudlets data definition as a JSON string."""
