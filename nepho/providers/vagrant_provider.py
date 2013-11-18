@@ -53,7 +53,9 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
         #vm_name = self._vm_name()
         vm_name = None
         try:
+            print 'Nepho Elves are now building your Stack.... this may take a couple of minutes.'
             v.up(provider=vagrant_provider, vm_name=vm_name)
+            print 'Vagrant Environment created! Access your stack with "nepho stack access <cloudlet> <blueprint>" or "vagrant ssh"'
         except subprocess.CalledProcessError:
             print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."
 
