@@ -221,8 +221,14 @@ def create_stack_name(context):
 
 
 def parse_cf_json(str):
-    cf_dict = json.loads(str, object_pairs_hook=collections.OrderedDict)
-    return cf_dict
+    try:
+        cf_dict = json.loads(str, object_pairs_hook=collections.OrderedDict)
+    except ValueError as e:
+        print "Error loading JSON template file."
+        print e
+        exit(1)
+    else:
+        return cf_dict
 
 
 def get_cf_json(order_dict, pretty=False):
