@@ -8,6 +8,7 @@ import yaml
 
 import vagrant
 import nepho
+from nepho.core.common import cwd
 #from nepho.core import common, resource
 #from nepho.core import  provider
 #import nepho.core.provider
@@ -31,19 +32,19 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     PROVIDER_ID = "vagrant"
     TEMPLATE_FILENAME = "Vagrantfile"
 
+    def __init__(self, config, scenario=None):
+        nepho.core.provider.AbstractProvider.__init__(self, config, scenario)
+        self.vagrantfile_path = os.path.join(
+            self.scenario.context['cloudlet']['path'], 'resources', self.scenario.context['blueprint']['name'])
+
     def deploy(self):
         # FIXME: For the moment, we are just using the Vagrantfile inside the
         # cloudlet.  We should move the template-processed Vagrantfile into a
         # working directory along with the payload, then run it from there.
 
-        context = self.scenario.context
-        context['parameters']
-
-        vagrantfile_path = os.path.join(
-            context['cloudlet']['path'], 'resources', context['blueprint']['name'])
         vagrant_provider = self.config.get("vagrant_provider")
 
-        with nepho.core.common.cwd(vagrantfile_path):
+        with cwd(self.vagrantfile_path):
             v = vagrant.Vagrant()
             vm_name = None
             try:
@@ -54,28 +55,31 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
                 print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."
 
     def status(self):
-        v = vagrant.Vagrant()
-        status = v.status()
-        try:
-            status['remote_user'] = v.user()
-            status['hostname'] = v.hostname()
-            status['port'] = v.port()
-            status['keyfile'] = v.keyfile()
-            status['conf'] = v.conf()
-        except Exception:
-            pass
-        return status
+        with cwd(self.vagrantfile_path):
+            v = vagrant.Vagrant()
+            status = v.status()
+            try:
+                status['remote_user'] = v.user()
+                status['hostname'] = v.hostname()
+                status['port'] = v.port()
+                status['keyfile'] = v.keyfile()
+                status['conf'] = v.conf()
+            except Exception:
+                pass
+            return status
 
     def access(self):
-        v = vagrant.Vagrant()
-        ssh_connect_string = v.user_hostname_port()
-        vagrant_binary = vagrant.VAGRANT_EXE
-        os.execlp(vagrant_binary, "", "ssh")
+        with cwd(self.vagrantfile_path):
+            v = vagrant.Vagrant()
+            ssh_connect_string = v.user_hostname_port()
+            vagrant_binary = vagrant.VAGRANT_EXE
+            os.execlp(vagrant_binary, "", "ssh")
 
     def destroy(self):
         """Bring down a vagrant instance."""
-        v = vagrant.Vagrant()
-        v.destroy()
+        with cwd(self.vagrantfile_path):
+            v = vagrant.Vagrant()
+            v.destroy()
 
     def _vm_name(self):
         """Helper method to generate the name for this VM."""
