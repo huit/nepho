@@ -9,7 +9,6 @@ import os
 import yaml
 import json
 import collections
-import uuid
 import shutil
 import tempfile
 from termcolor import colored
@@ -50,13 +49,17 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         self.s3_conn = boto.s3.connection.S3Connection(
             aws_access_key_id = access_key, aws_secret_access_key = secret_key)
-
-        conn = boto.cloudformation.connect_to_region(region,
-                                                     aws_access_key_id = access_key,
-                                                     aws_secret_access_key = secret_key)
-        if conn is None:
-            print "Boto connection to CloudFormation failed. Please check your "
+        if self.s3_conn is None:
+            print "Boto connection to S3 failed. Please check your credentials."
             exit(1)
+
+        conn = boto.cloudformation.connect_to_region(
+            region, aws_access_key_id = access_key, aws_secret_access_key = secret_key)
+        if conn is None:
+            print "Boto connection to CloudFormation failed. Please check your credentials."
+            exit(1)
+
+        self.access_key = access_key
 
         return conn
 
@@ -111,9 +114,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         print " - Creating S3 bucket for payload"
         try:
             payload_bucket = self.s3_conn.create_bucket(
-                'nepho-' + str(uuid.uuid1()), policy='public-read')
+                'nepho-payloads-' + self.access_key.lower(), policy='private')
+
+            payload_name = '%s-payload.tar.gz' % (stack_name)
             payload_key = boto.s3.key.Key(payload_bucket)
-            payload_key.key = 'payload.tar.gz'
+            payload_key.key = payload_name
         except:
             print colored("Error: ", "red") + "Unable to create S3 bucket"
             shutil.rmtree(tmp_dir)
@@ -131,6 +136,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             shutil.rmtree(tmp_dir)
 
         try:
+            print "The Nepho elves are now building your stack. This may take a few minutes."
             stack_id = self.connection.create_stack(
                 stack_name,
                 template_body = template_json,
@@ -138,17 +144,15 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 capabilities = ['CAPABILITY_IAM'],
                 disable_rollback = True
             )
-            return stack_id
+            print "Your stack ID is %s." % (stack_id)
+            print "You can monitor creation progress here: https://console.aws.amazon.com/cloudformation/home"
         except boto.exception.BotoServerError as be:
             print "Error communicating with the CloudFormation service: %s" % (be)
             print "Possible causes:"
             print " - Template error.  Check template validity and ensure all parameters can be accepted by the template."
             print " - Another stack by this name already exists."
             exit(1)
-        finally:
-            print "You will need to manually delete your bucket: %s" % (payload_bucket)
-            #payload_bucket.delete_key(payload_key)
-            #payload_bucket.delete()
+        return stack_id
 
     def status(self):
         """Check on the status of a stack within CloudFormation."""

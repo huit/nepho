@@ -31,33 +31,27 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     PROVIDER_ID = "vagrant"
     TEMPLATE_FILENAME = "Vagrantfile"
 
-    def initialize_vagrant(self):
-        """Creates the desired Vagrantfile in CWD, by rendering a tempalte + context."""
-
-        Vagrantfile_content = self.scenario.get_template()
-
-        try:
-            vfile = open("Vagrantfile", "w")
-            vfile.write(NEPHO_VAGRANT_BOILER_PLATE)
-            vfile.write(Vagrantfile_content)
-            vfile.close()
-        except IOError:
-            print "Error writing out a Vagrantfile in the current directory."
-            exit(1)
-
     def deploy(self):
-        """Deploy a given pattern."""
-        self.initialize_vagrant()
-        v = vagrant.Vagrant()
+        # FIXME: For the moment, we are just using the Vagrantfile inside the
+        # cloudlet.  We should move the template-processed Vagrantfile into a
+        # working directory along with the payload, then run it from there.
+
+        context = self.scenario.context
+        context['parameters']
+
+        vagrantfile_path = os.path.join(
+            context['cloudlet']['path'], 'resources', context['blueprint']['name'])
         vagrant_provider = self.config.get("vagrant_provider")
-        #vm_name = self._vm_name()
-        vm_name = None
-        try:
-            print 'Nepho Elves are now building your Stack.... this may take a couple of minutes.'
-            v.up(provider=vagrant_provider, vm_name=vm_name)
-            print 'Vagrant Environment created! Access your stack with "nepho stack access <cloudlet> <blueprint>" or "vagrant ssh"'
-        except subprocess.CalledProcessError:
-            print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."
+
+        with nepho.core.common.cwd(vagrantfile_path):
+            v = vagrant.Vagrant()
+            vm_name = None
+            try:
+                print 'Nepho Elves are now building your Stack.... this may take a couple of minutes.'
+                v.up(provider=vagrant_provider, vm_name=vm_name)
+                print 'Vagrant Environment created! Access your stack with "nepho stack access <cloudlet> <blueprint>" or "vagrant ssh"'
+            except subprocess.CalledProcessError:
+                print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."
 
     def status(self):
         v = vagrant.Vagrant()
