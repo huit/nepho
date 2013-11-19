@@ -83,7 +83,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         stack_name = create_stack_name(context)
 
-        raw_template = self.scenario.get_template()
+        raw_template = self.scenario.template
         template_json = self.format_template(raw_template)
 
         params = list()
