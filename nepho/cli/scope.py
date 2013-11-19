@@ -42,7 +42,7 @@ class NephoScopeController(base.NephoBaseController):
         elif old_cn is None:
             print "Default command scope is unset. Run nepho scope <cloudlet> [blueprint] to set."
 
-    @controller.expose(help="unset current scope")
+    @controller.expose(help="unset current scope", aliases=['clear'])
     def unset(self):
         self.app.log.debug('Unsetting scope.')
         self.app.nepho_config.unset('scope_cloudlet')

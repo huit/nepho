@@ -5,15 +5,20 @@
 #   http://www.technobabelfish.com/2013/08/boto-and-cloudformation.html
 #
 #
-from os import path
 import os
-
 import yaml
 import json
 import collections
+import shutil
+import tempfile
+from termcolor import colored
 
 import boto
 import boto.cloudformation
+import boto.s3.connection
+
+# Boto debugging output
+#boto.set_stream_logger('foo')
 
 import nepho
 
@@ -42,12 +47,19 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         if region is None:
             region = 'us-east-1'
 
-        conn = boto.cloudformation.connect_to_region(region,
-                                                     aws_access_key_id = access_key,
-                                                     aws_secret_access_key = secret_key)
-        if conn is None:
-            print "Boto connection to CloudFormation failed. Please check your "
+        self.s3_conn = boto.s3.connection.S3Connection(
+            aws_access_key_id = access_key, aws_secret_access_key = secret_key)
+        if self.s3_conn is None:
+            print "Boto connection to S3 failed. Please check your credentials."
             exit(1)
+
+        conn = boto.cloudformation.connect_to_region(
+            region, aws_access_key_id = access_key, aws_secret_access_key = secret_key)
+        if conn is None:
+            print "Boto connection to CloudFormation failed. Please check your credentials."
+            exit(1)
+
+        self.access_key = access_key
 
         return conn
 
@@ -76,18 +88,55 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def deploy(self):
         """Deploy a given pattern."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
 
         stack_name = create_stack_name(context)
 
-        raw_template = self.scenario.get_template()
+        raw_template = self.scenario.template
         template_json = self.format_template(raw_template)
 
         params = list()
         for item in context['parameters'].items():
             params.append(item)
 
+        print " - Archiving payload for upload to S3"
         try:
+            tmp_dir = tempfile.mkdtemp()
+            payload = shutil.make_archive(
+                os.path.join(tmp_dir, 'payload'), 'zip',
+                os.path.join(context['cloudlet']['path'], 'payload'))
+        except:
+            print colored("Error: ", "red") + "Unable to create payload file"
+            shutil.rmtree(tmp_dir)
+            exit(1)
+
+        # Upload payload to a public (but obfuscated) S3 bucket
+        print " - Creating S3 bucket for payload"
+        try:
+            payload_bucket = self.s3_conn.create_bucket(
+                'nepho-payloads-' + self.access_key.lower(), policy='private')
+
+            payload_name = '%s-payload.tar.gz' % (stack_name)
+            payload_key = boto.s3.key.Key(payload_bucket)
+            payload_key.key = payload_name
+        except:
+            print colored("Error: ", "red") + "Unable to create S3 bucket"
+            shutil.rmtree(tmp_dir)
+            exit(1)
+
+        print " - Uploading payload archive to S3"
+        try:
+            payload_key.set_contents_from_file(open(payload, 'r'))
+            params.append(('PayloadURL', payload_key.generate_url(3600)))
+        except Exception as e:
+            print colored("Error: ", "red") + "Unable to uplaod payload to S3"
+            print e
+            exit(1)
+        finally:
+            shutil.rmtree(tmp_dir)
+
+        try:
+            print "The Nepho elves are now building your stack. This may take a few minutes."
             stack_id = self.connection.create_stack(
                 stack_name,
                 template_body = template_json,
@@ -95,17 +144,20 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 capabilities = ['CAPABILITY_IAM'],
                 disable_rollback = True
             )
-            return stack_id
+            print "Your stack ID is %s." % (stack_id)
+            print "You can monitor creation progress here: https://console.aws.amazon.com/cloudformation/home"
         except boto.exception.BotoServerError as be:
             print "Error communicating with the CloudFormation service: %s" % (be)
-            print "Check your parameters and template for validity!  You may need to manually remove any parameters that your template doesn't know how to accept."
-
+            print "Possible causes:"
+            print " - Template error.  Check template validity and ensure all parameters can be accepted by the template."
+            print " - Another stack by this name already exists."
             exit(1)
+        return stack_id
 
     def status(self):
         """Check on the status of a stack within CloudFormation."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
         stack_name = create_stack_name(context)
 
         # Return object of type boto.cloudformation.stack.Stack
@@ -123,7 +175,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def access(self):
         """Check on the status of a stack within CloudFormation."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
         stack_name = create_stack_name(context)
 
         # Return object of type boto.cloudformation.stack.Stack
@@ -146,7 +198,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def destroy(self):
         """Delete a CloudFormation stack."""
 
-        context = self.scenario.get_context()
+        context = self.scenario.context
 
         stack_name = create_stack_name(context)
 
@@ -164,7 +216,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         return self.connection.list_stack()
 
     def _get_stack(self, stack):
-        context = self.scenario.get_context()
+        context = self.scenario.context
         stack_name = create_stack_name(context)
 
         stacks = self.connection.describe_stacks(stack_name)

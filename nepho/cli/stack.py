@@ -12,7 +12,7 @@ from cement.core import controller
 
 import nepho.core.config
 from nepho.cli import base, scope
-from nepho.core import common, cloudlet, stack, provider, provider_factory, resource, context, scenario
+from nepho.core import common, cloudlet, stack, provider, provider_factory, scenario
 
 
 class NephoStackController(base.NephoBaseController):
@@ -44,12 +44,12 @@ class NephoStackController(base.NephoBaseController):
             scope.print_scope(self)
 
         scene = self._assemble_scenario()
-        ctxt = scene.get_context()
+        ctxt = scene.context
 
         # Use JSON lib to pretty print a sorted version of this ...
         print colored("Context:", "yellow")
         print colored("-" * 80, "yellow")
-        print yaml.dump(ctxt)
+        print yaml.dump(ctxt, indent=4)
 #        print json.dumps(json.loads(json.dumps(ctxt), object_pairs_hook=collections.OrderedDict), indent=2, separators=(',', ': '))
 
     @controller.expose(help='Show the template output for a stack from a blueprint')
@@ -61,7 +61,7 @@ class NephoStackController(base.NephoBaseController):
             scope.print_scope(self)
 
         scene = self._assemble_scenario()
-        print scene.get_template()
+        print scene.template
 
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy', 'up'])
     def create(self):
@@ -145,19 +145,19 @@ class NephoStackController(base.NephoBaseController):
 
         try:
             cloudlt = self.cloudletManager.find(self.app.cloudlet_name)
-            y = cloudlt.defn
+            y = cloudlt.definition
         except IOError:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
             exit(1)
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
 
-        bprint = cloudlt.blueprint(self.app.blueprint_name)
+        #bprint = cloudlt.blueprint(self.app.blueprint_name)
 
         # Create an appropriate provider, and set the target pattern.
-        provider_name = bprint.provider_name()
-        providr = provider.ProviderFactory(provider_name, self.app.config)
-        providr.pattern(bprint.pattern())
+        #provider_name = bprint.provider_name
+        #providr = provider.ProviderFactory(provider_name, self.app.config)
+        #providr.pattern(bprint.pattern())
 
         print "Partially implemented action. (input: %s)" % self.app.pargs.params
 

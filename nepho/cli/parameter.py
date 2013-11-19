@@ -50,7 +50,7 @@ class NephoParameterController(base.NephoBaseController):
             print "Usage: nepho parameter get <key>"
             exit(1)
         domain = "parameters"
-        print self.nepho_config.get(self.pargs.key, domain)
+        print self.nepho_config.get(self.app.pargs.key, domain)
 
     @controller.expose(help='Set a parameter value', aliases=["add"])
     def set(self):
