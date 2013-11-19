@@ -152,7 +152,7 @@ class NephoStackController(base.NephoBaseController):
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
 
-        bprint = cloudlt.blueprint(self.app.blueprint_name)
+        #bprint = cloudlt.blueprint(self.app.blueprint_name)
 
         # Create an appropriate provider, and set the target pattern.
         #provider_name = bprint.provider_name

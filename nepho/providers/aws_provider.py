@@ -5,15 +5,18 @@
 #   http://www.technobabelfish.com/2013/08/boto-and-cloudformation.html
 #
 #
-from os import path
 import os
-
 import yaml
 import json
 import collections
+import uuid
+import shutil
+import tempfile
+from termcolor import colored
 
 import boto
 import boto.cloudformation
+import boto.s3.connection
 
 # Boto debugging output
 #boto.set_stream_logger('foo')
@@ -44,6 +47,9 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         (access_key, secret_key, region) = self._load_aws_connection_settings()
         if region is None:
             region = 'us-east-1'
+
+        self.s3_conn = boto.s3.connection.S3Connection(
+            aws_access_key_id = access_key, aws_secret_access_key = secret_key)
 
         conn = boto.cloudformation.connect_to_region(region,
                                                      aws_access_key_id = access_key,
@@ -90,6 +96,40 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         for item in context['parameters'].items():
             params.append(item)
 
+        print " - Archiving payload for upload to S3"
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            payload = shutil.make_archive(
+                os.path.join(tmp_dir, 'payload'), 'zip',
+                os.path.join(context['cloudlet']['path'], 'payload'))
+        except:
+            print colored("Error: ", "red") + "Unable to create payload file"
+            shutil.rmtree(tmp_dir)
+            exit(1)
+
+        # Upload payload to a public (but obfuscated) S3 bucket
+        print " - Creating S3 bucket for payload"
+        try:
+            payload_bucket = self.s3_conn.create_bucket(
+                'nepho-' + str(uuid.uuid1()), policy='public-read')
+            payload_key = boto.s3.key.Key(payload_bucket)
+            payload_key.key = 'payload.tar.gz'
+        except:
+            print colored("Error: ", "red") + "Unable to create S3 bucket"
+            shutil.rmtree(tmp_dir)
+            exit(1)
+
+        print " - Uploading payload archive to S3"
+        try:
+            payload_key.set_contents_from_file(open(payload, 'r'))
+            params.append(('PayloadURL', payload_key.generate_url(3600)))
+        except Exception as e:
+            print colored("Error: ", "red") + "Unable to uplaod payload to S3"
+            print e
+            exit(1)
+        finally:
+            shutil.rmtree(tmp_dir)
+
         try:
             stack_id = self.connection.create_stack(
                 stack_name,
@@ -101,9 +141,14 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             return stack_id
         except boto.exception.BotoServerError as be:
             print "Error communicating with the CloudFormation service: %s" % (be)
-            print "Check your parameters and template for validity!  You may need to manually remove any parameters that your template doesn't know how to accept."
-
+            print "Possible causes:"
+            print " - Template error.  Check template validity and ensure all parameters can be accepted by the template."
+            print " - Another stack by this name already exists."
             exit(1)
+        finally:
+            print "You will need to manually delete your bucket: %s" % (payload_bucket)
+            #payload_bucket.delete_key(payload_key)
+            #payload_bucket.delete()
 
     def status(self):
         """Check on the status of a stack within CloudFormation."""
