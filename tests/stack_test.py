@@ -15,7 +15,7 @@ class NephoTestApp(Nepho):
 class a_TestNephoStack(test.CementTestCase):
     app_class = NephoTestApp
 
-    def setup():
+    def setup(self):
         app = self.make_app(argv=['cloudlet', '--quiet', 'uninstall', 'nepho-example'])
         app.setup()
         app.run()
