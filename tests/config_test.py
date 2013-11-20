@@ -15,6 +15,11 @@ class NephoTestApp(Nepho):
 class a_TestNephoConfig(test.CementTestCase):
     app_class = NephoTestApp
 
+    def setUp(self):
+        super(a_TestNephoConfig, self).setUp()
+
+        self.reset_backend()
+
     def test_nepho_config_list(self):
         app = self.make_app(argv=['config', 'list'])
         app.setup()

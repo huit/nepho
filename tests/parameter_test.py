@@ -15,7 +15,11 @@ class NephoTestApp(Nepho):
 class a_TestNephoParameter(test.CementTestCase):
     app_class = NephoTestApp
 
-    def setup(self):
+    def setUp(self):
+        super(a_TestNephoParameter, self).setUp()
+
+        self.reset_backend()
+
         app = self.make_app(argv=['cloudlet', '--quiet', 'uninstall', 'nepho-example'])
         app.setup()
         app.run()

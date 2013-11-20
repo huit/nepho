@@ -15,7 +15,11 @@ class NephoTestApp(Nepho):
 class a_TestNephoCloudlet(test.CementTestCase):
     app_class = NephoTestApp
 
-    def setup(self):
+    def setUp(self):
+        super(a_TestNephoCloudlet, self).setUp()
+
+        self.reset_backend()
+
         app = self.make_app(argv=['cloudlet', 'registry-update'])
         app.setup()
         app.run()

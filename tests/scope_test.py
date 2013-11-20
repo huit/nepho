@@ -15,6 +15,11 @@ class NephoTestApp(Nepho):
 class a_TestNephoScope(test.CementTestCase):
     app_class = NephoTestApp
 
+    def setUp(self):
+        super(a_TestNephoScope, self).setUp()
+
+        self.reset_backend()
+
     def test_nepho_scope_default(self):
         app = self.make_app(argv=['scope', 'default', 'nepho-example'])
         app.setup()
