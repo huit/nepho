@@ -31,7 +31,7 @@ class Cloudlet:
         self.definition = None
         if self.path is not None:
             try:
-                self.definition = yaml.load(open(os.path.join(self.path, "cloudlet.yaml")))
+                self.definition = yaml.safe_load(open(os.path.join(self.path, "cloudlet.yaml")))
             except Exception:
                 print "Error loading cloudlet YAML file!"
                 exit(1)
@@ -226,7 +226,7 @@ class CloudletManager:
             try:
                 response = requests.get(self.registry, stream=True)
                 with open(self.registry_cache, 'wb') as out_file:
-                    yaml.safe_dump(yaml.load(response.raw), out_file, default_flow_style=True)
+                    yaml.safe_dump(yaml.safe_load(response.raw), out_file, default_flow_style=True)
                     del response
             except yaml.YAMLError, detail:
                 print "Invalid registry data received: ", detail
@@ -237,7 +237,7 @@ class CloudletManager:
 
             with open(self.registry_cache, 'r') as yaml_file:
                 try:
-                    return yaml.load(yaml_file)
+                    return yaml.safe_load(yaml_file)
                 except yaml.YAMLError, detail:
                     print "Invalid registry data found: ", detail
                     print "Try running the nepho command again.\n"
@@ -246,7 +246,7 @@ class CloudletManager:
         else:
             with open(self.registry_cache, 'r') as yaml_file:
                 try:
-                    return yaml.load(yaml_file)
+                    return yaml.safe_load(yaml_file)
                 except yaml.YAMLError, detail:
                     print "Invalid registry data found: ", detail
                     print "Try running the nepho command again.\n"
@@ -257,4 +257,4 @@ class CloudletManager:
         """Returns a dictionary with registry values."""
         self.update_registry()
         with open(self.registry_cache, 'r') as yaml_file:
-            return yaml.load(yaml_file)
+            return yaml.safe_load(yaml_file)
