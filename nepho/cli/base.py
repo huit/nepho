@@ -43,3 +43,4 @@ class Nepho(foundation.CementApp):
         label = 'nepho'
         base_controller = NephoBaseController
         config_defaults = defaults
+        bootstrap = 'nepho.cli.bootstrap'
