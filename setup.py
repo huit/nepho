@@ -29,7 +29,8 @@ setup(
     ],
     tests_require = [
         'flake8>=2.1.0',
-        'nosetests>=1.3.0',
+        'nose>=1.3.0',
         'coverage>=3.7',
     ],
+    test_suite = 'nose.collector',
 )
