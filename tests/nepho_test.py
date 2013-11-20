@@ -3,6 +3,7 @@ from cement.utils import test
 from nepho import cli
 from nepho.cli.base import Nepho
 
+
 class NephoTestApp(Nepho):
     class Meta:
         argv = []
@@ -23,13 +24,13 @@ class a_TestNephoCloudlet(test.CementTestCase):
     app_class = NephoTestApp
 
     def test_nepho_cloudlet_install(self):
-        app = self.make_app(argv=['cloudlet', 'install', 'nepho-example' ])
+        app = self.make_app(argv=['cloudlet', 'install', 'nepho-example'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_cloudlet_search(self):
-        app = self.make_app(argv=['cloudlet', 'search' ])
+        app = self.make_app(argv=['cloudlet', 'search'])
         app.setup()
         app.run()
         app.close()
@@ -40,7 +41,7 @@ class TestNephoBlueprint(test.CementTestCase):
     app_class = NephoTestApp
 
     def test_nepho_blueprint_list(self):
-        app = self.make_app(argv=['blueprint', 'list', 'nepho-example' ])
+        app = self.make_app(argv=['blueprint', 'list', 'nepho-example'])
         app.setup()
         app.run()
         app.close()
@@ -51,7 +52,7 @@ class TestNephoConfig(test.CementTestCase):
     app_class = NephoTestApp
 
     def test_nepho_config_list(self):
-        app = self.make_app(argv=['config', 'list' ])
+        app = self.make_app(argv=['config', 'list'])
         app.setup()
         app.run()
         app.close()
