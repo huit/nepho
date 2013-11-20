@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import sys
 import tempfile
 from time import time
 import re
@@ -225,17 +226,32 @@ class CloudletManager:
             try:
                 response = requests.get(self.registry, stream=True)
                 with open(self.registry_cache, 'wb') as out_file:
-                    copyfileobj(response.raw, out_file)
+                    yaml.safe_dump(yaml.load(response.raw), out_file, default_flow_style=True)
                     del response
-            except Exception:
+            except yaml.YAMLError, detail:
+                print "Invalid registry data received: ", detail
+                pass
+            except IOError:
                 print "Error updating cloudlet registry. Using last cached version.\n"
                 pass
 
             with open(self.registry_cache, 'r') as yaml_file:
-                return yaml.load(yaml_file)
+                try:
+                    return yaml.load(yaml_file)
+                except yaml.YAMLError, detail:
+                    print "Invalid registry data found: ", detail
+                    print "Try running the nepho command again.\n"
+                    os.unlink(self.registry_cache)
+                    sys.exit(1)
         else:
             with open(self.registry_cache, 'r') as yaml_file:
-                return yaml.load(yaml_file)
+                try:
+                    return yaml.load(yaml_file)
+                except yaml.YAMLError, detail:
+                    print "Invalid registry data found: ", detail
+                    print "Try running the nepho command again.\n"
+                    os.unlink(self.registry_cache)
+                    sys.exit(1)
 
     def get_registry(self):
         """Returns a dictionary with registry values."""
