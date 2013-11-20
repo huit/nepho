@@ -19,11 +19,11 @@ class BasicNephoTests(test.CementTestCase):
 
 
 # Test Cloudlet
-class TestNephoCloudlet(test.CementTestCase):
+class a_TestNephoCloudlet(test.CementTestCase):
     app_class = NephoTestApp
 
     def test_nepho_cloudlet_install(self):
-        app = self.make_app(argv=['cloudlet', 'search' ])
+        app = self.make_app(argv=['cloudlet', 'install', 'nepho-example' ])
         app.setup()
         app.run()
         app.close()
@@ -40,7 +40,7 @@ class TestNephoBlueprint(test.CementTestCase):
     app_class = NephoTestApp
 
     def test_nepho_blueprint_list(self):
-        app = self.make_app(argv=['blueprint', 'list', 'theforeman' ])
+        app = self.make_app(argv=['blueprint', 'list', 'nepho-example' ])
         app.setup()
         app.run()
         app.close()
