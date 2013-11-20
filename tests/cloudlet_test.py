@@ -16,6 +16,10 @@ class a_TestNephoCloudlet(test.CementTestCase):
     app_class = NephoTestApp
 
     def setup():
+        app = self.make_app(argv=['cloudlet', 'registry-update'])
+        app.setup()
+        app.run()
+        app.close()
         app = self.make_app(argv=['cloudlet', '--quiet', 'uninstall', 'nepho-example'])
         app.setup()
         app.run()
