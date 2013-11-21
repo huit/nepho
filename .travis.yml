@@ -6,6 +6,8 @@ install:
 - sudo dpkg -i vagrant_1.2.2_x86_64.deb
 - pip install -r ./ci/requirements.txt
 - python setup.py develop
+before_script:
+  - 'nepho cloudlet install nepho-example'
 script:
 - flake8 .
 - nosetests -v
