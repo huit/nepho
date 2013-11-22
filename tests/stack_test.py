@@ -37,69 +37,69 @@ class a_TestNephoStack(test.CementTestCase):
 
     def test_nepho_stack_access(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'access', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'access', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_ssh(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'ssh', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'ssh', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_create(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'create', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'create', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_deploy(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'deploy', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'deploy', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_up(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'up', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'up', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_destroy(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'destroy', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'destroy', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_delete(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'delete', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'delete', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_show_context(self):
-        app = self.make_app(argv=['stack', 'show-context', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'show-context', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_show_template(self):
         raise nose.SkipTest('skip this until #168 is resolved')
-        app = self.make_app(argv=['stack', 'show-template', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'show-template', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
 
     def test_nepho_stack_status(self):
         raise nose.SkipTest('skip this until #165 is resolved')
-        app = self.make_app(argv=['stack', 'status', 'nepho-example', 'example'])
+        app = self.make_app(argv=['stack', 'status', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()

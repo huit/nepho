@@ -36,7 +36,7 @@ class a_TestNephoBlueprint(test.CementTestCase):
         app.close()
 
     def test_nepho_blueprint_describe(self):
-        app = self.make_app(argv=['blueprint', 'describe', 'nepho-example', 'example'])
+        app = self.make_app(argv=['blueprint', 'describe', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
