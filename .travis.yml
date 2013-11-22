@@ -14,4 +14,4 @@ script:
 notifications:
   hipchat:
     rooms:
-      secure: FspDKHN7adEPxEa4QW1WOgT1am5OfOML3CuBj6UHCgO/+IKodmKU7v/Mn/Z5tf537Uthw91WFBDn2kGMA578Io+IOYwcFfGLHlfl0upw9g5nWXSFS+bDCes1INmi0A20mrfudVY/6hFHmokOsbr4fGegyKq9q+WpUYqM5zEABMo=
+      - FspDKHN7adEPxEa4QW1WOgT1am5OfOML3CuBj6UHCgO/+IKodmKU7v/Mn/Z5tf537Uthw91WFBDn2kGMA578Io+IOYwcFfGLHlfl0upw9g5nWXSFS+bDCes1INmi0A20mrfudVY/6hFHmokOsbr4fGegyKq9q+WpUYqM5zEABMo=
