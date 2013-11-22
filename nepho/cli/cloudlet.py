@@ -176,7 +176,10 @@ class NephoCloudletController(base.NephoBaseController):
         if not isinstance(cl, list):
             cl = [cl]
         for c in cl:
-            c.update()
+            try:
+                c.update()
+            except AssertionError:
+                print colored("Error: ", "red") + "Cloudlet update failed, see issue #176."
 
     @controller.expose(help="Uninstall a Nepho cloudlet", aliases=["remove"])
     def uninstall(self):
