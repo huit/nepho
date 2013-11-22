@@ -27,4 +27,10 @@ setup(
         'ply==3.4',
         'python-vagrant==0.4.0'
     ],
+    setup_requires = [
+        'flake8>=2.1.0',
+        'nose>=1.3.0',
+        'coverage>=3.7',
+    ],
+    test_suite = 'nose.collector',
 )
