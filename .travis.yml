@@ -7,11 +7,11 @@ install:
 - pip install -r ./ci/requirements.txt
 - python setup.py develop
 before_script:
-  - 'nepho cloudlet install nepho-example'
+- nepho cloudlet install nepho-example
 script:
 - flake8 .
 - nosetests -v
 notifications:
   hipchat:
     rooms:
-      - FspDKHN7adEPxEa4QW1WOgT1am5OfOML3CuBj6UHCgO/+IKodmKU7v/Mn/Z5tf537Uthw91WFBDn2kGMA578Io+IOYwcFfGLHlfl0upw9g5nWXSFS+bDCes1INmi0A20mrfudVY/6hFHmokOsbr4fGegyKq9q+WpUYqM5zEABMo=
+      secure: v/ZtmfpKyuQSAicOoWCAR4QZtCtojbph6NXjDiQf0/oa7U9TJOzE1zw4NqfQm+gdleBXZWJ+11wCy7mwYq7AgiEUNhv0UIQtoFlaLDeBGkXBaqqyKvxcOl9Ddxxk9jCK2NEFhJ7oEgtEs50zPg0E+L+jNy25RUlhkbmnfn1e/xo=
