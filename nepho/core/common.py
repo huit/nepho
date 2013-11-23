@@ -70,11 +70,9 @@ def select_list(self, items_list=[], all=False, desc="Select an item:"):
 
 
 def all_cloudlets(self):
-    dirs = self.app.config.get('nepho', 'cloudlet_dirs')
-
     # Collect the filesystem paths to every cloudlet into one list
     cloudlet_paths = list()
-    for one_dir in dirs:
+    for one_dir in self.cloudlet_dirs:
         cloudlet_paths.extend(glob.glob(os.path.join(one_dir, '*')))
 
     return cloudlet_paths

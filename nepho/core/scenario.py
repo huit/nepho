@@ -13,54 +13,77 @@ class Scenario:
     parameters, and the "live" filesystem, suitable for bringing up a stack.
     """
 
-    def __init__(self, config, blueprint, params):
-        self.config = config.to_dict()
+    def __init__(self, blueprint, stored_params, user_params):
         self.blueprint = blueprint
-        self.transient_params = params
+        self.stored_params = stored_params.to_dict()
+        self.user_params = user_params
 
         self.cloudlet = self.blueprint.cloudlet
         self.provider_name = self.blueprint.provider_name
 
         pfactory = provider_factory.ProviderFactory()
-        self.provider = pfactory.create(self.provider_name, config, self)
+        self.provider = pfactory.create(self.provider_name, self.stored_params, self)
 
     @property
     def context(self):
         """
         Generates a context object to be injected into the templating engine.
         """
-
-        # TODO: Make this compatible with the published cloudlet spec, i.e.
-        # include params from the blueprint.yaml file as well as user-provided
-        # params, both from local yaml files, prompting, and command line.
-
         self.context = dict()
-
-        # Construct the parameters data structure
-        # Order of precedence is (currently):
-        # - Blueprint definition
-        # - Stored params
-        # - Transient params
         self.context['parameters'] = dict()
+
+        # Inheritance is Provider -> Cloudlet -> Blueprint -> Stored -> User
+        # Only parameters defined by the provider, cloudlet, or blueprint are
+        # passed into the context, even if they are stored or passed by the user.
+        if self.provider.params is not None:
+            for (k, v) in self.provider.params.items():
+                self.context['parameters'][k] = v
+        if "parameters" in self.cloudlet.definition:
+            try:
+                for (k, v) in self.cloudlet.definition['parameters'].items():
+                    self.context['parameters'][k] = v
+            except:
+                pass
         if "parameters" in self.blueprint.definition:
-            self.context['parameters'] = copy(self.blueprint.definition['parameters'])
-        if "parameters" in self.config:
-            for (k, v) in self.config['parameters'].items():
-                self.context['parameters'][k] = v
-        if self.transient_params is not None:
-            for (k, v) in self.transient_params.items():
-                self.context['parameters'][k] = v
+            try:
+                for (k, v) in self.blueprint.definition['parameters'].items():
+                    self.context['parameters'][k] = v
+            except:
+                pass
 
-        self.context['config'] = self.config
+        if self.stored_params is not None:
+            try:
+                for (k, v) in self.stored_params.items():
+                    if k in self.context['parameters']:
+                        self.context['parameters'][k] = v
+            except:
+                pass
+        if self.user_params is not None:
+            try:
+                for (k, v) in self.user_params.items():
+                    if k in self.context['parameters']:
+                        self.context['parameters'][k] = v
+            except:
+                pass
 
+        # Provide a limited/cleaned set of values from cloudlet.yaml and blueprint.yaml
         if self.blueprint is not None:
-            self.context['cloudlet'] = self.cloudlet.definition
-            self.context['blueprint'] = self.blueprint.definition
+            c = self.cloudlet.definition
+            b = self.blueprint.definition
 
-        #
-        # Temporary measure for backwards compat
-        #
-        self.context['scripts'] = None
+            self.context['cloudlet'] = {
+                'name': c['name'],
+                'format': c['format'],
+                'path': c['path'],
+                'version': c['version'],
+            }
+            self.context['blueprint'] = {
+                'name': b['name'],
+                'provider': b['provider'],
+            }
+
+            # Backwards compatibility
+            self.context['scripts'] = None
 
         return self.context
 

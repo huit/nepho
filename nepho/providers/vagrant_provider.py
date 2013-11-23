@@ -34,22 +34,38 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
 
     def __init__(self, config, scenario=None):
         nepho.core.provider.AbstractProvider.__init__(self, config, scenario)
-        self.vagrantfile_path = os.path.join(
-            self.scenario.context['cloudlet']['path'], 'resources', self.scenario.context['blueprint']['name'])
+        self.params = {
+            VagrantProvider: None
+        }
+
+    @property
+    def vagrantfile_path(self):
+        # Lazy-load path because it requires a valid context.
+        return os.path.join(
+            self.scenario.context['cloudlet']['path'], 'resources',
+            self.scenario.context['blueprint']['name'])
+
+    @property
+    def vagrant_provider(self):
+        context = self.scenario.context
+        try:
+            return context['parameters']['VagrantProvider']
+        except KeyError as e:
+            print "In order to use the Vagrant provider you must specify a valid backend provider (i.e. virtualbox)."
+            print "The following parameter is missing: %s, you can set it by running \"nepho parameter set %s <value>\"" % (e, e)
+            exit(1)
 
     def deploy(self):
         # FIXME: For the moment, we are just using the Vagrantfile inside the
         # cloudlet.  We should move the template-processed Vagrantfile into a
         # working directory along with the payload, then run it from there.
 
-        vagrant_provider = self.config.get("vagrant_provider")
-
         with cwd(self.vagrantfile_path):
             v = vagrant.Vagrant()
             vm_name = None
             try:
                 print 'Nepho Elves are now building your Stack.... this may take a couple of minutes.'
-                v.up(provider=vagrant_provider, vm_name=vm_name)
+                v.up(provider=self.vagrant_provider, vm_name=vm_name)
                 print 'Vagrant Environment created! Access your stack with "nepho stack access <cloudlet> <blueprint>" or "vagrant ssh"'
             except subprocess.CalledProcessError:
                 print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."

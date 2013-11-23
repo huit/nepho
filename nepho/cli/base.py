@@ -6,18 +6,20 @@ import re
 from cement.core import backend, foundation, controller
 from cement.utils.misc import init_defaults
 
-import nepho.core.config
-
-defaults = init_defaults('nepho', 'internal')
-defaults['nepho']['archive_dir']           = path.join("~", ".nepho", "archive")
-defaults['nepho']['tmp_dir']               = path.join("~", ".nepho", "tmp")
-defaults['nepho']['cache_dir']             = path.join("~", ".nepho", "cache")
-defaults['nepho']['cloudlet_dirs']         = path.join("~", ".nepho", "cloudlets")
-defaults['nepho']['local_dir']             = path.join("~", ".nepho", "local")
-defaults['nepho']['local_config']          = path.join("~", ".nepho", "local", "config.yaml")
-defaults['nepho']['cloudlet_registry_url'] = "http://cloudlets.github.io/registry.yaml"
-defaults['nepho']['cloudlet_clone_proto']  = "https"
-defaults['internal']['processed_config']   = False
+defaults = {
+    'nepho': {
+        'archive_dir': path.join('~', '.nepho', 'archive'),
+        'cache_dir': path.join('~', '.nepho', 'cache'),
+        'cloudlet_dirs': path.join('~', '.nepho', 'cloudlets'),
+        'params_file': path.join('~', '.nepho', 'params.yaml'),
+        'cloudlet_registry_url': 'http://cloudlets.github.io/registry.yaml',
+        'cloudlet_clone_proto': 'https',
+    },
+    'scope': {
+        'cloudlet': '',
+        'blueprint': '',
+    }
+}
 
 
 class NephoBaseController(controller.CementBaseController):

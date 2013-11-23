@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import os
+from copy import copy
+
 from cement.core import controller, hook
 from termcolor import colored
 from nepho.cli import base
@@ -23,36 +26,68 @@ class NephoScopeController(base.NephoBaseController):
     def default(self):
         new_cn = self.app.pargs.cloudlet
         new_bp = self.app.pargs.blueprint
-        old_cn = self.app.nepho_config.get('scope_cloudlet')
-        old_bp = self.app.nepho_config.get('scope_blueprint')
+        old_cn = self.app.config.get('scope', 'cloudlet')
+        old_bp = self.app.config.get('scope', 'blueprint')
 
         self.app.log.debug('Setting scope to cloudlet: %s, blueprint: %s' % (new_cn, new_bp))
 
         if new_cn:
-            self.app.nepho_config.set('scope_cloudlet', new_cn)
+            self.app.config.set('scope', 'cloudlet', new_cn)
             if new_bp:
                 # Only delete the blueprint if cloudlet is being explicitly set
                 # (i.e. user isn't just viewing current scope printout)
-                self.app.nepho_config.set('scope_blueprint', new_bp)
+                self.app.config.set('scope', 'blueprint', new_bp)
             else:
-                self.app.nepho_config.unset('scope_blueprint')
+                self.app.config.set('scope', 'blueprint', '')
 
             if new_cn != old_cn or new_bp != old_bp:
                 print "Set default command scope to " + colored(new_cn, "cyan") + " " + colored(new_bp or "", "yellow")
-        elif old_cn is None:
+                save_config(self)
+        elif old_cn is '':
             print "Default command scope is unset. Run nepho scope <cloudlet> [blueprint] to set."
+        else:
+            print_scope(self)
 
     @controller.expose(help="unset current scope", aliases=['clear'])
     def unset(self):
         self.app.log.debug('Unsetting scope.')
-        self.app.nepho_config.unset('scope_cloudlet')
-        self.app.nepho_config.unset('scope_blueprint')
+        self.app.config.set('scope', 'cloudlet', '')
+        self.app.config.set('scope', 'blueprint', '')
+        save_config(self)
 
         print "Default command scope is now unset. Run nepho scope <cloudlet> [blueprint] to set."
 
 
-def print_scope(app):
-    if app.nepho_config.get('scope_cloudlet') is not None:
-        print "Using default command scope " + colored(app.nepho_config.get('scope_cloudlet'), "cyan") + " " + colored(app.nepho_config.get('scope_blueprint') or "", "yellow") + "\n"
+def print_scope(app_obj):
+    if app_obj.app.config.get('scope', 'cloudlet') is not '':
+        print "–" * 80
+        print " Using default command scope " + colored(app_obj.app.config.get('scope', 'cloudlet'), "cyan") + " " + colored(app_obj.app.config.get('scope', 'blueprint') or "", "yellow")
+        print "–" * 80
     else:
         pass
+
+
+def save_config(app_obj):
+    # Write out the working configuration to the lowest accessible config file
+    # on the stack after stripping extraneuous values. This has gotten quite
+    # convoluted and now I am regretting the whole exercise of using built-in
+    # config handling vs rolling our own.
+    config_files = app_obj.app._meta.config_files
+    config_files.reverse()
+    config_obj = copy(app_obj.app.config)
+    for section in [section for section in config_obj.sections() if section.find('controller.') != -1]:
+        config_obj.remove_section(section)
+    config_obj.remove_section('log')
+    for cf in config_files:
+        if os.access(os.path.dirname(cf), os.W_OK | os.X_OK):
+            try:
+                with open(cf, 'wb') as configfile:
+                    config_obj.write(configfile)
+                break
+            except:
+                pass
+        else:
+            continue
+    else:
+        print "Unable to write Nepho configuration -- no writable config file location found."
+        print "Possible locations are: %s" % (app_obj.app._meta.config_files)

@@ -1,5 +1,4 @@
 # coding: utf-8
-import nepho.core.config
 
 
 class AbstractProvider:
@@ -8,6 +7,7 @@ class AbstractProvider:
     def __init__(self, config, scenario=None):
         self.config = config
         self.scenario = scenario
+        self.params = None
 
     def validate_template(self, template):
         pass

@@ -7,7 +7,6 @@ import argparse
 from termcolor import colored
 from textwrap import TextWrapper
 
-import nepho.core.config
 from nepho.core import common, cloudlet
 
 
@@ -36,8 +35,7 @@ class NephoCloudletController(base.NephoBaseController):
 
     def _setup(self, app):
         super(NephoCloudletController, self)._setup(app)
-        self.nepho_config = nepho.core.config.ConfigManager(self.app.config)
-        self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
+        self.cloudletManager = cloudlet.CloudletManager(self.app)
 
     @controller.expose(help="List all installed cloudlets")
     def list(self):
@@ -144,7 +142,7 @@ class NephoCloudletController(base.NephoBaseController):
 
         if name in registry:
             url = registry[name]['source']
-            if self.nepho_config.get('cloudlet_clone_proto') == "ssh":
+            if self.app.config.get('nepho', 'cloudlet_clone_proto') == "ssh":
                 url = url.replace('https://github.com/', 'git@github.com:', 1)
         else:
             if self.app.pargs.location is None:
@@ -199,7 +197,7 @@ class NephoCloudletController(base.NephoBaseController):
         if not isinstance(cl, list):
             cl = [cl]
         for c in cl:
-            c.archive(self.app.cloudlet_name, self.nepho_config.get('archive_dir'))
+            c.archive(self.app.cloudlet_name, self.app.config.get('nepho', 'archive_dir'))
             c.uninstall()
 
     @controller.expose(help="Update the local cloudlet registry.", aliases=["update-registry"])
