@@ -91,9 +91,8 @@ class a_TestNephoStack(test.CementTestCase):
         app.run()
         app.close()
 
-    def test_nepho_stack_show_template(self):
-        raise nose.SkipTest('skip this until #168 is resolved')
-        app = self.make_app(argv=['stack', 'show-template', 'nepho-example', 'vagrant-single-host'])
+    def test_nepho_stack_validate(self):
+        app = self.make_app(argv=['stack', 'validate', 'nepho-example', 'vagrant-single-host'])
         app.setup()
         app.run()
         app.close()
