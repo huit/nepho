@@ -22,12 +22,7 @@ NEPHO_VAGRANT_BOILER_PLATE = """#
 
 
 class VagrantProvider(nepho.core.provider.AbstractProvider):
-    """
-    An infrastructure provider class for Vagrant
-
-    If you set a config value "vagrant_provider" it sill use that non-default provider.
-
-    """
+    """An infrastructure provider class for Vagrant"""
 
     PROVIDER_ID = "vagrant"
     TEMPLATE_FILENAME = "Vagrantfile"
@@ -35,7 +30,7 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     def __init__(self, config, scenario=None):
         nepho.core.provider.AbstractProvider.__init__(self, config, scenario)
         self.params = {
-            VagrantProvider: None
+            'VagrantBackend': 'virtualbox'
         }
 
     @property
@@ -46,14 +41,16 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
             self.scenario.context['blueprint']['name'])
 
     @property
-    def vagrant_provider(self):
+    def vagrant_backend(self):
         context = self.scenario.context
-        try:
-            return context['parameters']['VagrantProvider']
-        except KeyError as e:
-            print "In order to use the Vagrant provider you must specify a valid backend provider (i.e. virtualbox)."
-            print "The following parameter is missing: %s, you can set it by running \"nepho parameter set %s <value>\"" % (e, e)
+        if context['parameters']['VagrantBackend'] is None:
+            print colored("Error: ", "red"), "Vagrant requires a valid backend provider, such as 'virtualbox'."
+            print "Use \"nepho parameter set VagrantBackend <value>\" to set a parameter."
             exit(1)
+        return context['parameters']['VagrantBackend']
+
+    def validate_template(self, template_str):
+        return "Validation:\n  Vagrant does not support validation."
 
     def deploy(self):
         # FIXME: For the moment, we are just using the Vagrantfile inside the
@@ -65,7 +62,7 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
             vm_name = None
             try:
                 print 'Nepho Elves are now building your Stack.... this may take a couple of minutes.'
-                v.up(provider=self.vagrant_provider, vm_name=vm_name)
+                v.up(provider=self.vagrant_backend, vm_name=vm_name)
                 print 'Vagrant Environment created! Access your stack with "nepho stack access <cloudlet> <blueprint>" or "vagrant ssh"'
             except subprocess.CalledProcessError:
                 print "Vagrant exited with non-zero code, but your VM is likely running. Please use the status subcommand to check."

@@ -72,21 +72,20 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 exit(1)
         return self._s3_conn
 
-#     def validate_template(self, template_str):
-#         """Validate the template as JSON and CloudFormation."""
-#
-#         try:
-#             cf_dict = parse_cf_json(template_str)
-#             template = get_cf_json(cf_dict, pretty=True)
-#             main_args = [
-#                 'cloudformation',
-#                 'validate-template',
-#                 '--template-body', template
-#             ]
-#             self.clidriver.main(main_args)
-#         except:
-#             print "Invalid CloudFormation JSON."
-#             exit(1)
+    def validate_template(self, template_str):
+        try:
+            t = self.connection.validate_template(template_body=template_str)
+
+            ret = "Validation:\n  Template is valid\n"
+            ret += "Description:\n %s\n" % t.description
+            ret += "Parameters:"
+            for p in t.template_parameters:
+                ret += "\n  %s" % (p.parameter_key)
+        except Exception as e:
+            ret = "Validation:\n  Template is not valid!\n"
+            ret += "Error:\n  %s\n" % (e.code)
+            ret += "Description:\n  %s" % (e.message)
+        return ret
 
     def format_template(self, raw_template):
         """Pretty formats a CF template"""
@@ -243,15 +242,19 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
     def _load_aws_connection_settings(self):
         context = self.scenario.context
-        try:
-            access_key = context['parameters']['AWSAccessKeyID']
-            secret_key = context['parameters']['AWSSecretAccessKey']
-            region     = context['parameters']['AWSRegion']
-        except KeyError as e:
-            print "In order to use the AWS provider you must provide valid credentials."
-            print "The following parameter is missing: %s, you can set it by running \"nepho parameter set %s <value>\"" % (e, e)
-            exit(1)
-        return (access_key, secret_key, region)
+        required_params = ('AWSAccessKeyID', 'AWSSecretAccessKey', 'AWSRegion')
+        for param in required_params:
+            if context['parameters'][param] is None:
+                print colored("Error: ", "red"), "In order to use the AWS provider you must provide valid credentials."
+                print "The following parameters are required:"
+                print " ", "\n  ".join(required_params)
+                print "Use \"nepho parameter set <key> <value>\" to set a parameter."
+                exit(1)
+        return (
+            context['parameters']['AWSAccessKeyID'],
+            context['parameters']['AWSSecretAccessKey'],
+            context['parameters']['AWSRegion']
+        )
 
 
 def print_stack(stack):

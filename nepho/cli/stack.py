@@ -6,7 +6,7 @@ import yaml
 import collections
 from termcolor import colored
 from textwrap import TextWrapper, dedent
-from pprint import pprint
+from pydoc import pager
 
 from cement.core import controller
 
@@ -54,16 +54,20 @@ class NephoStackController(base.NephoBaseController):
         for k in sorted(c['parameters']):
             print "  %-18s: %s" % (k, c['parameters'][k])
 
-    @controller.expose(help='Show the template output for a stack from a blueprint')
-    def show_template(self):
+    @controller.expose(help='Validate and display the template output for a stack from a blueprint')
+    def validate(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
-            print "Usage: nepho stack show-template <cloudlet> <blueprint>"
+            print "Usage: nepho stack validate <cloudlet> <blueprint>"
             exit(1)
         else:
             scope.print_scope(self)
 
         s = self._assemble_scenario()
-        print s.template
+        output  = "-" * 80 + "\n"
+        output += s.provider.validate_template(s.template)
+        output += "\n" + "-" * 80 + "\n"
+        output += s.template
+        pager(output)
 
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy', 'up'])
     def create(self):

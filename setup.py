@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name         = 'nepho',
-    version      = '0.2.2',
+    version      = '1.0.0rc2',
     url          = 'http://github.com/huit/nepho',
     description  = 'Simplified cloud orchestration tool for constructing virtual data centers',
     packages     = ['nepho', 'nepho.core', 'nepho.cli', 'nepho.providers'],
