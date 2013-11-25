@@ -143,27 +143,22 @@ class Cloudlet:
 class CloudletManager:
     """A class to create, lookup, and manage cloudlets"""
 
-    def __init__(self, config = None):
-        self.config         = config
-        self.registry       = self.config.get('cloudlet_registry_url')
-        cache_dir           = self.config.get('cache_dir')
-        self.registry_cache = os.path.join(cache_dir, "registry.yaml")
+    def __init__(self, app_obj):
+        self.cloudlet_dirs  = app_obj.cloudlet_dirs
+        self.registry       = app_obj.config.get('nepho', 'cloudlet_registry_url')
+        self.cache_dir      = app_obj.config.get('nepho', 'cache_dir')
+        self.registry_cache = os.path.join(self.cache_dir, "registry.yaml")
         self.update_registry()
 
     def all_cloudlet_dirs(self):
         """Returns a list of paths to directories that contain cloudlets on disk."""
-        dirs = self.config.get('cloudlet_dirs')
-        return dirs
+        return self.cloudlet_dirs
 
     def all_cloudlet_paths(self):
         """Returns a list of paths to cloudlets on disk."""
-        dirs = self.config.get('cloudlet_dirs')
-
-        # Collect the filesystem paths to every cloudlet into one list
         cloudlet_paths = list()
-        for one_dir in dirs:
-            cloudlet_paths.extend(glob.glob(os.path.join(one_dir, '*')))
-
+        for dir in self.cloudlet_dirs:
+            cloudlet_paths.extend(glob.glob(os.path.join(dir, '*')))
         return cloudlet_paths
 
     def new(self, name, target_dir=None, url=None):

@@ -37,47 +37,55 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
     def __init__(self, config, scenario=None):
         nepho.core.provider.AbstractProvider.__init__(self, config, scenario)
+        self.params = {
+            'AWSAccessKeyID': None,
+            'AWSSecretAccessKey': None,
+            'AWSRegion': None,
+        }
+        self._connection = None
+        self._s3_conn = None
 
-        self.connection = self._setup_boto_connection()
+    @property
+    def connection(self):
+        """
+        Lazy-load connection when needed. This allows for including the provider
+        in context creation even though the provider connection requires a valid
+        context.
+        """
+        if self._connection is None:
+            (access_key, secret_key, region) = self._load_aws_connection_settings()
+            self._connection = boto.cloudformation.connect_to_region(
+                region, aws_access_key_id = access_key, aws_secret_access_key = secret_key)
+            if self._connection is None:
+                print "Boto connection to CloudFormation failed. Please check your credentials."
+                exit(1)
+        return self._connection
 
-    def _setup_boto_connection(self):
-        """Helper method to setup a connection to CloudFormation."""
+    @property
+    def s3_conn(self):
+        if self._s3_conn is None:
+            (access_key, secret_key, region) = self._load_aws_connection_settings()
+            self._s3_conn = boto.s3.connection.S3Connection(
+                aws_access_key_id = access_key, aws_secret_access_key = secret_key)
+            if self._s3_conn is None:
+                print "Boto connection to S3 failed. Please check your credentials."
+                exit(1)
+        return self._s3_conn
 
-        (access_key, secret_key, region) = self._load_aws_connection_settings()
-        if region is None:
-            region = 'us-east-1'
+    def validate_template(self, template_str):
+        try:
+            t = self.connection.validate_template(template_body=template_str)
 
-        self.s3_conn = boto.s3.connection.S3Connection(
-            aws_access_key_id = access_key, aws_secret_access_key = secret_key)
-        if self.s3_conn is None:
-            print "Boto connection to S3 failed. Please check your credentials."
-            exit(1)
-
-        conn = boto.cloudformation.connect_to_region(
-            region, aws_access_key_id = access_key, aws_secret_access_key = secret_key)
-        if conn is None:
-            print "Boto connection to CloudFormation failed. Please check your credentials."
-            exit(1)
-
-        self.access_key = access_key
-
-        return conn
-
-#     def validate_template(self, template_str):
-#         """Validate the template as JSON and CloudFormation."""
-#
-#         try:
-#             cf_dict = parse_cf_json(template_str)
-#             template = get_cf_json(cf_dict, pretty=True)
-#             main_args = [
-#                 'cloudformation',
-#                 'validate-template',
-#                 '--template-body', template
-#             ]
-#             self.clidriver.main(main_args)
-#         except:
-#             print "Invalid CloudFormation JSON."
-#             exit(1)
+            ret = "Validation:\n  Template is valid\n"
+            ret += "Description:\n %s\n" % t.description
+            ret += "Parameters:"
+            for p in t.template_parameters:
+                ret += "\n  %s" % (p.parameter_key)
+        except Exception as e:
+            ret = "Validation:\n  Template is not valid!\n"
+            ret += "Error:\n  %s\n" % (e.code)
+            ret += "Description:\n  %s" % (e.message)
+        return ret
 
     def format_template(self, raw_template):
         """Pretty formats a CF template"""
@@ -112,15 +120,17 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         # Upload payload to a public (but obfuscated) S3 bucket
         print " - Creating S3 bucket for payload"
+        (access_key, secret_key, region) = self._load_aws_connection_settings()
         try:
             payload_bucket = self.s3_conn.create_bucket(
-                'nepho-payloads-' + self.access_key.lower(), policy='private')
+                'nepho-payloads-' + access_key.lower(), policy='private')
 
             payload_name = '%s-payload.tar.gz' % (stack_name)
             payload_key = boto.s3.key.Key(payload_bucket)
             payload_key.key = payload_name
-        except:
+        except Exception as e:
             print colored("Error: ", "red") + "Unable to create S3 bucket"
+            print e
             shutil.rmtree(tmp_dir)
             exit(1)
 
@@ -231,29 +241,20 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             print_stack(self._get_stack(stackSumm.stack_id))
 
     def _load_aws_connection_settings(self):
-        """Helper method to load up the conenction settings from configs, or the AWS file."""
-
-        access_key = self.config.get("aws_access_key_id")
-        secret_key = self.config.get("aws_secret_access_key")
-        region = self.config.get("aws_region")
-
-        try:
-            aws_config_file = os.environ['AWS_CONFIG_FILE']
-            import ConfigParser
-            cp = ConfigParser.ConfigParser()
-            cp.read(aws_config_file)
-
-            if access_key is None:
-                access_key = cp.get("default", "aws_access_key_id")
-            if secret_key is None:
-                secret_key = cp.get("default", "aws_secret_access_key")
-            if region is None:
-                region = cp.get("default", "region")
-
-        except Exception:
-            pass
-
-        return (access_key, secret_key, region)
+        context = self.scenario.context
+        required_params = ('AWSAccessKeyID', 'AWSSecretAccessKey', 'AWSRegion')
+        for param in required_params:
+            if context['parameters'][param] is None:
+                print colored("Error: ", "red"), "In order to use the AWS provider you must provide valid credentials."
+                print "The following parameters are required:"
+                print " ", "\n  ".join(required_params)
+                print "Use \"nepho parameter set <key> <value>\" to set a parameter."
+                exit(1)
+        return (
+            context['parameters']['AWSAccessKeyID'],
+            context['parameters']['AWSSecretAccessKey'],
+            context['parameters']['AWSRegion']
+        )
 
 
 def print_stack(stack):

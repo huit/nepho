@@ -5,10 +5,9 @@ import argparse
 from termcolor import colored
 from pprint import pprint
 
-import nepho.core.config
 from cement.core import controller
 from nepho.cli import base
-from nepho.core import common, cloudlet, blueprint, config
+from nepho.core import common, cloudlet, blueprint, parameter
 
 
 class NephoParameterController(base.NephoBaseController):
@@ -28,44 +27,35 @@ class NephoParameterController(base.NephoBaseController):
 
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
-        self.nepho_config = nepho.core.config.ConfigManager(self.app.config)
+        self.params = parameter.ParamsManager(self)
 
-    @controller.expose(help='List parameters.')
+    @controller.expose(help='List parameters')
     def list(self):
-
-        print "-" * 80
-
-        keys = sorted(self.nepho_config.keys("parameters"))
-        for k in keys:
-            v = self.nepho_config.get(k, "parameters")
-            if isinstance(v, basestring):
-                print colored(" %s: " % (k), "yellow"), colored("\"%s\"" % (v), "blue")
-            else:
-                print colored(" %s: " % (k), "yellow"), colored("%s" % (v), "blue")
-        print "-" * 80
+        p = self.params.to_dict()
+        print "Global Parameters:"
+        for k in sorted(p):
+            print "  %-18s: %s" % (k, p[k])
 
     @controller.expose(help='Get a parameter value')
     def get(self):
         if self.app.pargs.key is None:
             print "Usage: nepho parameter get <key>"
             exit(1)
-        domain = "parameters"
-        print self.nepho_config.get(self.app.pargs.key, domain)
+        else:
+            print self.params.get(self.app.pargs.key)
 
     @controller.expose(help='Set a parameter value', aliases=["add"])
     def set(self):
         if self.app.pargs.key is None or self.app.pargs.value is None:
-            print "Usage: nepho parameter set <key>"
+            print "Usage: nepho parameter set <key> <value>"
             exit(1)
-        domain = "parameters"
-
-        self.nepho_config.set(self.app.pargs.key, self.app.pargs.value, domain)
+        else:
+            self.params.set(self.app.pargs.key, self.app.pargs.value)
 
     @controller.expose(help='unset a parameter value', aliases=["remove", "delete"])
     def unset(self):
         if self.app.pargs.key is None:
             print "Usage: nepho parameter unset <key>"
             exit(1)
-        domain = "parameters"
-
-        self.nepho_config.unset(self.app.pargs.key, domain)
+        else:
+            self.params.unset(self.app.pargs.key)

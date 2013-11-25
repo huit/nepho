@@ -9,7 +9,6 @@ def load():
     handler.register(cli.cloudlet.NephoCloudletController)
     handler.register(cli.blueprint.NephoBlueprintController)
     handler.register(cli.stack.NephoStackController)
-    handler.register(cli.config.NephoConfigController)
     handler.register(cli.parameter.NephoParameterController)
     handler.register(cli.scope.NephoScopeController)
 

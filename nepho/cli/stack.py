@@ -6,13 +6,12 @@ import yaml
 import collections
 from termcolor import colored
 from textwrap import TextWrapper, dedent
-from pprint import pprint
+from pydoc import pager
 
 from cement.core import controller
 
-import nepho.core.config
 from nepho.cli import base, scope
-from nepho.core import common, cloudlet, stack, provider, provider_factory, scenario
+from nepho.core import common, cloudlet, stack, provider, provider_factory, scenario, parameter
 
 
 class NephoStackController(base.NephoBaseController):
@@ -32,36 +31,43 @@ class NephoStackController(base.NephoBaseController):
 
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
-        self.nepho_config = nepho.core.config.ConfigManager(self.app.config)
-        self.cloudletManager = cloudlet.CloudletManager(self.nepho_config)
+        self.cloudletManager = cloudlet.CloudletManager(self.app)
 
     @controller.expose(help='Show the context for a stack from a blueprint and configs')
     def show_context(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
-            print "Usage: nepho stack show-context <cloudlet> <blueprint>"
+            print "Usage: nepho stack show-context <cloudlet> <blueprint> [-s/--save] [-p/--params <param>]"
             exit(1)
         else:
             scope.print_scope(self)
 
-        scene = self._assemble_scenario()
-        ctxt = scene.context
+        s = self._assemble_scenario()
+        c = s.context
 
-        # Use JSON lib to pretty print a sorted version of this ...
-        print colored("Context:", "yellow")
-        print colored("-" * 80, "yellow")
-        print yaml.dump(ctxt, indent=4)
-#        print json.dumps(json.loads(json.dumps(ctxt), object_pairs_hook=collections.OrderedDict), indent=2, separators=(',', ': '))
+        print "Cloudlet:"
+        for k in sorted(c['cloudlet']):
+            print "  %-18s: %s" % (k, c['cloudlet'][k])
+        print "Blueprint:"
+        for k in sorted(c['blueprint']):
+            print "  %-18s: %s" % (k, c['blueprint'][k])
+        print "Parameters:"
+        for k in sorted(c['parameters']):
+            print "  %-18s: %s" % (k, c['parameters'][k])
 
-    @controller.expose(help='Show the template output for a stack from a blueprint')
-    def show_template(self):
+    @controller.expose(help='Validate and display the template output for a stack from a blueprint')
+    def validate(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
-            print "Usage: nepho stack show-template <cloudlet> <blueprint>"
+            print "Usage: nepho stack validate <cloudlet> <blueprint>"
             exit(1)
         else:
             scope.print_scope(self)
 
-        scene = self._assemble_scenario()
-        print scene.template
+        s = self._assemble_scenario()
+        output  = "-" * 80 + "\n"
+        output += s.provider.validate_template(s.template)
+        output += "\n" + "-" * 80 + "\n"
+        output += s.template
+        pager(output)
 
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy', 'up'])
     def create(self):
@@ -70,8 +76,8 @@ class NephoStackController(base.NephoBaseController):
                 Usage: nepho stack create <cloudlet> <blueprint> [-s/--save] [-p/--params <param>]
 
                 -s, --save
-                  Save command-line (and/or interactive) parameters to an overrides file for
-                  use in all future invocations of this command.
+                  [NOT IMPLEMENTED] Save command-line (and/or interactive) parameters to an
+                  overrides file for use in all future invocations of this command.
 
                 -p, --params
                   Override any parameter from the blueprint template. This option can be passed
@@ -86,8 +92,8 @@ class NephoStackController(base.NephoBaseController):
         else:
             scope.print_scope(self)
 
-        scene = self._assemble_scenario()
-        scene.provider.deploy()
+        s = self._assemble_scenario()
+        s.provider.deploy()
 
     @controller.expose(help='Check on the status of a stack.')
     def status(self):
@@ -97,9 +103,9 @@ class NephoStackController(base.NephoBaseController):
         else:
             scope.print_scope(self)
 
-        scene = self._assemble_scenario()
+        s = self._assemble_scenario()
 
-        status = scene.provider.status()
+        status = s.provider.status()
         print json.dumps(status, sort_keys=True, indent=4, separators=(',', ': '))
         exit(0)
 
@@ -125,9 +131,9 @@ class NephoStackController(base.NephoBaseController):
         else:
             scope.print_scope(self)
 
-        scene = self._assemble_scenario()
+        s = self._assemble_scenario()
 
-        scene.provider.access()
+        s.provider.access()
 
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
     def destroy(self):
@@ -136,12 +142,15 @@ class NephoStackController(base.NephoBaseController):
         else:
             scope.print_scope(self)
 
-        scene = self._assemble_scenario()
-        scene.provider.destroy()
+        s = self._assemble_scenario()
+        s.provider.destroy()
 
     @controller.expose(help='List running stacks')
     def list(self):
         scope.print_scope(self)
+
+        print "Unimplemented action. (input: %s)" % self.app.pargs.params
+        exit(0)
 
         try:
             cloudlt = self.cloudletManager.find(self.app.cloudlet_name)
@@ -159,9 +168,7 @@ class NephoStackController(base.NephoBaseController):
         #providr = provider.ProviderFactory(provider_name, self.app.config)
         #providr.pattern(bprint.pattern())
 
-        print "Partially implemented action. (input: %s)" % self.app.pargs.params
-
-    def _parse_params(self):
+    def _parse_user_params(self):
         """Helper method to extract params from command line into a dict."""
         params = dict()
         if self.app.pargs.params is not None:
@@ -191,8 +198,9 @@ class NephoStackController(base.NephoBaseController):
     def _assemble_scenario(self):
         """Helper method to create a suitable scenario from the command line options."""
 
-        params = self._parse_params()
+        stored_params = parameter.ParamsManager(self)
+        user_params = self._parse_user_params()
         bprint = self._load_blueprint()
-        scene = scenario.Scenario(self.nepho_config, bprint, params)
+        s = scenario.Scenario(bprint, stored_params, user_params)
 
-        return scene
+        return s
