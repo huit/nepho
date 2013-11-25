@@ -5,7 +5,7 @@ Nepho is a command-line tool that orchestrates the creation of complete working 
 
 With Nepho, DevOps engineers can construct complete infrastructure-as-code bundles ("cloudlets") that anyone can easily spin up with a single command.  Nepho is in active development.
 
-To learn more about the key concepts and vocabulary of Nepho, please view the [structure of a cloudlet](Structure-of-a-cloudlet) page.
+To learn more about the key concepts and vocabulary of Nepho, please view the [[structure of a cloudlet|Structure-of-a-cloudlet]] page.
 
 
 ## Status
@@ -28,7 +28,7 @@ Users on all platforms who plan to use the Vagrant functionality within Nepho wi
 * Install Nepho via pip: `pip install nepho`
 
 ### Installation for developing Nepho
-If you plan to develop on the Nepho codebase you will want to follow the instructions for [developer setup](https://github.com/huit/nepho/wiki/Development-environment-with-virtualenv) using virtualenv.
+If you plan to develop on the Nepho codebase you will want to follow the instructions for [[developer setup|Development-environment-with-virtualenv]] using virtualenv.
 
 
 ## Configuration
