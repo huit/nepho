@@ -17,9 +17,6 @@ import boto
 import boto.cloudformation
 import boto.s3.connection
 
-# Boto debugging output
-#boto.set_stream_logger('foo')
-
 import nepho
 
 
@@ -93,8 +90,10 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         cf_dict = parse_cf_json(raw_template)
         return get_cf_json(cf_dict, pretty=True)
 
-    def deploy(self):
+    def deploy(self, debug=None):
         """Deploy a given pattern."""
+        if debug is True:
+            boto.set_stream_logger('aws_provider')
 
         context = self.scenario.context
 
@@ -125,7 +124,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             payload_bucket = self.s3_conn.create_bucket(
                 'nepho-payloads-' + access_key.lower(), policy='private')
 
-            payload_name = '%s-payload.tar.gz' % (stack_name)
+            payload_name = '%s-payload.zip' % (stack_name)
             payload_key = boto.s3.key.Key(payload_bucket)
             payload_key.key = payload_name
         except Exception as e:
