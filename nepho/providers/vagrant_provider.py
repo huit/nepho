@@ -79,7 +79,12 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
                 status['conf'] = v.conf()
             except Exception:
                 pass
-            return status
+
+            print "User:      %s" % status['remote_user']
+            print "Hostname:  %s" % status['hostname']
+            print "Port:      %s" % status['port']
+            print "Keyfile:   %s" % status['keyfile']
+            print "Conf:      %s" % status['conf']
 
     def access(self):
         with cwd(self.vagrantfile_path):
