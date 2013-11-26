@@ -14,3 +14,14 @@ def load():
 
     hook.register('post_argument_parsing', cli.hooks.set_scope)
     hook.register('post_setup', cli.hooks.process_config)
+
+
+def run():
+    # Load the base Nepho cement controller
+    app = cli.base.Nepho()
+
+    try:
+        app.setup()
+        app.run()
+    finally:
+        app.close()
