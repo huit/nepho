@@ -105,23 +105,8 @@ class NephoStackController(base.NephoBaseController):
 
         s = self._assemble_scenario()
 
-        status = s.provider.status()
-        print json.dumps(status, sort_keys=True, indent=4, separators=(',', ': '))
-        exit(0)
-
-        #
-        # Report system status
-        #
-        header_string = "%s/%s" % (self.app.cloudlet_name, self.app.blueprint_name)
-        print colored(header_string, "yellow")
-        print colored("-" * len(header_string), "yellow")
-        rep_string = "The stack is currently %s." % (status['default'])
-        color = "blue"
-        if status['default'] == "running":
-            color = 'green'
-        if status['default'] == "aborted":
-            color = 'red'
-        print colored(rep_string, color)
+        # For now the provider prints this information
+        s.provider.status()
 
     @controller.expose(help='Gain access to the stack', aliases=['ssh'])
     def access(self):

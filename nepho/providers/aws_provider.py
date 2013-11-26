@@ -257,14 +257,13 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
 
 def print_stack(stack):
-    print "---"
     print "Name:            %s" % stack.stack_name
-    print"ID:              %s" % stack.stack_id
+    print "ID:              %s" % stack.stack_id
     print "Status:          %s" % stack.stack_status
     print "Creation Time:   %s" % stack.creation_time
-    print"Outputs:         %s" % stack.outputs
+    print "Outputs:         %s" % stack.outputs
     print "Parameters:      %s" % stack.parameters
-    print"Tags:            %s" % stack.tags
+    print "Tags:            %s" % stack.tags
     print "Capabilities:    %s" % stack.capabilities
 
 
