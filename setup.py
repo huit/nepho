@@ -32,6 +32,7 @@ setup(
         'python-vagrant==0.4.0'
     ],
     setup_requires = [
+        'setuptools_git>=1.0',
         'flake8>=2.1.0',
         'nose>=1.3.0',
         'coverage>=3.7',
