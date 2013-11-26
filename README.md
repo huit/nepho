@@ -19,13 +19,9 @@ Currently there are two main code branches:
 
 ## Installation
 ### Standard installation
-Nepho is a Python application and requires at least Python 2.7 or greater, which is installed by default on most modern Linux and Mac OS X distributions.  If you do not have the `pip` Python package install tool, install it first by running `easy_install pip`.
+View our [getting started guide](https://github.com/huit/nepho/wiki/Getting-Started) for complete instructions for setting up Nepho and its dependencies.
 
-On Windows, you will need to [install Python](http://www.python.org/getit/windows/).
-
-Users on all platforms who plan to use the Vagrant functionality within Nepho will also need to [install Vagrant](http://www.vagrantup.com/), although this is not a pre-requisite for the Nepho installation (i.e. you can do it later).
-
-* Install Nepho via pip: `pip install nepho`
+On Windows, you will need to [install Python](http://www.python.org/getit/windows/) in addition to the other requirements, more detailed instructions for Windows users are coming soon.
 
 ### Installation for developing Nepho
 If you plan to develop on the Nepho codebase you will want to follow the instructions for [developer setup](https://github.com/huit/nepho/wiki/Development-environment-with-virtualenv) using virtualenv.
