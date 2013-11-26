@@ -139,7 +139,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             payload_key.set_contents_from_file(open(payload, 'r'))
             params.append(('PayloadURL', payload_key.generate_url(3600)))
         except Exception as e:
-            print colored("Error: ", "red") + "Unable to uplaod payload to S3"
+            print colored("Error: ", "red") + "Unable to upload payload to S3"
             print e
             exit(1)
         finally:
