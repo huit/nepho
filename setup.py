@@ -27,6 +27,7 @@ setup(
         'PyYAML',
         'cement>=2.1,==2.1.4-dev',
         'termcolor',
+        'colorama',
         'gitpython==0.3.2.RC1',
         'requests>=1.2.3',
         'python-vagrant==0.4.0'
