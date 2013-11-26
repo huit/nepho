@@ -3,6 +3,10 @@ from cement.core import hook, handler
 from cement.utils import fs
 from nepho import cli
 
+# Capture and translate ANSI terminal escape sequences for Windows
+from colorama import init
+init()
+
 
 def load():
     # Subcontrollers for each functional component
