@@ -117,7 +117,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             shutil.rmtree(tmp_dir)
             exit(1)
 
-        # Upload payload to a public (but obfuscated) S3 bucket
+        # Upload payload to a private S3 bucket
         print " - Creating S3 bucket for payload"
         (access_key, secret_key, region) = self._load_aws_connection_settings()
         try:
@@ -135,7 +135,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         print " - Uploading payload archive to S3"
         try:
-            payload_key.set_contents_from_file(open(payload, 'r'))
+            payload_key.set_contents_from_file(open(payload, 'rb'))
             params.append(('PayloadURL', payload_key.generate_url(3600)))
         except Exception as e:
             print colored("Error: ", "red") + "Unable to upload payload to S3"
