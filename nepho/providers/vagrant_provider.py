@@ -52,7 +52,7 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     def validate_template(self, template_str):
         return "Validation:\n  Vagrant does not support validation."
 
-    def deploy(self):
+    def deploy(self, debug=False):
         # FIXME: For the moment, we are just using the Vagrantfile inside the
         # cloudlet.  We should move the template-processed Vagrantfile into a
         # working directory along with the payload, then run it from there.
