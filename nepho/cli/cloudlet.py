@@ -106,13 +106,20 @@ class NephoCloudletController(base.NephoBaseController):
             query = self.app.pargs.cloudlet + ' ' + ' '.join(self.app.pargs.query)
         else:
             query = ""
+
+        query = query.strip()
+
         registry = self.cloudletManager.get_registry()
 
-        print "Searching for %s" % query
+        if query:
+            print "Searching for '%s'" % query + ":"
+        else:
+            print "Listing all cloudlets:"
+
         matchList = list()
         for cloudletRepo in registry.keys():
             flattenedText = "%s: %s" % (cloudletRepo, registry[cloudletRepo])
-            if (query == '') or (query.strip() in flattenedText):
+            if (query == '') or (query in flattenedText):
                 matchList.append(cloudletRepo)
 
         if len(matchList) == 0:
