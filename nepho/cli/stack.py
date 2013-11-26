@@ -93,7 +93,7 @@ class NephoStackController(base.NephoBaseController):
             scope.print_scope(self)
 
         s = self._assemble_scenario()
-        s.provider.deploy()
+        s.provider.deploy(self.app.pargs.debug)
 
     @controller.expose(help='Check on the status of a stack.')
     def status(self):
@@ -160,13 +160,6 @@ class NephoStackController(base.NephoBaseController):
             exit(1)
         else:
             print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
-
-        #bprint = cloudlt.blueprint(self.app.blueprint_name)
-
-        # Create an appropriate provider, and set the target pattern.
-        #provider_name = bprint.provider_name
-        #providr = provider.ProviderFactory(provider_name, self.app.config)
-        #providr.pattern(bprint.pattern())
 
     def _parse_user_params(self):
         """Helper method to extract params from command line into a dict."""
