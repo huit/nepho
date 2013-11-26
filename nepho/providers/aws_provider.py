@@ -38,6 +38,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             'AWSAccessKeyID': None,
             'AWSSecretAccessKey': None,
             'AWSRegion': None,
+            'KeyName': None,
         }
         self._connection = None
         self._s3_conn = None
@@ -241,7 +242,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
     def _load_aws_connection_settings(self):
         context = self.scenario.context
-        required_params = ('AWSAccessKeyID', 'AWSSecretAccessKey', 'AWSRegion')
+        required_params = ('AWSAccessKeyID', 'AWSSecretAccessKey', 'AWSRegion', 'KeyName')
         for param in required_params:
             if context['parameters'][param] is None:
                 print colored("Error: ", "red"), "In order to use the AWS provider you must provide valid credentials."
