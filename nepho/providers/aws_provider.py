@@ -93,7 +93,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     def deploy(self, debug=None):
         """Deploy a given pattern."""
         if debug is True:
-            boto.set_stream_logger('foo')
+            boto.set_stream_logger('aws_provider')
 
         context = self.scenario.context
 
