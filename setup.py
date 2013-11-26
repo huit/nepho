@@ -11,7 +11,12 @@ setup(
     author       = 'Harvard University Information Technology',
     author_email = 'ithelp@harvard.edu',
     license      = 'MIT',
-    scripts      = ['bin/nepho'],
+    #scripts      = ['bin/nepho'],
+    entry_points = {
+        'console_scripts': [
+            'nepho=nepho.cli.bootstrap:run',
+        ]
+    },
     dependency_links = [
         'git+git://github.com/cement/cement.git@2.1.4.dev20131029203905#egg=cement-2.1.4-dev'
     ],
