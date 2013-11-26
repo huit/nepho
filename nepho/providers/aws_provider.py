@@ -124,7 +124,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             payload_bucket = self.s3_conn.create_bucket(
                 'nepho-payloads-' + access_key.lower(), policy='private')
 
-            payload_name = '%s-payload.zip' % (stack_name)
+            payload_name = '%s/%s/payload.zip' % (context['cloudlet']['name'], context['blueprint']['name'])
             payload_key = boto.s3.key.Key(payload_bucket)
             payload_key.key = payload_name
         except Exception as e:
