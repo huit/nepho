@@ -18,6 +18,7 @@ develop-eggs
 lib
 lib64
 __pycache__
+README.txt
 
 # Installer logs
 pip-log.txt
@@ -40,3 +41,7 @@ test.json
 .vagrant
 .settings
 .ruby-version
+
+# Virtualenv
+bin/
+include/
