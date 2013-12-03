@@ -1,4 +1,4 @@
-# nepho [![Build Status](https://travis-ci.org/huit/nepho.png?branch=master)](https://travis-ci.org/huit/nepho)
+# nepho [![PyPI version](https://badge.fury.io/py/nepho.png)](http://badge.fury.io/py/nepho) [![Build Status](https://travis-ci.org/huit/nepho.png?branch=master)](https://travis-ci.org/huit/nepho)
 ### Command line cross-cloud orchestration tool for constructing virtual datacenters
 
 Nepho is a command-line tool that orchestrates the creation of complete working application stacks on virtual infrastructure.  Initially targeting Amazon Web Services as well as Vagrant, Nepho abstracts datacenter creation, instance configuration, and application deployment into portable "cloudlets" that can be shared between developers and teams.
@@ -13,6 +13,7 @@ To learn more about the key concepts and vocabulary of Nepho, please view the [s
 This project is new but being actively developed by the Cloud Engineering team within Harvard University Information Technology.  We have released a stable 1.0 release that is being used by teams within Harvard.  We welcome your feedback and contributions!
 
 Currently there are two main code branches:
+
 * **master** - refactoring into a generic _core_, vendor-specific _providers_, and _cloudlets_ for each individual application/service environment.
 * **legacy** - legacy code for constructing CloudFormation stacks using Jinja2 templated JSON files, slowly being merged into master.
 
@@ -34,6 +35,7 @@ By default Nepho will create a hidden configuration directory in your home direc
 Nepho passed configuration information into providers (i.e. AWS, Vagrant) through a parameter management system.  Each provider, cloudlet, and blueprint may specify required or optional parameters.  You can view and manipulate parameters using the `nepho parameter` subcommand.
 
 Examples of some common parameters (which use the CamelCase format):
+
 * AWSRegion: us-east-1
 * VagrantBackend: virtualbox
 * UpdatePackages: False
@@ -42,6 +44,7 @@ Examples of some common parameters (which use the CamelCase format):
 ## Usage
 
 Consult the built-in documentation (`nepho --help`) for the latest information about commands and arguments.  Nepho supports the following five subcommands:
+
 * `nepho cloudlet` - find, download, and manage cloudlets
 * `nepho blueprint` - list and view individual cloudlet deployment blueprints
 * `nepho stack` - create, manage, and destroy stacks built from blueprints

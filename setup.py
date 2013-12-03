@@ -1,17 +1,24 @@
 #!/usr/bin/env python
 
 from setuptools import setup
+import os
+
+# Markdown to ReStructuredText conversion
+long_description = 'Nepho is a command-line tool that orchestrates the creation of complete working application stacks on virtual infrastructure. Initially targeting Amazon Web Services as well as Vagrant, Nepho abstracts datacenter creation, instance configuration, and application deployment into portable "cloudlets" that can be shared between developers and teams.'
+if os.path.exists('README.rst'):
+    long_description = open('README.rst').read()
+
 
 setup(
     name         = 'nepho',
-    version      = '1.0.0rc4',
+    version      = '1.0.1',
     url          = 'http://github.com/huit/nepho',
     description  = 'Simplified cloud orchestration tool for constructing virtual data centers',
+    long_description = long_description,
     packages     = ['nepho', 'nepho.core', 'nepho.cli', 'nepho.providers'],
     author       = 'Harvard University Information Technology',
     author_email = 'ithelp@harvard.edu',
-    license      = 'MIT',
-    #scripts      = ['bin/nepho'],
+    license      = 'LICENSE.txt',
     entry_points = {
         'console_scripts': [
             'nepho=nepho.cli.bootstrap:run',
@@ -34,9 +41,12 @@ setup(
     ],
     setup_requires = [
         'setuptools_git>=1.0',
+        'pypandoc>=0.7.0',
+    ],
+    test_suite = 'nose.collector',
+    tests_require = [
         'flake8>=2.1.0',
         'nose>=1.3.0',
         'coverage>=3.7',
     ],
-    test_suite = 'nose.collector',
 )
