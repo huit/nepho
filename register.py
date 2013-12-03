@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # https://coderwall.com/p/qawuyq
 #
-import pandoc
 import os
+import pypandoc
 
-pandoc.core.PANDOC_PATH = '/usr/local/bin/pandoc'
+markdown = 'README.md'
+rst = 'README.rst'
 
-doc = pandoc.Document()
-doc.markdown = open('README.md').read()
-f = open('README.txt', 'w+')
-f.write(doc.rst)
+converted = pypandoc.convert(markdown, 'rst')
+f = open(rst, 'w+')
+f.write(converted)
 f.close()
-os.system("python setup.py register")
-os.remove('README.txt')
+os.system('python setup.py register sdist bdist_egg')
+os.remove(rst)

@@ -34,6 +34,7 @@ By default Nepho will create a hidden configuration directory in your home direc
 Nepho passed configuration information into providers (i.e. AWS, Vagrant) through a parameter management system.  Each provider, cloudlet, and blueprint may specify required or optional parameters.  You can view and manipulate parameters using the `nepho parameter` subcommand.
 
 Examples of some common parameters (which use the CamelCase format):
+
 * AWSRegion: us-east-1
 * VagrantBackend: virtualbox
 * UpdatePackages: False
@@ -42,6 +43,7 @@ Examples of some common parameters (which use the CamelCase format):
 ## Usage
 
 Consult the built-in documentation (`nepho --help`) for the latest information about commands and arguments.  Nepho supports the following five subcommands:
+
 * `nepho cloudlet` - find, download, and manage cloudlets
 * `nepho blueprint` - list and view individual cloudlet deployment blueprints
 * `nepho stack` - create, manage, and destroy stacks built from blueprints
