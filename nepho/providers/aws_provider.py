@@ -17,6 +17,8 @@ import boto
 import boto.cloudformation
 import boto.s3.connection
 
+from ast import literal_eval
+
 import nepho
 
 
@@ -81,8 +83,8 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 ret += "\n  %s" % (p.parameter_key)
         except Exception as e:
             ret = "Validation:\n  Template is not valid!\n"
-            ret += "Error:\n  %s\n" % (e.code)
-            ret += "Description:\n  %s" % (e.message)
+            ret += "Error:\n  %s\n" % (e.error_code)
+            ret += "Description:\n  %s" % (e.body)
         return ret
 
     def format_template(self, raw_template):
@@ -130,7 +132,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             payload_key.key = payload_name
         except Exception as e:
             print colored("Error: ", "red") + "Unable to create S3 bucket"
-            print e
+            print "(%s) %s " % (e.error_code, e.body)
             shutil.rmtree(tmp_dir)
             exit(1)
 
@@ -140,7 +142,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             params.append(('PayloadURL', payload_key.generate_url(3600)))
         except Exception as e:
             print colored("Error: ", "red") + "Unable to upload payload to S3"
-            print e
+            print "(%s) %s " % (e.error_code, e.body)
             exit(1)
         finally:
             shutil.rmtree(tmp_dir)
@@ -156,11 +158,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             )
             print "Your stack ID is %s." % (stack_id)
             print "You can monitor creation progress here: https://console.aws.amazon.com/cloudformation/home"
-        except boto.exception.BotoServerError as be:
-            print "Error communicating with the CloudFormation service: %s" % (be)
-            print "Possible causes:"
-            print " - Template error.  Check template validity and ensure all parameters can be accepted by the template."
-            print " - Another stack by this name already exists."
+        except boto.exception.BotoServerError as e:
+            print colored("Error: ", "red") + "Problem communicating with CloudFormation"
+            # Use e.message instead of e.body as per: https://github.com/boto/boto/issues/1658
+            msg = literal_eval(e.message)
+            print "(%s) %s " % (msg["Error"]["Code"], msg["Error"]["Message"])
             exit(1)
         return stack_id
 
