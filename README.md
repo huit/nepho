@@ -1,4 +1,4 @@
-# nepho [![Build Status](https://travis-ci.org/huit/nepho.png?branch=master)](https://travis-ci.org/huit/nepho)
+# nepho [![PyPI version](https://badge.fury.io/py/nepho.png)](http://badge.fury.io/py/nepho) [![Build Status](https://travis-ci.org/huit/nepho.png?branch=master)](https://travis-ci.org/huit/nepho)
 ### Command line cross-cloud orchestration tool for constructing virtual datacenters
 
 Nepho is a command-line tool that orchestrates the creation of complete working application stacks on virtual infrastructure.  Initially targeting Amazon Web Services as well as Vagrant, Nepho abstracts datacenter creation, instance configuration, and application deployment into portable "cloudlets" that can be shared between developers and teams.

@@ -18,7 +18,7 @@ setup(
     packages     = ['nepho', 'nepho.core', 'nepho.cli', 'nepho.providers'],
     author       = 'Harvard University Information Technology',
     author_email = 'ithelp@harvard.edu',
-    license      = 'MIT',
+    license      = 'LICENSE.txt',
     #scripts      = ['bin/nepho'],
     entry_points = {
         'console_scripts': [
