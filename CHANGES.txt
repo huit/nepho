@@ -1,1 +1,5 @@
+v1.0.1, 2013-11-26 -- Bugfix release.
+Better error messages from Boto.
+Markdown->ReST conversion of README.
+
 v1.0.0, 2013-11-26 -- Initial release.
