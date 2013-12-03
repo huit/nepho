@@ -19,7 +19,6 @@ setup(
     author       = 'Harvard University Information Technology',
     author_email = 'ithelp@harvard.edu',
     license      = 'LICENSE.txt',
-    #scripts      = ['bin/nepho'],
     entry_points = {
         'console_scripts': [
             'nepho=nepho.cli.bootstrap:run',
@@ -42,10 +41,12 @@ setup(
     ],
     setup_requires = [
         'setuptools_git>=1.0',
-        'flake8>=2.1.0',
-        'nose>=1.3.0',
-        'coverage>=3.7',
         'pypandoc>=0.7.0',
     ],
     test_suite = 'nose.collector',
+    tests_require = [
+        'flake8>=2.1.0',
+        'nose>=1.3.0',
+        'coverage>=3.7',
+    ],
 )

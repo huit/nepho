@@ -13,6 +13,7 @@ To learn more about the key concepts and vocabulary of Nepho, please view the [s
 This project is new but being actively developed by the Cloud Engineering team within Harvard University Information Technology.  We have released a stable 1.0 release that is being used by teams within Harvard.  We welcome your feedback and contributions!
 
 Currently there are two main code branches:
+
 * **master** - refactoring into a generic _core_, vendor-specific _providers_, and _cloudlets_ for each individual application/service environment.
 * **legacy** - legacy code for constructing CloudFormation stacks using Jinja2 templated JSON files, slowly being merged into master.
 
