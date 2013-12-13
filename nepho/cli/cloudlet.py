@@ -2,7 +2,7 @@
 # coding: utf-8
 from cement.core import controller
 from nepho.cli import base, scope
-from os import path
+import os
 import argparse
 from termcolor import colored
 from textwrap import TextWrapper
@@ -48,10 +48,10 @@ class NephoCloudletController(base.NephoBaseController):
             for cloudlt in cloudlets:  # sorted(all_cloudlets):
                 # Print directory if it changes
                 cloudlet_path = cloudlt.get_path()
-                if dir != path.dirname(cloudlet_path):
-                    dir = path.dirname(cloudlet_path)
+                if dir != os.path.dirname(cloudlet_path):
+                    dir = os.path.dirname(cloudlet_path)
                     print colored(dir, "cyan")
-                name = path.basename(cloudlet_path)
+                name = os.path.basename(cloudlet_path)
 
                 # If there are multiple versions of a cloudlet with the same name,
                 # subsequent versions will be ignored by other commands
@@ -59,14 +59,14 @@ class NephoCloudletController(base.NephoBaseController):
                     try:
                         y = cloudlt.definition
                     except:
-                        print colored("└──", "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
+                        print colored(base.DISP_PATH, "yellow"), name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
                     else:
-                        print colored("└──", "yellow"), name, "(", colored("v%s", "blue") % (y['version']), ")"
+                        print colored(base.DISP_PATH, "yellow"), name, "(", colored("v%s", "blue") % (y['version']), ")"
                     items.append(name)
                 else:
-                    print colored("└──", "yellow"), name, "(", colored("error", "red"), "- duplicate cloudlet will be ignored )"
+                    print colored(base.DISP_PATH, "yellow"), name, "(", colored("error", "red"), "- duplicate cloudlet will be ignored )"
         except TypeError:
-            print colored("└──", "yellow"), colored("No cloudlets installed.", "blue")
+            print colored(base.DISP_PATH, "yellow"), colored("No cloudlets installed.", "blue")
 
         return
 
@@ -88,14 +88,14 @@ class NephoCloudletController(base.NephoBaseController):
             wrapper = TextWrapper(width=80, subsequent_indent="              ")
             d = c.definition
 
-            print "-" * 80
+            print base.DISP_DASH * 80
             print "Name:         %s" % (d['name'])
             print "Version:      %s" % (d['version'])
             print "Author:       %s" % (d['author'])
             print "License:      %s" % (d['license'])
             print wrapper.fill("Summary:      %s" % (d['summary']))
             print wrapper.fill("Description:  %s" % (d['description']))
-            print "-" * 80
+            print base.DISP_DASH * 80
         return
 
     @controller.expose(help="Search the Nepho Cloudlet Registry for cloudlets whose names, summaries, or descriptions match the provided search term")
@@ -129,7 +129,7 @@ class NephoCloudletController(base.NephoBaseController):
                 cloudletDict = registry[cloudletRepo]
 
                 wrapper = TextWrapper(width=80, subsequent_indent="              ")
-                print "-" * 80
+                print base.DISP_DASH * 80
                 print "Name:         %s" % (cloudletRepo)
                 print "Version:      %s" % (cloudletDict['version'])
                 print "Author:       %s" % (cloudletDict['author'])

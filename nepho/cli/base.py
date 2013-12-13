@@ -1,6 +1,7 @@
 #!/usr/bin/env python
+# coding: utf-8
 
-from os import path, makedirs
+import os
 import re
 
 from cement.core import backend, foundation, controller
@@ -8,10 +9,10 @@ from cement.utils.misc import init_defaults
 
 defaults = {
     'nepho': {
-        'archive_dir': path.join('~', '.nepho', 'archive'),
-        'cache_dir': path.join('~', '.nepho', 'cache'),
-        'cloudlet_dirs': path.join('~', '.nepho', 'cloudlets'),
-        'params_file': path.join('~', '.nepho', 'params.yaml'),
+        'archive_dir': os.path.join('~', '.nepho', 'archive'),
+        'cache_dir': os.path.join('~', '.nepho', 'cache'),
+        'cloudlet_dirs': os.path.join('~', '.nepho', 'cloudlets'),
+        'params_file': os.path.join('~', '.nepho', 'params.yaml'),
         'cloudlet_registry_url': 'http://cloudlets.github.io/registry.yaml',
         'cloudlet_clone_proto': 'https',
     },
@@ -20,6 +21,14 @@ defaults = {
         'blueprint': '',
     }
 }
+
+# Windows cmd.exe does not display Unicode symbols
+if os.name == "nt":
+    DISP_DASH = "-"
+    DISP_PATH = "|__"
+else:
+    DISP_DASH = "–"
+    DISP_PATH = "└──"
 
 
 class NephoBaseController(controller.CementBaseController):
