@@ -141,10 +141,10 @@ class NephoStackController(base.NephoBaseController):
             cloudlt = self.cloudletManager.find(self.app.cloudlet_name)
             y = cloudlt.definition
         except IOError:
-            print colored("└──", "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
+            print colored(base.DISP_PATH, "yellow"), cloudlt.name, "(", colored("error", "red"), "- missing or malformed cloudlet.yaml )"
             exit(1)
         else:
-            print colored("└──", "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
+            print colored(base.DISP_PATH, "yellow"), cloudlt.name, "(", colored("v%s", "blue") % (y['version']), ")"
 
     def _parse_user_params(self):
         """Helper method to extract params from command line into a dict."""

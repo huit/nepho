@@ -60,9 +60,9 @@ class NephoScopeController(base.NephoBaseController):
 
 def print_scope(app_obj):
     if app_obj.app.config.get('scope', 'cloudlet') is not '':
-        print "–" * 80
+        print base.DISP_DASH * 80
         print " Using default command scope " + colored(app_obj.app.config.get('scope', 'cloudlet'), "cyan") + " " + colored(app_obj.app.config.get('scope', 'blueprint') or "", "yellow")
-        print "–" * 80
+        print base.DISP_DASH * 80
     else:
         pass
 

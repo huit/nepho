@@ -46,10 +46,10 @@ class NephoBlueprintController(base.NephoBaseController):
         # Now list the available blueprints
         for bp in blueprints:
             if bp.definition is not None:
-                print colored("    └──", "yellow"), colored(bp.name, attrs=['underline']), "[", colored(bp.definition['provider'], 'magenta'), "]"
+                print colored("    " + base.DISP_PATH, "yellow"), colored(bp.name, attrs=['underline']), "[", colored(bp.definition['provider'], 'magenta'), "]"
                 print wrapper.fill(bp.definition['summary'])
             else:
-                print colored("    └──", "yellow"), colored(bp.name, attrs=['underline'])
+                print colored("    " + base.DISP_PATH, "yellow"), colored(bp.name, attrs=['underline'])
                 print colored("        Error - missing or malformed blueprint.yaml", "red")
 
         return
@@ -69,10 +69,10 @@ class NephoBlueprintController(base.NephoBaseController):
         wrapper2 = TextWrapper(width=80, initial_indent="          ", subsequent_indent="          ")
 
         if bp.definition is not None:
-            print colored("    └──", "yellow"), colored(bp.name, attrs=['underline']), "[", colored(bp.definition['provider'], 'magenta'), "]"
+            print colored("    " + base.DISP_PATH, "yellow"), colored(bp.name, attrs=['underline']), "[", colored(bp.definition['provider'], 'magenta'), "]"
             print wrapper.fill(bp.definition['summary'])
         else:
-            print colored("    └──", "yellow"), colored(bp.name, attrs=['underline'])
+            print colored("    " + base.DISP_PATH, "yellow"), colored(bp.name, attrs=['underline'])
             print colored("        Error - missing or malformed blueprint.yaml", "red")
             return
 
@@ -83,6 +83,7 @@ class NephoBlueprintController(base.NephoBaseController):
         params = bp.definition.pop('parameters', None)
         for k, v in params.iteritems():
             print "          %-18s: %s" % (k, v)
+        print
         return
 
 
@@ -97,5 +98,5 @@ def _load_cloudlet(app_obj, name):
         exit(1)
     else:
         print colored(os.path.dirname(c.get_path()), "cyan")
-        print colored("└──", "yellow"), c.name, "(", colored("v%s", "blue") % (c.definition['version']), ")"
+        print colored(base.DISP_PATH, "yellow"), c.name, "(", colored("v%s", "blue") % (c.definition['version']), ")"
     return c
