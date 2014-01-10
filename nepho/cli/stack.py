@@ -80,7 +80,6 @@ class NephoStackController(base.NephoBaseController):
 
         print self._assemble_scenario().template
 
-
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy', 'up'])
     def create(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
