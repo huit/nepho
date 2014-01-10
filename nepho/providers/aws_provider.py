@@ -84,7 +84,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             return ret
 
         try:
-            compact_template = json.dumps(json.loads(template_str), separators=(',',':'))
+            compact_template = json.dumps(json.loads(template_str), separators=(',', ':'))
             t = self.connection.validate_template(template_body=compact_template)
 
             ret = "Validation:\n  Template is valid\n"
@@ -160,7 +160,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         try:
             # Use minimal size representation of this JSON string
-            compact_template_json = json.dumps(json.loads(template_json), separators=(',',':'))
+            compact_template_json = json.dumps(json.loads(template_json), separators=(',', ':'))
 
             print "The Nepho elves are now building your stack. This may take a few minutes."
             stack_id = self.connection.create_stack(

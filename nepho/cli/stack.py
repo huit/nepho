@@ -77,13 +77,14 @@ class NephoStackController(base.NephoBaseController):
             exit(1)
         else:
             scope.print_scope(self)
-        
+
         s = self._assemble_scenario()
 
         template_str = self._assemble_scenario().template
         try:
             template_str = s.provider.format_template(template_str)
-        except Exception as e: pass
+        except Exception:
+            pass
 
         print template_str
 
