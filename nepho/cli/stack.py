@@ -63,11 +63,27 @@ class NephoStackController(base.NephoBaseController):
             scope.print_scope(self)
 
         s = self._assemble_scenario()
+
         output  = "-" * 80 + "\n"
         output += s.provider.validate_template(s.template)
         output += "\n" + "-" * 80 + "\n"
         output += s.template
         pager(output)
+
+    @controller.expose(help='Display the raw template output for a stack from a blueprint')
+    def show_template(self):
+        if self.app.cloudlet_name is None or self.app.blueprint_name is None:
+            print "Usage: nepho stack show-template <cloudlet> <blueprint>"
+            exit(1)
+        else:
+            scope.print_scope(self)
+
+        s = self._assemble_scenario()
+
+        output  = "-" * 80 + "\n"
+        output += s.template
+        pager(output)
+
 
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy', 'up'])
     def create(self):
