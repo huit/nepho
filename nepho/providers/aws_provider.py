@@ -77,11 +77,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         # Attempt to validate that template is valid JSON, and clean it up
         try:
             template_dict = json.loads(template_str)
-            template_str = json.dumps(template_dict, indent=2, separators=(',', ': '))
+            template_str  = json.dumps(template_dict, indent=2, separators=(',', ': '))
         except Exception as e:
             ret = "Validation:\n  Template JSON is not valid!\n"
             ret += "Error:\n  %s\n" % (e)
-        return ret
+            return ret
 
         try:
             t = self.connection.validate_template(template_body=template_str)
