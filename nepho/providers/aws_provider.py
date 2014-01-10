@@ -73,16 +73,27 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         return self._s3_conn
 
     def validate_template(self, template_str):
+
+        # Attempt to validate that template is valid JSON, and clean it up
         try:
-            t = self.connection.validate_template(template_body=template_str)
+            template_dict = json.loads(template_str)
+            template_str  = json.dumps(template_dict, indent=2, separators=(',', ': '))
+        except Exception as e:
+            ret = "Validation:\n  Template JSON is not valid!\n"
+            ret += "Error:\n  %s\n" % (e)
+            return ret
+
+        try:
+            compact_template = json.dumps(json.loads(template_str), separators=(',', ':'))
+            t = self.connection.validate_template(template_body=compact_template)
 
             ret = "Validation:\n  Template is valid\n"
             ret += "Description:\n %s\n" % t.description
             ret += "Parameters:"
             for p in t.template_parameters:
                 ret += "\n  %s" % (p.parameter_key)
-        except Exception as e:
-            ret = "Validation:\n  Template is not valid!\n"
+        except boto.exception.BotoServerError as e:
+            ret = "Boto Server Error:\n  Template is not valid!\n"
             ret += "Error:\n  %s\n" % (e.error_code)
             ret += "Description:\n  %s" % (e.body)
         return ret
@@ -148,10 +159,13 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             shutil.rmtree(tmp_dir)
 
         try:
+            # Use minimal size representation of this JSON string
+            compact_template_json = json.dumps(json.loads(template_json), separators=(',', ':'))
+
             print "The Nepho elves are now building your stack. This may take a few minutes."
             stack_id = self.connection.create_stack(
                 stack_name,
-                template_body = template_json,
+                template_body = compact_template_json,
                 parameters = params,
                 capabilities = ['CAPABILITY_IAM'],
                 disable_rollback = True
