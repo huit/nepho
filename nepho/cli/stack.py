@@ -77,8 +77,15 @@ class NephoStackController(base.NephoBaseController):
             exit(1)
         else:
             scope.print_scope(self)
+        
+        s = self._assemble_scenario()
 
-        print self._assemble_scenario().template
+        template_str = self._assemble_scenario().template
+        try:
+            template_str = s.provider.format_template(template_str)
+        except Exception as e: pass
+
+        print template_str
 
     @controller.expose(help='Create a stack from a blueprint', aliases=['deploy', 'up'])
     def create(self):
