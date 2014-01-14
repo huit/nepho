@@ -11,7 +11,7 @@ if os.path.exists('README.rst'):
 
 setup(
     name         = 'nepho',
-    version      = '1.0.1',
+    version      = '1.1.0',
     url          = 'http://github.com/huit/nepho',
     description  = 'Simplified cloud orchestration tool for constructing virtual data centers',
     long_description = long_description,

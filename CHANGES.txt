@@ -1,3 +1,9 @@
+v1.1.0, 2014-01-14 -- Feature release.
+Support for Oracle RDS instances.
+Compacting whitespace in CloudFormation template.
+More validation and pretty-printing of JSON.
+Fixing display artifacts on Windows platform.
+
 v1.0.1, 2013-11-26 -- Bugfix release.
 Better error messages from Boto.
 Markdown->ReST conversion of README.
