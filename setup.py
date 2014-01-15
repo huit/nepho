@@ -11,7 +11,7 @@ if os.path.exists('README.rst'):
 
 setup(
     name         = 'nepho',
-    version      = '1.1.0',
+    version      = '1.1.1',
     url          = 'http://github.com/huit/nepho',
     description  = 'Simplified cloud orchestration tool for constructing virtual data centers',
     long_description = long_description,
@@ -28,7 +28,6 @@ setup(
         'git+git://github.com/cement/cement.git@2.1.4.dev20131029203905#egg=cement-2.1.4-dev'
     ],
     install_requires = [
-        'argparse>=1.2',
         'boto>=2.0',
         'Jinja2',
         'PyYAML',
