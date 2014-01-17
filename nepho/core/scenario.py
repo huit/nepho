@@ -13,10 +13,11 @@ class Scenario:
     parameters, and the "live" filesystem, suitable for bringing up a stack.
     """
 
-    def __init__(self, blueprint, stored_params, user_params):
+    def __init__(self, blueprint, stored_params, user_params, name):
         self.blueprint = blueprint
         self.stored_params = stored_params.to_dict()
         self.user_params = user_params
+        self.name = name
 
         self.cloudlet = self.blueprint.cloudlet
         self.provider_name = self.blueprint.provider_name
