@@ -200,46 +200,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 capabilities = ['CAPABILITY_IAM'],
                 disable_rollback = True
             )
-            while True:
-                try:
-                    print
-                    print "More information: https://console.aws.amazon.com/cloudformation/home"
-                    print "Updating in ",
-                    for i in xrange(9, -1, -1):
-                        sys.stdout.write(str(i))
-                        sys.stdout.flush()
-                        time.sleep(1)
-                        sys.stdout.write('\b')
-                    stack_update = self.connection.describe_stacks(stack_name_or_id=stack_id)
-                    resources = self.connection.list_stack_resources(stack_id)
-                    os.system('cls' if os.name == 'nt' else 'clear')
-
-                    su = stack_update[0]
-                    print "Name:            %s" % su.stack_name
-                    print "Creation Time:   %s" % su.creation_time
-                    print "Status:          %s" % self._colorize_status(su.stack_status)
-                    print
-                    print "+------------------------+----------------------------------+------------------+"
-                    print "|%-24s|%-34s|%-18s|" % ("Resource", "Type", "Status")
-                    print "+------------------------+----------------------------------+------------------+"
-                    for r in resources:
-                        print "|%-24s|%-34s|%-27s|" % (r.logical_resource_id[0:24],
-                                                       r.resource_type[0:34],
-                                                       self._colorize_status(r.resource_status)[0:27])
-                    print "+------------------------+----------------------------------+------------------+"
-                    if su.stack_status.endswith("COMPLETE"):
-                        print
-                        print "+------------------------+-----------------------------------------------------+"
-                        print "|%-24s|%-53s|" % ("Output", "Value")
-                        print "+------------------------+-----------------------------------------------------+"
-                        for o in su.outputs:
-                            print "|%-24s|%-53s|" % (o.key[0:24], o.value)
-                        print "+------------------------+-----------------------------------------------------+"
-                        break
-                    if su.stack_status.endswith("FAILED"):
-                        break
-                except KeyboardInterrupt:
-                    sys.exit()
+            self._show_status(stack_id)
         except boto.exception.BotoServerError as e:
             print colored("Error: ", "red") + "Problem communicating with CloudFormation"
             # Use e.message instead of e.body as per: https://github.com/boto/boto/issues/1658
@@ -253,18 +214,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         context = self.scenario.context
         stack_name = create_stack_name(context)
-
-        # Return object of type boto.cloudformation.stack.Stack
-        try:
-            stack = self.connection.describe_stacks(stack_name_or_id=stack_name)
-        except boto.exception.BotoServerError as be:
-            # Actually ,this may just mean that there's no stack by that name ...
-            print "Error communication with the CloudFormation service: %s" % (be)
-            exit(1)
-
-        # Just for now ...
-        print_stack(stack[0])
-        return stack[0]
+        self._show_status(stack_name)
 
     def access(self):
         """Check on the status of a stack within CloudFormation."""
@@ -291,15 +241,10 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
     def destroy(self):
         """Delete a CloudFormation stack."""
-
         context = self.scenario.context
-
         stack_name = create_stack_name(context)
-
-        out = self.connection.delete_stack(stack_name_or_id=stack_name)
-
-        print out
-        return out
+        self.connection.delete_stack(stack_name_or_id=stack_name)
+        self._show_status(stack_name)
 
     #===========================================================================
     # These are example helper functions for capabilities not yet needed.
@@ -339,6 +284,55 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             context['parameters']['AWSSecretAccessKey'],
             context['parameters']['AWSRegion']
         )
+
+    def _show_status(self, stack):
+        while True:
+            try:
+                stack_update = self.connection.describe_stacks(stack_name_or_id=stack)
+                resources = self.connection.list_stack_resources(stack)
+            except KeyboardInterrupt:
+                exit()
+            except boto.exception.BotoServerError as e:
+                print colored("Error: ", "red") + e.message
+                exit(1)
+
+            try:
+                os.system('cls' if os.name == 'nt' else 'clear')
+
+                su = stack_update[0]
+                print "Name:    %s" % su.stack_name
+                print "ID:      %s" % stack.stack_id
+                print "Created: %s" % su.creation_time
+                print "Status:  %s" % self._colorize_status(su.stack_status)
+                print
+                print "+------------------------+----------------------------------+------------------+"
+                print "|%-24s|%-34s|%-18s|" % ("Resource", "Type", "Status")
+                print "+------------------------+----------------------------------+------------------+"
+                for r in resources:
+                    print "|%-24s|%-34s|%-27s|" % (r.logical_resource_id[0:24],
+                                                   r.resource_type[0:34],
+                                                   self._colorize_status(r.resource_status)[0:27])
+                print "+------------------------+----------------------------------+------------------+"
+                if su.stack_status == "CREATE_COMPLETE" or su.stack_status == "UPDATE_COMPLETE":
+                    print
+                    print "+------------------------+-----------------------------------------------------+"
+                    print "|%-24s|%-53s|" % ("Output", "Value")
+                    print "+------------------------+-----------------------------------------------------+"
+                    for o in su.outputs:
+                        print "|%-24s|%-53s|" % (o.key[0:24], o.value)
+                    print "+------------------------+-----------------------------------------------------+"
+                print "\nMore information: https://console.aws.amazon.com/cloudformation/home"
+                if su.stack_status.endswith("FAILED") or su.stack_status.endswith("COMPLETE"):
+                    break
+                else:
+                    print "Updating in ",
+                    for i in xrange(9, -1, -1):
+                        sys.stdout.write(str(i))
+                        sys.stdout.flush()
+                        time.sleep(1)
+                        sys.stdout.write('\b')
+            except KeyboardInterrupt:
+                exit()
 
     def _colorize_status(self, status):
         if status.endswith("COMPLETE"):
