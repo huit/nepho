@@ -22,6 +22,9 @@ import boto.iam.connection
 
 from ast import literal_eval
 
+import signal
+from cement.core import exc
+
 import nepho
 
 
@@ -194,7 +197,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 capabilities = ['CAPABILITY_IAM'],
                 disable_rollback = True
             )
-            self._show_status(stack_id)
+
+            try:
+                self._show_status(stack_name)
+            except exc.CaughtSignal:
+                exit()
         except boto.exception.BotoServerError as e:
             print colored("Error: ", "red") + "Problem communicating with CloudFormation"
             # Use e.message instead of e.body as per: https://github.com/boto/boto/issues/1658
@@ -208,7 +215,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
 
         context = self.scenario.context
         stack_name = create_stack_name(context)
-        self._show_status(stack_name)
+
+        try:
+            self._show_status(stack_name)
+        except exc.CaughtSignal:
+            exit()
 
     def access(self):
         """Check on the status of a stack within CloudFormation."""
@@ -238,7 +249,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         context = self.scenario.context
         stack_name = create_stack_name(context)
         self.connection.delete_stack(stack_name_or_id=stack_name)
-        self._show_status(stack_name)
+
+        try:
+            self._show_status(stack_name)
+        except exc.CaughtSignal:
+            exit()
 
     #===========================================================================
     # These are example helper functions for capabilities not yet needed.
@@ -284,49 +299,42 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             try:
                 stack_update = self.connection.describe_stacks(stack_name_or_id=stack)
                 resources = self.connection.list_stack_resources(stack)
-            except KeyboardInterrupt:
-                exit()
             except boto.exception.BotoServerError as e:
                 print colored("Error: ", "red") + e.message
                 exit(1)
+            os.system('cls' if os.name == 'nt' else 'clear')
 
-            try:
-                os.system('cls' if os.name == 'nt' else 'clear')
-
-                su = stack_update[0]
-                print "Name:    %s" % su.stack_name
-                print "ID:      %s" % stack.stack_id
-                print "Created: %s" % su.creation_time
-                print "Status:  %s" % self._colorize_status(su.stack_status)
+            su = stack_update[0]
+            print "Name:    %s" % su.stack_name
+            print "Created: %s" % su.creation_time
+            print "Status:  %s" % self._colorize_status(su.stack_status)
+            print
+            print "+------------------------+----------------------------------+------------------+"
+            print "|%-24s|%-34s|%-18s|" % ("Resource", "Type", "Status")
+            print "+------------------------+----------------------------------+------------------+"
+            for r in resources:
+                print "|%-24s|%-34s|%-27s|" % (r.logical_resource_id[0:24],
+                                               r.resource_type[0:34],
+                                               self._colorize_status(r.resource_status)[0:27])
+            print "+------------------------+----------------------------------+------------------+"
+            if su.stack_status == "CREATE_COMPLETE" or su.stack_status == "UPDATE_COMPLETE":
                 print
-                print "+------------------------+----------------------------------+------------------+"
-                print "|%-24s|%-34s|%-18s|" % ("Resource", "Type", "Status")
-                print "+------------------------+----------------------------------+------------------+"
-                for r in resources:
-                    print "|%-24s|%-34s|%-27s|" % (r.logical_resource_id[0:24],
-                                                   r.resource_type[0:34],
-                                                   self._colorize_status(r.resource_status)[0:27])
-                print "+------------------------+----------------------------------+------------------+"
-                if su.stack_status == "CREATE_COMPLETE" or su.stack_status == "UPDATE_COMPLETE":
-                    print
-                    print "+------------------------+-----------------------------------------------------+"
-                    print "|%-24s|%-53s|" % ("Output", "Value")
-                    print "+------------------------+-----------------------------------------------------+"
-                    for o in su.outputs:
-                        print "|%-24s|%-53s|" % (o.key[0:24], o.value)
-                    print "+------------------------+-----------------------------------------------------+"
-                print "\nMore information: https://console.aws.amazon.com/cloudformation/home"
-                if su.stack_status.endswith("FAILED") or su.stack_status.endswith("COMPLETE"):
-                    break
-                else:
-                    print "Updating in ",
-                    for i in xrange(9, -1, -1):
-                        sys.stdout.write(str(i))
-                        sys.stdout.flush()
-                        time.sleep(1)
-                        sys.stdout.write('\b')
-            except KeyboardInterrupt:
-                exit()
+                print "+------------------------+-----------------------------------------------------+"
+                print "|%-24s|%-53s|" % ("Output", "Value")
+                print "+------------------------+-----------------------------------------------------+"
+                for o in su.outputs:
+                    print "|%-24s|%-53s|" % (o.key[0:24], o.value)
+                print "+------------------------+-----------------------------------------------------+"
+            print "\nMore information: https://console.aws.amazon.com/cloudformation/home"
+            if su.stack_status.endswith("FAILED") or su.stack_status.endswith("COMPLETE"):
+                break
+            else:
+                print "Updating in ",
+                for i in xrange(9, -1, -1):
+                    sys.stdout.write(str(i))
+                    sys.stdout.flush()
+                    time.sleep(1)
+                    sys.stdout.write('\b')
 
     def _colorize_status(self, status):
         if status.endswith("COMPLETE"):
