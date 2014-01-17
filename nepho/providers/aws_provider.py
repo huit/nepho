@@ -335,12 +335,13 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             if su.stack_status.endswith("FAILED") or su.stack_status.endswith("COMPLETE"):
                 break
             else:
-                print "Updating in ",
+                print "Updating in  ",
                 for i in xrange(9, -1, -1):
+                    sys.stdout.write('\b')
                     sys.stdout.write(str(i))
                     sys.stdout.flush()
                     time.sleep(1)
-                    sys.stdout.write('\b')
+                print
 
     def _colorize_status(self, status):
         if status.endswith("COMPLETE"):
