@@ -206,7 +206,7 @@ class NephoStackController(base.NephoBaseController):
         if self.app.pargs.name is not None:
             stack_name = self.app.pargs.name
         else:
-            stack_name = 'nepho-%s-%s' % (self.app.cloudlet_name, self.app.blueprint_name)
+            stack_name = '%s-%s' % (self.app.cloudlet_name, self.app.blueprint_name)
         s = scenario.Scenario(bprint, stored_params, user_params, stack_name)
 
         return s
