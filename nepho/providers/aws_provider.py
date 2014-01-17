@@ -140,17 +140,26 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         context = self.scenario.context
 
         raw_template = self.scenario.template
-        template_json = self.format_template(raw_template)
+
+        template_dict = parse_cf_json(raw_template)
+        template_param_names = template_dict['Parameters'].keys()
+        # Minimize JSON to save space
+        template_json = json.dumps(template_dict, separators=(',', ':'))
 
         params = list()
         for item in context['parameters'].items():
-            params.append(item)
+            if item[0] in template_param_names:
+                params.append(item)
+            else:
+                print colored("Warning: ", "yellow"), "Nepho parameter %s is not present in the CloudFormation template" % item[0]
 
         print " - Determining owner information"
         try:
             iam_user = self.iam_conn.get_user()
-            params.append(('OwnerId', iam_user.user_id))
-            params.append(('OwnerName', iam_user.user_name))
+            if 'OwnerId' in template_param_names:
+                params.append(('OwnerId', iam_user.user_id))
+            if 'OwnerName' in template_param_names:
+                params.append(('OwnerName', iam_user.user_name))
         except:
             print colored("Error: ", "red") + "Unable to get IAM username"
             exit(1)
@@ -194,13 +203,10 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             shutil.rmtree(tmp_dir)
 
         try:
-            # Use minimal size representation of this JSON string
-            compact_template_json = json.dumps(json.loads(template_json), separators=(',', ':'))
-
             print " - Creating CloudFormation stack"
             stack_id = self.connection.create_stack(
                 self.stack_name,
-                template_body = compact_template_json,
+                template_body = template_json,
                 parameters = params,
                 capabilities = ['CAPABILITY_IAM'],
                 disable_rollback = True
