@@ -26,6 +26,7 @@ class NephoStackController(base.NephoBaseController):
             (['cloudlet'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['--save', '-s'], dict(help=argparse.SUPPRESS, action='store_true')),
+            (['--name', '-n'], dict(help='custom stack name (aws only)')),
             (['--params', '-p'], dict(help=argparse.SUPPRESS, nargs='*', action='append')),
         ]
 
@@ -36,7 +37,7 @@ class NephoStackController(base.NephoBaseController):
     @controller.expose(help='Show the context for a stack from a blueprint and configs')
     def show_context(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
-            print "Usage: nepho stack show-context <cloudlet> <blueprint> [-s/--save] [-p/--params <param>]"
+            print "Usage: nepho stack show-context <cloudlet> <blueprint> [-n/--name <stack name] [-s/--save] [-p/--params <param>]"
             exit(1)
         else:
             scope.print_scope(self)
@@ -92,8 +93,12 @@ class NephoStackController(base.NephoBaseController):
     def create(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
             print dedent("""\
-                Usage: nepho stack create <cloudlet> <blueprint> [-s/--save] [-p/--params <param>]
+                Usage: nepho stack create <cloudlet> <blueprint> [-n/--name <stack name] [-s/--save] [-p/--params <param>]
 
+                -n, --name <stack name>
+                  [AWS ONLY] A custom name for your stack rather than nepho-<cloudlet>-<blueprint>.
+                  When using this option you must specify name for other stack actions such as
+                  connect, destroy, and status or they will not know which stack to act upon.
                 -s, --save
                   [NOT IMPLEMENTED] Save command-line (and/or interactive) parameters to an
                   overrides file for use in all future invocations of this command.
@@ -117,7 +122,7 @@ class NephoStackController(base.NephoBaseController):
     @controller.expose(help='Check on the status of a stack.')
     def status(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
-            print "Usage: nepho stack status <cloudlet> <blueprint>"
+            print "Usage: nepho stack status <cloudlet> <blueprint> [-n/--name <stack name]"
             exit(1)
         else:
             scope.print_scope(self)
@@ -130,7 +135,7 @@ class NephoStackController(base.NephoBaseController):
     @controller.expose(help='Gain access to the stack', aliases=['ssh'])
     def access(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
-            print "Usage: nepho stack access <cloudlet> <blueprint>"
+            print "Usage: nepho stack access <cloudlet> <blueprint> [-n/--name <stack name]"
             exit(1)
         else:
             scope.print_scope(self)
@@ -142,7 +147,7 @@ class NephoStackController(base.NephoBaseController):
     @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
     def destroy(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
-            print "Usage: nepho stack destroy <cloudlet> <blueprint>"
+            print "Usage: nepho stack destroy <cloudlet> <blueprint> [-n/--name <stack name]"
         else:
             scope.print_scope(self)
 

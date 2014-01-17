@@ -36,7 +36,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
     PROVIDER_ID = "aws"
     TEMPLATE_FILENAME = "cf.json"
 
-    def __init__(self, config, scenario=None):
+    def __init__(self, app_obj, config, scenario=None):
         nepho.core.provider.AbstractProvider.__init__(self, config, scenario)
         self.params = {
             'AWSAccessKeyID': None,
@@ -46,6 +46,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         }
         self._connection = None
         self._s3_conn = None
+        if app_obj.app.pargs.name is not None:
+            self.stack_name = self.app.pargs.name
+        else:
+            self.stack_name = "%s-%s" % (context['cloudlet']['name'],
+                                         context['blueprint']['name'])
 
     @property
     def connection(self):
@@ -321,21 +326,6 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             return colored(status, "red")
         else:
             return status
-
-
-def print_stack(stack):
-    print "Name:            %s" % stack.stack_name
-    print "ID:              %s" % stack.stack_id
-    print "Status:          %s" % stack.stack_status
-    print "Creation Time:   %s" % stack.creation_time
-    print "Outputs:         %s" % stack.outputs
-    print "Parameters:      %s" % stack.parameters
-    print "Tags:            %s" % stack.tags
-    print "Capabilities:    %s" % stack.capabilities
-
-
-def create_stack_name(context):
-    return "%s-%s" % (context['cloudlet']['name'], context['blueprint']['name'])
 
 
 def parse_cf_json(str):
