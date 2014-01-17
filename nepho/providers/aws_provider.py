@@ -6,6 +6,8 @@
 #
 #
 import os
+import sys
+import time
 import yaml
 import json
 import collections
@@ -162,7 +164,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             # Use minimal size representation of this JSON string
             compact_template_json = json.dumps(json.loads(template_json), separators=(',', ':'))
 
-            print "The Nepho elves are now building your stack. This may take a few minutes."
+            print " - Creating CloudFormation stack"
             stack_id = self.connection.create_stack(
                 stack_name,
                 template_body = compact_template_json,
@@ -170,8 +172,46 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 capabilities = ['CAPABILITY_IAM'],
                 disable_rollback = True
             )
-            print "Your stack ID is %s." % (stack_id)
-            print "You can monitor creation progress here: https://console.aws.amazon.com/cloudformation/home"
+            while True:
+                try:
+                    print
+                    print "More information: https://console.aws.amazon.com/cloudformation/home"
+                    print "Updating in ",
+                    for i in xrange(9, -1, -1):
+                        sys.stdout.write(str(i))
+                        sys.stdout.flush()
+                        time.sleep(1)
+                        sys.stdout.write('\b')
+                    stack_update = self.connection.describe_stacks(stack_name_or_id=stack_id)
+                    resources = self.connection.list_stack_resources(stack_id)
+                    os.system('cls' if os.name == 'nt' else 'clear')
+
+                    su = stack_update[0]
+                    print "Name:            %s" % su.stack_name
+                    print "Creation Time:   %s" % su.creation_time
+                    print "Status:          %s" % self._colorize_status(su.stack_status)
+                    print
+                    print "+------------------------+----------------------------------+------------------+"
+                    print "|%-24s|%-34s|%-18s|" % ("Resource", "Type", "Status")
+                    print "+------------------------+----------------------------------+------------------+"
+                    for r in resources:
+                        print "|%-24s|%-34s|%-27s|" % (r.logical_resource_id[0:24],
+                                                       r.resource_type[0:34],
+                                                       self._colorize_status(r.resource_status)[0:27])
+                    print "+------------------------+----------------------------------+------------------+"
+                    if su.stack_status.endswith("COMPLETE"):
+                        print
+                        print "+------------------------+-----------------------------------------------------+"
+                        print "|%-24s|%-53s|" % ("Output", "Value")
+                        print "+------------------------+-----------------------------------------------------+"
+                        for o in su.outputs:
+                            print "|%-24s|%-53s|" % (o.key[0:24], o.value)
+                        print "+------------------------+-----------------------------------------------------+"
+                        break
+                    if su.stack_status.endswith("FAILED"):
+                        break
+                except KeyboardInterrupt:
+                    sys.exit()
         except boto.exception.BotoServerError as e:
             print colored("Error: ", "red") + "Problem communicating with CloudFormation"
             # Use e.message instead of e.body as per: https://github.com/boto/boto/issues/1658
@@ -271,6 +311,16 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             context['parameters']['AWSSecretAccessKey'],
             context['parameters']['AWSRegion']
         )
+
+    def _colorize_status(self, status):
+        if status.endswith("COMPLETE"):
+            return colored(status, "green")
+        elif status.endswith("IN_PROGRESS"):
+            return colored(status, "yellow")
+        elif status.endswith("FAILED"):
+            return colored(status, "red")
+        else:
+            return status
 
 
 def print_stack(stack):
