@@ -26,7 +26,7 @@ class NephoStackController(base.NephoBaseController):
             (['cloudlet'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['--save', '-s'], dict(help=argparse.SUPPRESS, action='store_true')),
-            (['--name', '-n'], dict(help='custom stack name (aws only)')),
+            (['--name', '-n'], dict(help='custom stack name (aws only)', default=None)),
             (['--params', '-p'], dict(help=argparse.SUPPRESS, nargs='*', action='append')),
         ]
 
@@ -203,6 +203,10 @@ class NephoStackController(base.NephoBaseController):
         stored_params = parameter.ParamsManager(self)
         user_params = self._parse_user_params()
         bprint = self._load_blueprint()
-        s = scenario.Scenario(bprint, stored_params, user_params)
+        if self.app.pargs.name is not None:
+            stack_name = self.app.pargs.name
+        else:
+            stack_name = 'nepho-%s-%s' % (self.app.cloudlet_name, self.app.blueprint_name)
+        s = scenario.Scenario(bprint, stored_params, user_params, stack_name)
 
         return s
