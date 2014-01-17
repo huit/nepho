@@ -18,6 +18,7 @@ from termcolor import colored
 import boto
 import boto.cloudformation
 import boto.s3.connection
+import boto.iam.connection
 
 from ast import literal_eval
 
@@ -46,6 +47,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         }
         self._connection = None
         self._s3_conn = None
+        self._iam_conn = None
 
     @property
     def connection(self):
@@ -73,6 +75,17 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 print "Boto connection to S3 failed. Please check your credentials."
                 exit(1)
         return self._s3_conn
+
+    @property
+    def iam_conn(self):
+        if self._iam_conn is None:
+            (access_key, secret_key, region) = self._load_aws_connection_settings()
+            self._iam_conn = boto.iam.connection.IAMConnection(
+                aws_access_key_id = access_key, aws_secret_access_key = secret_key)
+            if self._iam_conn is None:
+                print "Boto connection to IAM failed. Please check your credentials."
+                exit(1)
+        return self._iam_conn
 
     def validate_template(self, template_str):
 
@@ -121,6 +134,15 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         params = list()
         for item in context['parameters'].items():
             params.append(item)
+
+        print " - Determining owner information"
+        try:
+            iam_user = self.iam_conn.get_user()
+            params.append(('OwnerId', iam_user.user_id))
+            params.append(('OwnerName', iam_user.user_name))
+        except:
+            print colored("Error: ", "red") + "Unable to get IAM username"
+            exit(1)
 
         print " - Archiving payload for upload to S3"
         try:
