@@ -22,10 +22,13 @@ import boto.iam.connection
 
 from ast import literal_eval
 
+from textwrap import TextWrapper
+
 import signal
 from cement.core import exc
 
 import nepho
+from nepho.cli import base
 
 
 class AWSProvider(nepho.core.provider.AbstractProvider):
@@ -282,22 +285,20 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             print "Created: %s" % su.creation_time
             print "Status:  %s" % self._colorize_status(su.stack_status)
             print
-            print "+------------------------+----------------------------------+------------------+"
-            print "|%-24s|%-34s|%-18s|" % ("Resource", "Type", "Status")
-            print "+------------------------+----------------------------------+------------------+"
+            print colored(" %-23s %-35s %-18s " % ("Resource", "Type", "Status"), 'white', 'on_blue')
             for r in resources:
-                print "|%-24s|%-34s|%-27s|" % (r.logical_resource_id[0:24],
-                                               r.resource_type[0:34],
+                print " %-23s %-35s %-27s " % (r.logical_resource_id[0:23],
+                                               r.resource_type[0:35],
                                                self._colorize_status(r.resource_status)[0:27])
-            print "+------------------------+----------------------------------+------------------+"
             if su.stack_status == "CREATE_COMPLETE" or su.stack_status == "UPDATE_COMPLETE":
+                wrapper = TextWrapper(width=54)
                 print
-                print "+------------------------+-----------------------------------------------------+"
-                print "|%-24s|%-53s|" % ("Output", "Value")
-                print "+------------------------+-----------------------------------------------------+"
+                print colored(" %-23s %-54s " % ("Output", "Value"), 'grey', 'on_yellow')
                 for o in su.outputs:
-                    print "|%-24s|%-53s|" % (o.key[0:24], o.value)
-                print "+------------------------+-----------------------------------------------------+"
+                    v = wrapper.wrap(o.value)
+                    print " %-23s %-54s " % (o.key[0:24], v.pop(0))
+                    if len(v) > 0:
+                        print "                        ", "\n                         ".join(v)
             print "\nMore information: https://console.aws.amazon.com/cloudformation/home"
             if su.stack_status.endswith("FAILED") or su.stack_status.endswith("COMPLETE"):
                 break
