@@ -28,7 +28,6 @@ import signal
 from cement.core import exc
 
 import nepho
-from nepho.cli import base
 
 
 class AWSProvider(nepho.core.provider.AbstractProvider):
