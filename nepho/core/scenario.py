@@ -109,6 +109,19 @@ class Scenario:
         # Initialize Jinja2
         jinjaFSloader = jinja2.FileSystemLoader(template_dirs)
         jinja_env = jinja2.Environment(loader=jinjaFSloader)
+
+        # Output parameters as env variables
+        @jinja2.contextfunction
+        def export_env_vars(context):
+            p = context['parameters'].copy()
+            # Don't include secret key
+            if 'AWSSecretAccessKey' in p:
+                del p['AWSSecretAccessKey']
+            return p
+
+        jinja_env.globals['env_vars'] = export_env_vars
+        jinja_env.globals['callable'] = callable
+
         jinja_template = jinja_env.get_template(template_filename)
 
         # Render the template
