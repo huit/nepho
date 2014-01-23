@@ -117,18 +117,23 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
 
     def status(self, app_obj):
         working_path = self._working_path(app_obj)
-        with cwd(working_path):
-            v = vagrant.Vagrant()
-            instances = v.status()
 
-            print "Name:        %s" % self.stack_name
-            print "Working Dir: %s" % working_path
-            print
-            print colored(" %-32s %-24s " % ("Instance", "Status"), 'white', 'on_blue')
-            for k, v in instances.items():
-                print " %-32s %-24s " % (k, v)
+        if not os.path.isdir(working_path):
+            print colored("Error: ", "red") + "Working directory does not exist"
+            exit(1)
+        else:
+            with cwd(working_path):
+                v = vagrant.Vagrant()
+                instances = v.status()
 
-            print "\nTo run Vagrant commands directly, change to the working directory listed above.\n"
+                print "Name:        %s" % self.stack_name
+                print "Working Dir: %s" % working_path
+                print
+                print colored(" %-32s %-24s " % ("Instance", "Status"), 'white', 'on_blue')
+                for k, v in instances.items():
+                    print " %-32s %-24s " % (k, v)
+
+                print "\nTo run Vagrant commands directly, change to the working directory listed above.\n"
 
     def access(self, app_obj):
         if not os.path.isdir(self._working_path(app_obj)):
