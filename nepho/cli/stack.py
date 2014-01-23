@@ -117,7 +117,7 @@ class NephoStackController(base.NephoBaseController):
             scope.print_scope(self)
 
         s = self._assemble_scenario()
-        s.provider.deploy(self.app.pargs.debug)
+        s.provider.deploy(self.app)
 
     @controller.expose(help='Check on the status of a stack.')
     def status(self):

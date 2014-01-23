@@ -92,7 +92,7 @@ class Scenario:
     def template(self):
         """
         Load a blueprint template, generate a context, and return the rendered
-        Jina2 template.
+        Jinja2 template.
         """
 
         # Templates may be composed of multiple files in the template_path
