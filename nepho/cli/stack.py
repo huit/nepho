@@ -130,7 +130,7 @@ class NephoStackController(base.NephoBaseController):
         s = self._assemble_scenario()
 
         # For now the provider prints this information
-        s.provider.status()
+        s.provider.status(self.app)
 
     @controller.expose(help='Gain access to the stack', aliases=['ssh'])
     def access(self):
@@ -142,9 +142,9 @@ class NephoStackController(base.NephoBaseController):
 
         s = self._assemble_scenario()
 
-        s.provider.access()
+        s.provider.access(self.app)
 
-    @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete'])
+    @controller.expose(help='Destroy a stack from a blueprint', aliases=['delete', 'down'])
     def destroy(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
             print "Usage: nepho stack destroy <cloudlet> <blueprint> [-n/--name <stack name]"
@@ -152,7 +152,7 @@ class NephoStackController(base.NephoBaseController):
             scope.print_scope(self)
 
         s = self._assemble_scenario()
-        s.provider.destroy()
+        s.provider.destroy(self.app)
 
     @controller.expose(help='List running stacks')
     def list(self):
