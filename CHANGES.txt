@@ -1,3 +1,9 @@
+v1.2.0, 2014-01-23 -- Feature release for Vagrant.
+Run Vagrant stacks from working directories.
+Allow from multiple copies of the same blueprint to be run at once.
+Better Vagrant support.
+Bump version in light of major new AWS and Vagrant functionalities.
+
 v1.1.2, 2014-01-19 -- Feature release for AWS.
 Support for custom AWS stack names.
 Auto-refreshing status updates during CloudFormation actions.
