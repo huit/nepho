@@ -226,7 +226,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             exit(1)
         return stack_id
 
-    def status(self):
+    def status(self, app_obj):
         """Check on the status of a stack within CloudFormation."""
 
         try:
@@ -234,7 +234,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         except exc.CaughtSignal:
             exit()
 
-    def access(self):
+    def access(self, app_obj):
         """Check on the status of a stack within CloudFormation."""
 
         # Return object of type boto.cloudformation.stack.Stack
@@ -250,7 +250,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             print "Error communication with the CloudFormation service: %s" % (be)
             exit(1)
 
-    def destroy(self):
+    def destroy(self, app_obj):
         """Delete a CloudFormation stack."""
         self.connection.delete_stack(stack_name_or_id=self.stack_name)
 
