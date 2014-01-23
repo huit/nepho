@@ -1,5 +1,7 @@
 import glob
+import subprocess
 import os
+import sys
 
 
 class cwd:
@@ -18,6 +20,26 @@ class cwd:
 
     def __exit__(self, etype, value, traceback):
         os.chdir(self.savedPath)
+
+
+def execute(command):
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    # Poll process for new output until finished
+    while True:
+        nextline = process.stdout.readline()
+        if nextline == '' and process.poll() is not None:
+            break
+        sys.stdout.write(nextline)
+        sys.stdout.flush()
+
+    output = process.communicate()[0]
+    exitCode = process.returncode
+
+    if (exitCode == 0):
+        return output
+    else:
+        raise subprocess.ProcessException(command, exitCode, output)
 
 
 def merge(user, system):
