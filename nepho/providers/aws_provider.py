@@ -151,7 +151,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         params = list()
         for item in context['parameters'].items():
             if item[0] in template_param_names:
-                params.append(item)
+                if item[1] is None:
+                    print colored("Error: ", "red"), "Required parameter %s is not set" % item[0]
+                    exit(1)
+                else:
+                    params.append(item)
             else:
                 print colored("Warning: ", "yellow"), "Nepho parameter %s is not present in the CloudFormation template" % item[0]
 
