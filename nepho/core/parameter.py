@@ -73,7 +73,7 @@ class ParamsManager:
         """Save current parameters into YAML params_file"""
         try:
             with open(self.params_file, "wb") as file:
-                yaml.dump(self.params, file)
+                yaml.dump(self.params, file, default_flow_style=False)
         except Exception as e:
             print "Error writing parameters to file %s!" % (self.params_file)
             print e

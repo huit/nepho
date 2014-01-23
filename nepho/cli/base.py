@@ -11,6 +11,7 @@ defaults = {
     'nepho': {
         'archive_dir': os.path.join('~', '.nepho', 'archive'),
         'cache_dir': os.path.join('~', '.nepho', 'cache'),
+        'working_dir': os.path.join('~', '.nepho', 'working'),
         'cloudlet_dirs': os.path.join('~', '.nepho', 'cloudlets'),
         'params_file': os.path.join('~', '.nepho', 'params.yaml'),
         'cloudlet_registry_url': 'http://cloudlets.github.io/registry.yaml',
