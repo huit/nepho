@@ -186,13 +186,13 @@ class NephoStackController(base.NephoBaseController):
         try:
             cloudlt = self.cloudletManager.find(self.app.cloudlet_name)
         except Exception:
-            print colored("Error loading cloudlet %s" % (self.app.cloudlet_name), "red")
+            print colored("Error: ", "red"), "Could not load cloudlet %s" % (self.app.cloudlet_name)
             exit(1)
 
-        bprint = cloudlt.blueprint(self.app.blueprint_name)
-
-        if bprint is None:
-            print "Cannot find blueprint %s in cloudlet %s." % (self.app.blueprint_name, self.app.cloudlet_name)
+        try:
+            bprint = cloudlt.blueprint(self.app.blueprint_name)
+        except Exception:
+            print colored("Error: ", "red"), "Could not load blueprint %s for cloudlet %s.\nFor a list of blueprints run `nepho blueprint list %s`" % (self.app.blueprint_name, self.app.cloudlet_name, self.app.cloudlet_name)
             exit(1)
 
         return bprint
