@@ -65,6 +65,10 @@ class NephoBlueprintController(base.NephoBaseController):
         c = _load_cloudlet(self, self.app.cloudlet_name)
         bp = c.blueprint(self.app.blueprint_name)
 
+        if bp is None:
+            print colored("Error: ", "red"), "No blueprint by that name.\nFor a list of blueprints run `nepho blueprint list %s`" % (self.app.cloudlet_name)
+            exit(1)
+
         wrapper  = TextWrapper(width=80, initial_indent="        ", subsequent_indent="        ")
         wrapper2 = TextWrapper(width=80, initial_indent="          ", subsequent_indent="          ")
 
@@ -91,12 +95,13 @@ def _load_cloudlet(app_obj, name):
     try:
         c = app_obj.cloudletManager.find(name)
     except IOError:
-        print colored("Error: ", "red") + "Missing or malformed cloudlet.yaml for %s" % (c.name)
+        print colored("Error: ", "red"), "Missing or malformed cloudlet.yaml for %s" % (c.name)
         exit(1)
-    except AttributeError as e:
-        print 'Could not find cloudlet: %s' % (e)
+
+    if c is None:
+        print colored("Error: ", "red"), "Could not find cloudlet %s.\nFor a list of cloudlets run `nepho cloudlet list`" % (name)
         exit(1)
-    else:
-        print colored(os.path.dirname(c.get_path()), "cyan")
-        print colored(base.DISP_PATH, "yellow"), c.name, "(", colored("v%s", "blue") % (c.definition['version']), ")"
+
+    print colored(os.path.dirname(c.get_path()), "cyan")
+    print colored(base.DISP_PATH, "yellow"), c.name, "(", colored("v%s", "blue") % (c.definition['version']), ")"
     return c
