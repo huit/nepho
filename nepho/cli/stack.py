@@ -148,6 +148,7 @@ class NephoStackController(base.NephoBaseController):
     def destroy(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
             print "Usage: nepho stack destroy <cloudlet> <blueprint> [-n/--name <stack name]"
+            exit(1)
         else:
             scope.print_scope(self)
 
