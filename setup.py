@@ -19,6 +19,7 @@ setup(
     author       = 'Harvard University Information Technology',
     author_email = 'ithelp@harvard.edu',
     license      = 'LICENSE.txt',
+    scripts      = ['bin/nepho_completer'],
     entry_points = {
         'console_scripts': [
             'nepho=nepho.cli.bootstrap:run',

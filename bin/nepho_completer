@@ -1,0 +1,25 @@
+#!/bin/bash
+# Completion for nepho
+_nepho() {
+  local cur first second cmds
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  first="${COMP_WORDS[1]}"
+  second="${COMP_WORDS[2]}"
+  case "${first}" in
+    blueprint)  cmds="describe list" ;;
+    cloudlet)   cmds="describe install list registry-update update-registry search uninstall remove update upgrade" ;;
+    parameter)  cmds="get list set add unset remove delete" ;;
+    scope)      cmds="set unset clear" ;;
+    stack)      cmds="access ssh create deploy up destroy delete down list show-context show-template status validate" ;;
+    *)          cmds="blueprint cloudlet parameter scope stack" ;;
+  esac
+
+  if [[ " ${cmds[@]} " =~ " ${second} " ]]; then
+    return 0;
+  else
+    COMPREPLY=( $(compgen -W "${cmds}" -- ${cur}) )
+    return 0
+  fi
+}
+complete -F _nepho nepho
