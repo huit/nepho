@@ -11,7 +11,7 @@ if os.path.exists('README.rst'):
 
 setup(
     name         = 'nepho',
-    version      = '1.1.1',
+    version      = '1.2.0',
     url          = 'http://github.com/huit/nepho',
     description  = 'Simplified cloud orchestration tool for constructing virtual data centers',
     long_description = long_description,
@@ -19,6 +19,7 @@ setup(
     author       = 'Harvard University Information Technology',
     author_email = 'ithelp@harvard.edu',
     license      = 'LICENSE.txt',
+    scripts      = ['bin/nepho_completer'],
     entry_points = {
         'console_scripts': [
             'nepho=nepho.cli.bootstrap:run',
