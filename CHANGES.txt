@@ -1,3 +1,5 @@
+v1.2.1, 2014-01-28 -- Bash completion and additional error checking.
+
 v1.2.0, 2014-01-23 -- Feature release for Vagrant.
 Run Vagrant stacks from working directories.
 Allow from multiple copies of the same blueprint to be run at once.
