@@ -13,6 +13,7 @@ import json
 import collections
 import shutil
 import tempfile
+import datetime
 from termcolor import colored
 
 import boto
@@ -188,7 +189,11 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             payload_bucket = self.s3_conn.create_bucket(
                 'nepho-payloads-' + access_key.lower(), policy='private')
 
-            payload_name = '%s/%s/payload.zip' % (context['cloudlet']['name'], context['blueprint']['name'])
+            payload_name = '%s/%s/payload-%s.zip' % (
+                context['cloudlet']['name'],
+                context['blueprint']['name'],
+                datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+            )
             payload_key = boto.s3.key.Key(payload_bucket)
             payload_key.key = payload_name
         except Exception as e:
