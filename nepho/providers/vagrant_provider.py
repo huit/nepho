@@ -106,11 +106,13 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
             exit(1)
 
         with cwd(working_path):
-            v = vagrant.Vagrant()
+            #v = vagrant.Vagrant()
             vm_name = None
             try:
                 print " - Running Vagrant from: %s" % (working_path)
-                v.up(provider=self.vagrant_backend, vm_name=vm_name)
+                print ""
+                #v.up(provider=self.vagrant_backend, vm_name=vm_name)
+                execute('vagrant up')
                 print 'Vagrant run complete. Run "nepho stack status" for details or "nepho stack access" to connect.'
             except subprocess.CalledProcessError:
                 print colored("Error: ", "red") + 'Vagrant exited with a non-zero exit code, but your VM may be running.  Run "nepho stack status" for details.'
@@ -152,11 +154,13 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
             exit(1)
         else:
             with cwd(self._working_path(app_obj)):
-                v = vagrant.Vagrant()
-                print " - Terminating instance(s)"
-                v.destroy()
-                print " - Removing working directory"
-                shutil.rmtree(self._working_path(app_obj))
+                try:
+                    v = vagrant.Vagrant()
+                    print " - Terminating instance(s)"
+                    v.destroy()
+                finally:
+                    print " - Removing working directory"
+                    shutil.rmtree(self._working_path(app_obj))
 
     def _list_boxes(self):
         listing = subprocess.check_output('vagrant box list', shell=True)
