@@ -27,6 +27,7 @@ class NephoStackController(base.NephoBaseController):
             (['blueprint'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['--save', '-s'], dict(help=argparse.SUPPRESS, action='store_true')),
             (['--name', '-n'], dict(help='custom stack name (aws only)', default=None)),
+            (['--develop', '-d'], dict(help='development mode (vagrant only)', action='store_true')),
             (['--params', '-p'], dict(help=argparse.SUPPRESS, nargs='*', action='append')),
         ]
 

@@ -2,7 +2,6 @@
 # flake8: noqa
 
 import os
-from os import path
 import subprocess
 import re
 import yaml
@@ -67,7 +66,14 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
 
         context = self.scenario.context
         raw_template = self.scenario.template
+        working_path = self._working_path(app_obj)
 
+        if os.path.isdir(working_path):
+            print colored("Error: ", "red") + "Working directory already exists"
+            print "Either a stack of this name is already running or an orphaned directory exists."
+            exit(1)
+
+        # Download box if it is not installed
         if context['parameters']['BoxName'] is not None:
             name = context['parameters']['BoxName']
             url = context['parameters']['BoxUrl']
@@ -80,17 +86,14 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
                     print colored("Error: ", "red") + 'Attempt to download box exited with a non-zero exit code.'
                     exit(1)
 
-        print " - Copying payload to working directory"
-
-        working_path = self._working_path(app_obj)
-
-        if os.path.isdir(working_path):
-            print colored("Error: ", "red") + "Working directory already exists"
-            print "Either a stack of this name is already running or an old working directory exists."
-            exit(1)
-
         try:
-            shutil.copytree(self.payload_path, os.path.join(working_path, 'payload'))
+            if app_obj.pargs.develop is True:
+                print " -", colored("Development mode:", "yellow"), "Symlinking payload to working directory"
+                os.mkdir(working_path)
+                os.symlink(self.payload_path, os.path.join(working_path, 'payload'))
+            else:
+                print " - Copying payload to working directory"
+                shutil.copytree(self.payload_path, os.path.join(working_path, 'payload'))
         except:
             print colored("Error: ", "red") + "Unable to create payload directory"
             shutil.rmtree(working_path)
@@ -160,6 +163,8 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
                     v.destroy()
                 finally:
                     print " - Removing working directory"
+                    if app_obj.pargs.develop is True:
+                        os.unlink(os.path.join(working_path, 'payload'))
                     shutil.rmtree(self._working_path(app_obj))
 
     def _list_boxes(self):
