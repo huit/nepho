@@ -59,7 +59,7 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     def validate_template(self, template_str):
         return "Validation:\n  Vagrant does not support validation."
 
-    def deploy(self, app_obj):
+    def create(self, app_obj):
         """Deploy a given pattern."""
         if app_obj.pargs.debug is True:
             print "Vagrant does not support debug logging"

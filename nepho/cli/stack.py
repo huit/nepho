@@ -118,7 +118,7 @@ class NephoStackController(base.NephoBaseController):
             scope.print_scope(self)
 
         s = self._assemble_scenario()
-        s.provider.deploy(self.app)
+        s.provider.init(self.app)
 
     @controller.expose(help='Update a running stack', aliases=['provision'])
     def update(self):
