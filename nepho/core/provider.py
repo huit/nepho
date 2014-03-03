@@ -18,6 +18,9 @@ class AbstractProvider:
     def deploy(self):
         pass
 
+    def update(self):
+        pass
+
     def status(self):
         pass
 

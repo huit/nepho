@@ -94,10 +94,10 @@ class NephoStackController(base.NephoBaseController):
     def create(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
             print dedent("""\
-                Usage: nepho stack create <cloudlet> <blueprint> [-n/--name <stack name] [-s/--save] [-p/--params <param>]
+                Usage: nepho stack create <cloudlet> <blueprint> [-n/--name <stack name>] [-s/--save] [-p/--params <param>]
 
                 -n, --name <stack name>
-                  [AWS ONLY] A custom name for your stack rather than nepho-<cloudlet>-<blueprint>.
+                  A custom name for your stack rather than nepho-<cloudlet>-<blueprint>.
                   When using this option you must specify name for other stack actions such as
                   connect, destroy, and status or they will not know which stack to act upon.
                 -s, --save
@@ -111,14 +111,25 @@ class NephoStackController(base.NephoBaseController):
                   prompt for it.
 
                 Examples:
-                  nepho stack create my-app development --params AwsAvailZone1=us-east-1a
-                  nepho stack create my-app development -s -p Foo=True Bar=False -p Test=Passed""")
+                  nepho stack create my-app development --name foostack --params AZ1=us-east-1a
+                  nepho stack create my-app development -s -p Foo=True -p Bar=False""")
             exit(1)
         else:
             scope.print_scope(self)
 
         s = self._assemble_scenario()
         s.provider.deploy(self.app)
+
+    @controller.expose(help='Update a running stack', aliases=['provision'])
+    def update(self):
+        if self.app.cloudlet_name is None or self.app.blueprint_name is None:
+            print "Usage: nepho stack update <cloudlet> <blueprint> [-n/--name <stack name>]"
+            exit(1)
+        else:
+            scope.print_scope(self)
+
+        s = self._assemble_scenario()
+        s.provider.update(self.app)
 
     @controller.expose(help='Check on the status of a stack.')
     def status(self):
