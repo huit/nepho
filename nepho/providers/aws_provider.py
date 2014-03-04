@@ -349,8 +349,10 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             width, height = nepho.core.common.terminal_size()
             if width < 80:
                 type_width = 30
+                output_width = 54
             else:
                 type_width = width - 50
+                output_width = width - 31
 
             print "Name:    %s" % su.stack_name
             print "Created: %s" % su.creation_time
@@ -363,14 +365,14 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                                               r.resource_type[0:type_width],
                                               colorize_status(r.resource_status)[0:27])
             if su.stack_status == "CREATE_COMPLETE" or su.stack_status == "UPDATE_COMPLETE":
-                wrapper = TextWrapper(width=54)
+                wrapper = TextWrapper(width=output_width)
                 print
-                print colored(" %-23s %-54s " % ("Output", "Value"), 'grey', 'on_yellow')
+                print colored(" %-28s %-*s " % ("Output", output_width, "Value"), 'grey', 'on_yellow')
                 for o in su.outputs:
                     v = wrapper.wrap(o.value)
-                    print " %-23s %-54s " % (o.key[0:24], v.pop(0))
+                    print " %-28s %-*s " % (o.key[0:28], output_width, v.pop(0))
                     if len(v) > 0:
-                        print "                        ", "\n                         ".join(v)
+                        print "                             ", "\n                              ".join(v)
             print "\nMore information: https://console.aws.amazon.com/cloudformation/home"
             if su.stack_status.endswith("FAILED") or su.stack_status.endswith("COMPLETE"):
                 break
