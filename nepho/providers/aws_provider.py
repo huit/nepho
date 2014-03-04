@@ -344,15 +344,24 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             os.system('cls' if os.name == 'nt' else 'clear')
 
             su = stack_update[0]
+
+            # Determine terminal display size
+            width, height = nepho.core.common.terminal_size()
+            if width < 80:
+                type_width = 30
+            else:
+                type_width = width - 50
+
             print "Name:    %s" % su.stack_name
             print "Created: %s" % su.creation_time
             print "Status:  %s" % colorize_status(su.stack_status)
             print
-            print colored(" %-23s %-35s %-18s " % ("Resource", "Type", "Status"), 'white', 'on_blue')
+            print colored(" %-28s %-*s %-18s " % ("Resource", type_width, "Type", "Status"), 'white', 'on_blue')
             for r in resources:
-                print " %-23s %-35s %-27s " % (r.logical_resource_id[0:23],
-                                               r.resource_type[0:35],
-                                               colorize_status(r.resource_status)[0:27])
+                print " %-28s %-*s %-27s " % (r.logical_resource_id[0:23],
+                                              type_width,
+                                              r.resource_type[0:type_width],
+                                              colorize_status(r.resource_status)[0:27])
             if su.stack_status == "CREATE_COMPLETE" or su.stack_status == "UPDATE_COMPLETE":
                 wrapper = TextWrapper(width=54)
                 print
