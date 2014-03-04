@@ -250,19 +250,21 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             exit()
 
     def access(self, app_obj):
-        """Check on the status of a stack within CloudFormation."""
-
-        # Return object of type boto.cloudformation.stack.Stack
         try:
             stack = self.connection.describe_stacks(stack_name_or_id=self.stack_name)
+        except boto.exception.BotoServerError as e:
+            print colored("Error: ", "red") + e.message
+            exit(1)
 
-            # this will need to be improved ... basically a stub for now ...
-            outputs = stack.outputs
-            access_hostname = outputs['SSHEndpoint']
-            return "ssh %s@%s" % ("ec2-user", access_hostname)
-        except boto.exception.BotoServerError as be:
-            # Actually ,this may just mean that there's no stack by that name ...
-            print "Error communication with the CloudFormation service: %s" % (be)
+        outputs = stack[0].outputs
+        if 'SSHEndpoint' in outputs:
+            endpoint = outputs['SSHEndpoint']
+            user = 'ec2-user'
+            if 'SSHUser' in outputs:
+                user = outputs['SSHUser']
+            return "ssh %s@%s" % (user, endpoint)
+        else:
+            print colored("Error: ", "red") + "No endpoint configured. The stack has not specified the output SSHEndpoint."
             exit(1)
 
     def destroy(self, app_obj):
