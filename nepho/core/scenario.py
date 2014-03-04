@@ -23,7 +23,7 @@ class Scenario:
         self.provider_name = self.blueprint.provider_name
 
         pfactory = provider_factory.ProviderFactory()
-        self.provider = pfactory.create(self.provider_name, self.stored_params, self)
+        self.provider = pfactory.init(self.provider_name, self.stored_params, self)
 
     @property
     def context(self):

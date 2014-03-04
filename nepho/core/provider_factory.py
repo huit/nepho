@@ -12,6 +12,3 @@ class ProviderFactory:
             return vagrant_provider.VagrantProvider(config, scenario)
         elif name == "aws":
             return aws_provider.AWSProvider(config, scenario)
-        elif name == "ansible":
-            #return ansible.AnsibleProvider(config)
-            pass
