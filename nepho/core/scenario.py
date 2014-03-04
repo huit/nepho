@@ -19,7 +19,11 @@ class Scenario:
         self.user_params = user_params
         self.name = name
 
-        self.cloudlet = self.blueprint.cloudlet
+        try:
+            self.cloudlet = self.blueprint.cloudlet
+        except AttributeError:
+            print colored('Error: ', 'red') + 'could not find specified cloudlet and blueprint.'
+            exit(1)
         self.provider_name = self.blueprint.provider_name
 
         pfactory = provider_factory.ProviderFactory()
