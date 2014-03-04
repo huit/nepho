@@ -257,12 +257,16 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             exit(1)
 
         outputs = stack[0].outputs
-        if 'SSHEndpoint' in outputs:
-            endpoint = outputs['SSHEndpoint']
-            user = 'ec2-user'
-            if 'SSHUser' in outputs:
-                user = outputs['SSHUser']
-            return "ssh %s@%s" % (user, endpoint)
+        endpoint = [n.value for n in outputs if n.key == 'SSHEndpoint']
+        user = [n.value for n in outputs if n.key == 'SSHUser']
+        if endpoint:
+            endpoint = endpoint.pop()
+            if user:
+                user = user.pop()
+            else:
+                user = 'ec2-user'
+
+            os.system("ssh %s@%s" % (user, endpoint))
         else:
             print colored("Error: ", "red") + "No endpoint configured. The stack has not specified the output SSHEndpoint."
             exit(1)
