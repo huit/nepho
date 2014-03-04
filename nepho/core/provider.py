@@ -15,7 +15,10 @@ class AbstractProvider:
     def format_template(self, template):
         return template
 
-    def deploy(self):
+    def create(self):
+        pass
+
+    def update(self):
         pass
 
     def status(self):

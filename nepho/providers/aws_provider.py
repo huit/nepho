@@ -135,7 +135,7 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         cf_dict = parse_cf_json(raw_template)
         return get_cf_json(cf_dict, pretty=True)
 
-    def deploy(self, app_obj):
+    def create(self, app_obj):
         """Deploy a given pattern."""
         if app_obj.pargs.debug is True:
             boto.set_stream_logger('aws_provider')
@@ -145,73 +145,21 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
         raw_template = self.scenario.template
 
         template_dict = parse_cf_json(raw_template)
-        template_param_names = template_dict['Parameters'].keys()
         # Minimize JSON to save space
         template_json = json.dumps(template_dict, separators=(',', ':'))
 
-        params = list()
-        for item in context['parameters'].items():
-            if item[0] in template_param_names:
-                if item[1] is None:
-                    print colored("Error: ", "red"), "Required parameter %s is not set" % item[0]
-                    exit(1)
-                else:
-                    params.append(item)
-            else:
-                print colored("Warning: ", "yellow"), "Nepho parameter %s is not present in the CloudFormation template" % item[0]
+        params = construct_params(context['parameters'], template_dict['Parameters'].keys())
 
         print " - Determining owner information"
         try:
             iam_user = self.iam_conn.get_user()
-            if 'OwnerId' in template_param_names:
-                params.append(('OwnerId', iam_user.user_id))
-            if 'OwnerName' in template_param_names:
-                params.append(('OwnerName', iam_user.user_name))
         except:
             print colored("Error: ", "red") + "Unable to get IAM username"
             exit(1)
 
-        print " - Archiving payload for upload to S3"
-        try:
-            tmp_dir = tempfile.mkdtemp()
-            payload = shutil.make_archive(
-                os.path.join(tmp_dir, 'payload'), 'zip',
-                os.path.join(context['cloudlet']['path'], 'payload'))
-        except:
-            print colored("Error: ", "red") + "Unable to create payload file"
-            shutil.rmtree(tmp_dir)
-            exit(1)
-
-        # Upload payload to a private S3 bucket
-        print " - Creating S3 bucket for payload"
-        (access_key, secret_key, region) = self._load_aws_connection_settings()
-        try:
-            payload_bucket = self.s3_conn.create_bucket(
-                'nepho-payloads-' + access_key.lower(), policy='private')
-
-            payload_name = '%s/%s/payload-%s.zip' % (
-                context['cloudlet']['name'],
-                context['blueprint']['name'],
-                datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-            )
-            payload_key = boto.s3.key.Key(payload_bucket)
-            payload_key.key = payload_name
-        except Exception as e:
-            print colored("Error: ", "red") + "Unable to create S3 bucket"
-            print "(%s) %s " % (e.error_code, e.body)
-            shutil.rmtree(tmp_dir)
-            exit(1)
-
-        print " - Uploading payload archive to S3"
-        try:
-            payload_key.set_contents_from_file(open(payload, 'rb'))
-            params.append(('PayloadURL', payload_key.generate_url(3600)))
-        except Exception as e:
-            print colored("Error: ", "red") + "Unable to upload payload to S3"
-            print "(%s) %s " % (e.error_code, e.body)
-            exit(1)
-        finally:
-            shutil.rmtree(tmp_dir)
+        # Archive payload directory and send to S3
+        payload_url = self._send_payload(context, timeout=3600)
+        params.append(('PayloadURL', payload_url))
 
         try:
             print " - Creating CloudFormation stack"
@@ -220,6 +168,64 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                 template_body = template_json,
                 parameters = params,
                 capabilities = ['CAPABILITY_IAM'],
+                tags = {
+                    'OwnerId': iam_user.user_id,
+                    'OwnerName': iam_user.user_name,
+                    'CreatedBy': 'nepho'
+                },
+                disable_rollback = True
+            )
+
+            try:
+                self._show_status(self.stack_name)
+            except exc.CaughtSignal:
+                exit()
+        except boto.exception.BotoServerError as e:
+            print colored("Error: ", "red") + "Problem communicating with CloudFormation"
+            # Use e.message instead of e.body as per: https://github.com/boto/boto/issues/1658
+            msg = literal_eval(e.message)
+            print "(%s) %s " % (msg["Error"]["Code"], msg["Error"]["Message"])
+            exit(1)
+        return stack_id
+
+    def update(self, app_obj):
+        """Update a given pattern."""
+        if app_obj.pargs.debug is True:
+            boto.set_stream_logger('aws_provider')
+
+        context = self.scenario.context
+
+        raw_template = self.scenario.template
+
+        template_dict = parse_cf_json(raw_template)
+        # Minimize JSON to save space
+        template_json = json.dumps(template_dict, separators=(',', ':'))
+
+        params = construct_params(context['parameters'], template_dict['Parameters'].keys())
+
+        print " - Determining owner information"
+        try:
+            iam_user = self.iam_conn.get_user()
+        except:
+            print colored("Error: ", "red") + "Unable to get IAM username"
+            exit(1)
+
+        # Archive payload directory and send to S3
+        payload_url = self._send_payload(context, timeout=3600)
+        params.append(('PayloadURL', payload_url))
+
+        try:
+            print " - Updating CloudFormation stack"
+            stack_id = self.connection.update_stack(
+                self.stack_name,
+                template_body = template_json,
+                parameters = params,
+                capabilities = ['CAPABILITY_IAM'],
+                tags = {
+                    'OwnerId': iam_user.user_id,
+                    'OwnerName': iam_user.user_name,
+                    'CreatedBy': 'nepho'
+                },
                 disable_rollback = True
             )
 
@@ -284,6 +290,49 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             context['parameters']['AWSRegion']
         )
 
+    def _send_payload(self, context, timeout):
+        print " - Archiving payload for upload to S3"
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            payload = shutil.make_archive(
+                os.path.join(tmp_dir, 'payload'), 'zip',
+                os.path.join(context['cloudlet']['path'], 'payload'))
+        except:
+            print colored("Error: ", "red") + "Unable to create payload file"
+            shutil.rmtree(tmp_dir)
+            exit(1)
+
+        # Upload payload to a private S3 bucket
+        print " - Creating S3 bucket for payload"
+        (access_key, secret_key, region) = self._load_aws_connection_settings()
+        try:
+            payload_bucket = self.s3_conn.create_bucket(
+                'nepho-payloads-' + access_key.lower(), policy='private')
+
+            payload_name = '%s/%s/payload-%s.zip' % (
+                context['cloudlet']['name'],
+                context['blueprint']['name'],
+                datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+            )
+            payload_key = boto.s3.key.Key(payload_bucket)
+            payload_key.key = payload_name
+        except Exception as e:
+            print colored("Error: ", "red") + "Unable to create S3 bucket"
+            print "(%s) %s " % (e.error_code, e.body)
+            shutil.rmtree(tmp_dir)
+            exit(1)
+
+        print " - Uploading payload archive to S3"
+        try:
+            payload_key.set_contents_from_file(open(payload, 'rb'))
+            return payload_key.generate_url(timeout)
+        except Exception as e:
+            print colored("Error: ", "red") + "Unable to upload payload to S3"
+            print "(%s) %s " % (e.error_code, e.body)
+            exit(1)
+        finally:
+            shutil.rmtree(tmp_dir)
+
     def _show_status(self, stack):
         while True:
             try:
@@ -295,15 +344,24 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
             os.system('cls' if os.name == 'nt' else 'clear')
 
             su = stack_update[0]
+
+            # Determine terminal display size
+            width, height = nepho.core.common.terminal_size()
+            if width < 80:
+                type_width = 30
+            else:
+                type_width = width - 50
+
             print "Name:    %s" % su.stack_name
             print "Created: %s" % su.creation_time
-            print "Status:  %s" % self._colorize_status(su.stack_status)
+            print "Status:  %s" % colorize_status(su.stack_status)
             print
-            print colored(" %-23s %-35s %-18s " % ("Resource", "Type", "Status"), 'white', 'on_blue')
+            print colored(" %-28s %-*s %-18s " % ("Resource", type_width, "Type", "Status"), 'white', 'on_blue')
             for r in resources:
-                print " %-23s %-35s %-27s " % (r.logical_resource_id[0:23],
-                                               r.resource_type[0:35],
-                                               self._colorize_status(r.resource_status)[0:27])
+                print " %-28s %-*s %-27s " % (r.logical_resource_id[0:23],
+                                              type_width,
+                                              r.resource_type[0:type_width],
+                                              colorize_status(r.resource_status)[0:27])
             if su.stack_status == "CREATE_COMPLETE" or su.stack_status == "UPDATE_COMPLETE":
                 wrapper = TextWrapper(width=54)
                 print
@@ -325,15 +383,16 @@ class AWSProvider(nepho.core.provider.AbstractProvider):
                     time.sleep(1)
                 print
 
-    def _colorize_status(self, status):
-        if status.endswith("COMPLETE"):
-            return colored(status, "green")
-        elif status.endswith("IN_PROGRESS"):
-            return colored(status, "yellow")
-        elif status.endswith("FAILED"):
-            return colored(status, "red")
-        else:
-            return status
+
+def colorize_status(status):
+    if status.endswith("COMPLETE"):
+        return colored(status, "green")
+    elif status.endswith("IN_PROGRESS"):
+        return colored(status, "yellow")
+    elif status.endswith("FAILED"):
+        return colored(status, "red")
+    else:
+        return status
 
 
 def parse_cf_json(str):
@@ -354,3 +413,17 @@ def get_cf_json(order_dict, pretty=False):
     else:
         outstr = json.dumps(order_dict)
     return outstr
+
+
+def construct_params(possible_params, allowed_params):
+    params = list()
+    for item in possible_params.items():
+        if item[0] in allowed_params:
+            if item[1] is None:
+                print colored("Error: ", "red"), "Required parameter %s is not set" % item[0]
+                exit(1)
+            else:
+                params.append(item)
+        else:
+            print colored("Warning: ", "yellow"), "Nepho parameter %s is not present in the CloudFormation template" % item[0]
+    return params

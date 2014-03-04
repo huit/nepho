@@ -59,7 +59,7 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     def validate_template(self, template_str):
         return "Validation:\n  Vagrant does not support validation."
 
-    def deploy(self, app_obj):
+    def create(self, app_obj):
         """Deploy a given pattern."""
         if app_obj.pargs.debug is True:
             print "Vagrant does not support debug logging"
@@ -119,6 +119,38 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
                 print 'Vagrant run complete. Run "nepho stack status" for details or "nepho stack access" to connect.'
             except subprocess.CalledProcessError:
                 print colored("Error: ", "red") + 'Vagrant exited with a non-zero exit code, but your VM may be running.  Run "nepho stack status" for details.'
+
+    def update(self, app_obj):
+        if app_obj.pargs.debug is True:
+            print "Vagrant does not support debug logging"
+
+        context = self.scenario.context
+        raw_template = self.scenario.template
+        working_path = self._working_path(app_obj)
+
+        if not os.path.isdir(working_path):
+            print colored("Error: ", "red") + "Working directory does not exist"
+            print "Update can only be run on a running stack."
+            exit(1)
+
+        try:
+            if app_obj.pargs.develop is True:
+                print " -", colored("Development mode:", "yellow"), "Not updating payload"
+            else:
+                print " - Deleting old payload from working directory"
+                shutil.rmtree(os.path.join(working_path, 'payload'))
+                print " - Copying payload to working directory"
+                shutil.copytree(self.payload_path, os.path.join(working_path, 'payload'))
+        except:
+            print colored("Error: ", "red") + "Unable to update payload directory"
+            exit(1)
+
+        with cwd(working_path):
+            vm_name = None
+            try:
+                execute('vagrant provision')
+            except subprocess.CalledProcessError:
+                print colored("Error: ", "red") + 'Vagrant provision exited with a non-zero exit code.'
 
     def status(self, app_obj):
         working_path = self._working_path(app_obj)

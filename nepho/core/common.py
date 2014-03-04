@@ -123,3 +123,15 @@ def find_blueprint(self, cloudlet, name):
     blueprint_paths = all_blueprints(self, cloudlet)
     paths = [path for path in blueprint_paths if name in path]
     return paths[0]
+
+
+def terminal_size():
+    import fcntl
+    import termios
+    import struct
+    h, w, hp, wp = struct.unpack('HHHH', fcntl.ioctl(
+        sys.stdin.fileno(),
+        termios.TIOCGWINSZ,
+        struct.pack('HHHH', 0, 0, 0, 0)
+    ))
+    return w, h
