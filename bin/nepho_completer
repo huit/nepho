@@ -11,7 +11,7 @@ _nepho() {
     cloudlet)   cmds="describe install list registry-update update-registry search uninstall remove update upgrade" ;;
     parameter)  cmds="get list set add unset remove delete" ;;
     scope)      cmds="set unset clear" ;;
-    stack)      cmds="access ssh create deploy up destroy delete down list show-context show-template status validate" ;;
+    stack)      cmds="access ssh create deploy up destroy delete down list show-context show-template status validate provision" ;;
     *)          cmds="blueprint cloudlet parameter scope stack" ;;
   esac
 
