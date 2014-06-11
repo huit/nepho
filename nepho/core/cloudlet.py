@@ -16,8 +16,8 @@ from git import Repo
 from nepho.core import common, blueprint, parameter
 
 __CLOUDLET_DIRS_PARAM_NAME__ = "CloudletDirs"
-
 __CLOUDLET_YAML_FILENAME__ = "cloudlet.yaml"
+
 
 class Cloudlet:
     """A class that encompasses a cloudlet"""
@@ -37,9 +37,8 @@ class Cloudlet:
             try:
                 self.definition = yaml.safe_load(open(os.path.join(self.path, "cloudlet.yaml")))
             except Exception:
-                pass 
-#                print "Error loading cloudlet YAML file!"
-#                exit(1)
+                print "Error loading cloudlet YAML file!"
+                exit(1)
 
         # include metadata into the definition dictionary
         self.definition['name'] = self.name
@@ -198,9 +197,9 @@ class CloudletManager:
 
         self.cloudlet_dirs.remove(directory)
 
-
     def all_cloudlet_paths(self):
         """Returns a list of paths to cloudlets on disk."""
+
         cloudlet_paths = list()
         for dir in self.cloudlet_dirs:
             paths = glob.glob(os.path.join(dir, '*'))
