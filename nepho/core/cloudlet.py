@@ -205,7 +205,7 @@ class CloudletManager:
             paths = glob.glob(os.path.join(dir, '*'))
             for p in paths:
                 if os.path.isdir(p):
-                    yfile = string.join([p,__CLOUDLET_YAML_FILENAME__], os.sep)
+                    yfile = string.join([p, __CLOUDLET_YAML_FILENAME__], os.sep)
                     if os.path.isfile(yfile):
                         cloudlet_paths.append(p)
 

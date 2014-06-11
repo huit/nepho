@@ -36,7 +36,6 @@ class NephoStackController(base.NephoBaseController):
         self.cloudletManager = cloudlet.CloudletManager(self.app)
         self.paramsManager   = parameter.ParamsManager(self.app)
 
-
     @controller.expose(help='Show the context for a stack from a blueprint and configs')
     def show_context(self):
         if self.app.cloudlet_name is None or self.app.blueprint_name is None:
