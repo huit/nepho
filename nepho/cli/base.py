@@ -41,9 +41,8 @@ class NephoBaseController(controller.CementBaseController):
         usage = "nepho <command> <action> [options]"
 
         arguments = [
-            (['-v', '--version'], dict(action='store_true', help='print nepho version')),
-            (['-C'], dict(action='store_true', help='the big C option'))
-            ]
+            (['-v', '--version'], dict(action='store_true', help='print nepho version'))
+        ]
 
     def _setup(self, app):
         super(NephoBaseController, self)._setup(app)
@@ -53,7 +52,7 @@ class NephoBaseController(controller.CementBaseController):
 
         if self._meta.label == "base":
 
-            if self.app.pargs.version == True:
+            if self.app.pargs.version is True:
                 print "nepho version: %s" % (nepho.__version__)
             else:
                 print "Run %s --help for a list of commands" % (self.app.args.prog)
