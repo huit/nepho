@@ -17,6 +17,8 @@ from nepho.core import common, blueprint, parameter
 
 __CLOUDLET_DIRS_PARAM_NAME__ = "CloudletDirs"
 
+__CLOUDLET_YAML_FILENAME__ = "cloudlet.yaml"
+
 class Cloudlet:
     """A class that encompasses a cloudlet"""
 
@@ -35,8 +37,9 @@ class Cloudlet:
             try:
                 self.definition = yaml.safe_load(open(os.path.join(self.path, "cloudlet.yaml")))
             except Exception:
-                print "Error loading cloudlet YAML file!"
-                exit(1)
+                pass 
+#                print "Error loading cloudlet YAML file!"
+#                exit(1)
 
         # include metadata into the definition dictionary
         self.definition['name'] = self.name
@@ -201,7 +204,13 @@ class CloudletManager:
         """Returns a list of paths to cloudlets on disk."""
         cloudlet_paths = list()
         for dir in self.cloudlet_dirs:
-            cloudlet_paths.extend(glob.glob(os.path.join(dir, '*')))
+            paths = glob.glob(os.path.join(dir, '*'))
+            for p in paths:
+                if os.path.isdir(p):
+                    yfile = string.join([p,__CLOUDLET_YAML_FILENAME__], os.sep)
+                    if os.path.isfile(yfile):
+                        cloudlet_paths.append(p)
+
         return cloudlet_paths
 
     def new(self, name, target_dir=None, url=None):

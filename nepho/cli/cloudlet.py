@@ -72,8 +72,6 @@ class NephoCloudletController(base.NephoBaseController):
 
         return
 
-        #cloudlet.list_all_cloudlets(self)
-
     @controller.expose(help="List all directories to search for cloudlets", aliases=["list-directories"])
     def directory_list(self):
         cloudlet_dirs = self.cloudletManager.all_cloudlet_dirs()
@@ -164,13 +162,15 @@ class NephoCloudletController(base.NephoBaseController):
 
     @controller.expose(help="Create a Nepho cloudlet in the current directory from a generic template, or from a location")
     def create(self):
-        if self.app.cloudlet_name is None:
+        if self.app.pargs.cloudlet is None:
             print "Usage: nepho cloudlet create <cloudlet> [--location <location>]"
             exit(1)
         else:
             scope.print_scope(self)
 
-        name = self.app.cloudlet_name
+        name = self.app.pargs.cloudlet
+
+        print name
         registry = self.cloudletManager.get_registry()
 
         if name in registry:
@@ -179,8 +179,14 @@ class NephoCloudletController(base.NephoBaseController):
 
         url="https://github.com/cloudlets/nepho-example.git"
 
+        dir="."
+        if self.app.pargs.directory is not None:
+            dir = self.app.pargs.directory 
+
         # TODO: Move error handling from core to CLI
-        self.cloudletManager.new(name, selected_dir, url)
+        self.cloudletManager.new(name, dir, url)
+        self.cloudletManager.add_cloudlet_dir(dir)
+
         return
 
     @controller.expose(help="Install a Nepho cloudlet from the Nepho Cloudlet Registry or from an external Git repository")
