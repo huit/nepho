@@ -34,7 +34,9 @@ class ParamsManager:
     """
 
     def __init__(self, app_obj):
-        self.params_file = app_obj.app.config.get('nepho', 'params_file')
+        print app_obj
+#        self.params_file = app_obj.app.config.get('nepho', 'params_file')
+        self.params_file = app_obj.config.get('nepho', 'params_file')        
         self.params = dict()
         self.load()
 

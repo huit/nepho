@@ -27,7 +27,7 @@ class NephoParameterController(base.NephoBaseController):
 
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
-        self.params = parameter.ParamsManager(self)
+        self.params = parameter.ParamsManager(app)
 
     @controller.expose(help='List parameters')
     def list(self):
