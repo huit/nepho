@@ -8,7 +8,16 @@ import yaml
 import shutil
 from termcolor import colored
 
-import vagrant
+__have_vagrant__ = True
+__vagrant_unavailable_msg__ = "Vagrant is not available. Please install vagrant from http://vagrantup.com and try again."
+
+try:
+    import vagrant
+except ImportError:
+    __have_vagrant__ = False
+except  AssertionError:
+    __have_vagrant__ = False
+
 import nepho
 from nepho.core.common import cwd, execute
 
@@ -19,6 +28,11 @@ class VagrantProvider(nepho.core.provider.AbstractProvider):
     TEMPLATE_FILENAME = "Vagrantfile"
 
     def __init__(self, config, scenario=None):
+
+        if __have_vagrant__ is not True:
+            print colored("Error: ", "red") + __vagrant_unavailable_msg__
+            exit(1)
+
         nepho.core.provider.AbstractProvider.__init__(self, config, scenario)
         self.params = {
             'VagrantBackend': 'virtualbox',

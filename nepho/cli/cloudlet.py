@@ -95,7 +95,6 @@ class NephoCloudletController(base.NephoBaseController):
         directory = self.app.pargs.directory
         cloudlet_dirs = self.cloudletManager.rm_cloudlet_dir(self.app.pargs.directory)
 
-
     @controller.expose(help="Describe an installed cloudlet")
     def describe(self):
         if self.app.cloudlet_name is None:

@@ -39,7 +39,7 @@ def execute(command):
     if (exitCode == 0):
         return output
     else:
-        raise subprocess.ProcessException(command, exitCode, output)
+        raise OSError(command, exitCode, output)
 
 
 def merge(user, system):

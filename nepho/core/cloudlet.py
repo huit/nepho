@@ -74,8 +74,7 @@ class Cloudlet:
     def clone(self, url):
         """
         Creates a local cloudlet as a git repo on disk
-         from the supplied remote git URL.
-        """
+         from the supplied remote git URL."""
         try:
             temp_repo = tempfile.mkdtemp()
             validate = Repo.init(temp_repo, bare=True)
