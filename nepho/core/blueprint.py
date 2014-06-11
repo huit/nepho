@@ -28,6 +28,6 @@ class Blueprint:
         """Validates the blueprint as defined to determine if it's sufficent and properly formed."""
         fields = ["provider"]
         for f in fields:
-            if not f in self.definition.keys():
+            if f not in self.definition.keys():
                 print "Blueprint is missing required field %s." % (f)
                 exit(1)
