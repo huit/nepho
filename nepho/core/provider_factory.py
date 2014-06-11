@@ -1,5 +1,5 @@
 # coding: utf-8
-from nepho.providers import vagrant_provider, aws_provider
+from nepho.providers import vagrant_provider, aws_provider, openstack_provider
 
 
 class ProviderFactory:
@@ -12,3 +12,5 @@ class ProviderFactory:
             return vagrant_provider.VagrantProvider(config, scenario)
         elif name == "aws":
             return aws_provider.AWSProvider(config, scenario)
+        elif name == "openstack":
+            return openstack_provider.OpenStackProvider(config, scenario)
