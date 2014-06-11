@@ -3,7 +3,6 @@ import cloudlet
 import blueprint
 import hooks
 import stack
-#import config
 import parameter
 import scope
 

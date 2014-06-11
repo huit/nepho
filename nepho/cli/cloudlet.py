@@ -70,7 +70,7 @@ class NephoCloudletController(base.NephoBaseController):
 
         return
 
-        #cloudlet.list_all_cloudlets(self)
+        # cloudlet.list_all_cloudlets(self)
 
     @controller.expose(help="Describe an installed cloudlet")
     def describe(self):
