@@ -7,6 +7,8 @@ import re
 from cement.core import backend, foundation, controller
 from cement.utils.misc import init_defaults
 
+import nepho
+
 defaults = {
     'nepho': {
         'archive_dir': os.path.join('~', '.nepho', 'archive'),
@@ -38,13 +40,23 @@ class NephoBaseController(controller.CementBaseController):
         description = "Command line cross-cloud orchestration tool for constructing virtual datacenters."
         usage = "nepho <command> <action> [options]"
 
+        arguments = [
+            (['-v', '--version'], dict(action='store_true', help='print nepho version')),
+            (['-C'], dict(action='store_true', help='the big C option'))
+            ]
+
     def _setup(self, app):
         super(NephoBaseController, self)._setup(app)
 
     @controller.expose(hide=True)
     def default(self):
+
         if self._meta.label == "base":
-            print "Run %s --help for a list of commands" % (self.app.args.prog)
+
+            if self.app.pargs.version == True:
+                print "nepho version: %s" % (nepho.__version__)
+            else:
+                print "Run %s --help for a list of commands" % (self.app.args.prog)
 
         else:
             print "Run %s %s --help for a list of actions" % (self.app.args.prog, self._meta.label)
