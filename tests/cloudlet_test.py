@@ -45,6 +45,24 @@ class a_TestNephoCloudlet(test.CementTestCase):
         app.run()
         app.close()
 
+    def test_nepho_cloudlet_list_directories(self):
+        app = self.make_app(argv=['cloudlet', 'directory-list'])
+        app.setup()
+        app.run()
+        app.close()
+
+    def test_nepho_cloudlet_add_directories(self):
+        app = self.make_app(argv=['cloudlet', 'directory-add', '--directory', '.'])
+        app.setup()
+        app.run()
+        app.close()
+
+    def test_nepho_cloudlet_rm_directories(self):
+        app = self.make_app(argv=['cloudlet', 'directory-remove', '--directory', '.'])
+        app.setup()
+        app.run()
+        app.close()
+
     def test_nepho_cloudlet_list(self):
         app = self.make_app(argv=['cloudlet', 'list'])
         app.setup()
@@ -53,6 +71,12 @@ class a_TestNephoCloudlet(test.CementTestCase):
 
     def test_nepho_cloudlet_search(self):
         app = self.make_app(argv=['cloudlet', 'search', 'nepho-example'])
+        app.setup()
+        app.run()
+        app.close()
+
+    def test_nepho_cloudlet_create(self):
+        app = self.make_app(argv=['cloudlet', 'create', 'test-cloudlet'])
         app.setup()
         app.run()
         app.close()

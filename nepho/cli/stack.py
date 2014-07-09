@@ -34,6 +34,7 @@ class NephoStackController(base.NephoBaseController):
     def _setup(self, app):
         super(base.NephoBaseController, self)._setup(app)
         self.cloudletManager = cloudlet.CloudletManager(self.app)
+        self.paramsManager   = parameter.ParamsManager(self.app)
 
     @controller.expose(help='Show the context for a stack from a blueprint and configs')
     def show_context(self):
@@ -213,7 +214,7 @@ class NephoStackController(base.NephoBaseController):
     def _assemble_scenario(self):
         """Helper method to create a suitable scenario from the command line options."""
 
-        stored_params = parameter.ParamsManager(self)
+        stored_params = self.paramsManager
         user_params = self._parse_user_params()
         bprint = self._load_blueprint()
         if self.app.pargs.name is not None:

@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import sys
+import string
 import tempfile
 from time import time
 import re
@@ -12,7 +13,10 @@ from shutil import rmtree, copyfileobj
 
 from git import Repo
 
-from nepho.core import common, blueprint
+from nepho.core import common, blueprint, parameter
+
+__CLOUDLET_DIRS_PARAM_NAME__ = "CloudletDirs"
+__CLOUDLET_YAML_FILENAME__ = "cloudlet.yaml"
 
 
 class Cloudlet:
@@ -147,17 +151,64 @@ class CloudletManager:
         self.registry       = app_obj.config.get('nepho', 'cloudlet_registry_url')
         self.cache_dir      = app_obj.config.get('nepho', 'cache_dir')
         self.registry_cache = os.path.join(self.cache_dir, "registry.yaml")
+
+        self.params = parameter.ParamsManager(app_obj)
+
+        cloud_dirs = self.params.get(__CLOUDLET_DIRS_PARAM_NAME__)
+        if cloud_dirs is not None:
+            for d in cloud_dirs.split(os.pathsep):
+                if d not in self.cloudlet_dirs:
+                    self.cloudlet_dirs.append(d)
+
         self.update_registry()
 
     def all_cloudlet_dirs(self):
         """Returns a list of paths to directories that contain cloudlets on disk."""
         return self.cloudlet_dirs
 
+    def add_cloudlet_dir(self, directory):
+        """Add a dir to the list of paths to directories that contain cloudlets on disk."""
+        if directory in self.cloudlet_dirs:
+            return
+
+        # Load parameters for cloudlet directories and add this to the list there.
+        dirs_param = self.params.get(__CLOUDLET_DIRS_PARAM_NAME__)
+        params_dir_list = [directory]
+        if dirs_param is not None:
+            params_dir_list = dirs_param.split(os.pathsep)
+            if directory not in params_dir_list:
+                params_dir_list.append(directory)
+
+        self.params.set(__CLOUDLET_DIRS_PARAM_NAME__, string.join(params_dir_list, os.pathsep))
+
+        self.cloudlet_dirs.append(directory)
+
+    def rm_cloudlet_dir(self, directory):
+        """Removes a dir from the list of paths to directories that contain cloudlets on disk."""
+
+        # Load parameters for cloudlet directories and add this to the list there.
+        dirs_param = self.params.get(__CLOUDLET_DIRS_PARAM_NAME__)
+        if dirs_param is not None:
+            params_dir_list = dirs_param.split(os.pathsep)
+            if directory in params_dir_list:
+                params_dir_list.remove(directory)
+
+        self.params.set(__CLOUDLET_DIRS_PARAM_NAME__, string.join(params_dir_list, os.pathsep))
+
+        self.cloudlet_dirs.remove(directory)
+
     def all_cloudlet_paths(self):
         """Returns a list of paths to cloudlets on disk."""
+
         cloudlet_paths = list()
         for dir in self.cloudlet_dirs:
-            cloudlet_paths.extend(glob.glob(os.path.join(dir, '*')))
+            paths = glob.glob(os.path.join(dir, '*'))
+            for p in paths:
+                if os.path.isdir(p):
+                    yfile = string.join([p, __CLOUDLET_YAML_FILENAME__], os.sep)
+                    if os.path.isfile(yfile):
+                        cloudlet_paths.append(p)
+
         return cloudlet_paths
 
     def new(self, name, target_dir=None, url=None):

@@ -4,10 +4,11 @@ from cement.core import controller
 from nepho.cli import base, scope
 import os
 import argparse
+import string
 from termcolor import colored
 from textwrap import TextWrapper
 
-from nepho.core import common, cloudlet
+from nepho.core import common, cloudlet, parameter
 
 
 # Python 2.x vs 3.x input handling change
@@ -29,6 +30,7 @@ class NephoCloudletController(base.NephoBaseController):
         arguments = [
             (['--force', '-f'], dict(action='store_true', dest='force', help=argparse.SUPPRESS)),
             (['--location', '-l'], dict(dest='location', help=argparse.SUPPRESS)),
+            (['--directory'], dict(dest='directory', help=argparse.SUPPRESS)),
             (['cloudlet'], dict(help=argparse.SUPPRESS, nargs='?')),
             (['query'], dict(help=argparse.SUPPRESS, nargs='*')),
         ]
@@ -70,7 +72,27 @@ class NephoCloudletController(base.NephoBaseController):
 
         return
 
-        # cloudlet.list_all_cloudlets(self)
+    @controller.expose(help="List all directories to search for cloudlets", aliases=["list-directories"])
+    def directory_list(self):
+        cloudlet_dirs = self.cloudletManager.all_cloudlet_dirs()
+        for d in cloudlet_dirs:
+            print colored(d, "yellow")
+
+    @controller.expose(help="Add a directory to search for cloudlets", aliases=["add-directory", "add-dir"])
+    def directory_add(self):
+        if self.app.pargs.directory is None:
+            print "Usage: nepho cloudlet add-drectory --directory <dir>"
+            exit(1)
+
+        self.cloudletManager.add_cloudlet_dir(self.app.pargs.directory)
+
+    @controller.expose(help="Remove a directory to search for cloudlets", aliases=["remove-directory", "rmdir"])
+    def directory_remove(self, aliases=["list-directories"]):
+        if self.app.pargs.directory is None:
+            print "Usage: nepho cloudlet remove-drectory --directory <dir>"
+            exit(1)
+
+        self.cloudletManager.rm_cloudlet_dir(self.app.pargs.directory)
 
     @controller.expose(help="Describe an installed cloudlet")
     def describe(self):
@@ -135,6 +157,35 @@ class NephoCloudletController(base.NephoBaseController):
                 print "Author:       %s" % (cloudletDict['author'])
                 print "License:      %s" % (cloudletDict['license'])
                 print wrapper.fill("Summary:      %s" % (cloudletDict['summary']))
+
+    @controller.expose(help="Create a Nepho cloudlet in the current directory from a generic template, or from a location")
+    def create(self):
+        if self.app.pargs.cloudlet is None:
+            print "Usage: nepho cloudlet create <cloudlet> [--location <location>]"
+            exit(1)
+        else:
+            scope.print_scope(self)
+
+        name = self.app.pargs.cloudlet
+
+        print name
+        registry = self.cloudletManager.get_registry()
+
+        if name in registry:
+            print "Cloudlet name is already in master registry. please choose another name."
+            exit(1)
+
+        url = "https://github.com/cloudlets/nepho-example.git"
+
+        dir = "."
+        if self.app.pargs.directory is not None:
+            dir = self.app.pargs.directory
+
+        # TODO: Move error handling from core to CLI
+        self.cloudletManager.new(name, dir, url)
+        self.cloudletManager.add_cloudlet_dir(dir)
+
+        return
 
     @controller.expose(help="Install a Nepho cloudlet from the Nepho Cloudlet Registry or from an external Git repository")
     def install(self):
