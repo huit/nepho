@@ -8,7 +8,7 @@ from colorama import init
 init()
 
 
-def load():
+def load(app):
     # Subcontrollers for each functional component
     handler.register(cli.cloudlet.NephoCloudletController)
     handler.register(cli.blueprint.NephoBlueprintController)
