@@ -1,3 +1,8 @@
+v1.2.3, 2014-10-03 -- Features and compatibility updates.
+New command allows for creating new cloudlets from the example template.
+Manage cloudlet directory locations.
+Compatibility with Cement 2.3.2+ releases.
+
 v1.2.2, 2014-01-30 -- Feature release.
 Vagrant develop mode for working with master payload directory.
 Vagrant live status display during stack create.
