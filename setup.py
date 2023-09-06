@@ -34,7 +34,7 @@ setup(
         'cement>=2.2.0',
         'termcolor',
         'colorama',
-        'gitpython==0.3.2.RC1',
+        'gitpython==3.1.34',
         'requests>=1.2.3',
         'python-vagrant==0.4.0'
     ],
